@@ -1,0 +1,319 @@
+﻿<mah:MetroContentControl
+    x:Class="FluorescenceFullAutomatic.Views.DataManagerView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:convert="clr-namespace:FluorescenceFullAutomatic.Converters"
+    xmlns:ctr="clr-namespace:FluorescenceFullAutomatic.Views.Ctr"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    xmlns:local="clr-namespace:FluorescenceFullAutomatic.Views"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
+    Name="root"
+    d:Background="White"
+    d:DesignHeight="700"
+    d:DesignWidth="1370"
+    mah:DialogParticipation.Register="{Binding}"
+    DataContext="{Binding DataManagerViewModel, Source={StaticResource ServiceLocator}}"
+    SizeChanged="MetroContentControl_SizeChanged"
+    Visibility="{Binding Visibility, Mode=OneWayToSource}"
+    mc:Ignorable="d">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadedCommand}" />
+        </i:EventTrigger>
+        <i:EventTrigger EventName="SizeChanged">
+            <i:InvokeCommandAction Command="{Binding SizeChangedCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <mah:MetroContentControl.Resources>
+        <convert:MaxHeightConverter x:Key="MaxHeightConverter" />
+        <convert:DateTimeToStringConvert x:Key="DTConvert" />
+        <convert:TestResultStateConverter x:Key="TrStateConverter" />
+        <convert:ResultToImageConverter x:Key="ResultToImageConverter" />
+
+        <Style
+            x:Key="TextBlockCell"
+            BasedOn="{StaticResource MahApps.Styles.DataGridCell}"
+            TargetType="DataGridCell">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="MinHeight" Value="40" />
+            <Setter Property="Padding" Value="5,0,0,0" />
+            <Setter Property="BorderBrush" Value="#e0e0e0" />
+            <Setter Property="BorderThickness" Value="1,1,0,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+
+        </Style>
+        <Style
+            x:Key="TextBlockCellHeader"
+            BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}"
+            TargetType="DataGridColumnHeader">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Padding" Value="10,10,0,10" />
+            <Setter Property="BorderBrush" Value="Gray" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="SeparatorBrush" Value="Red" />
+            <Setter Property="SeparatorVisibility" Value="Collapsed" />
+        </Style>
+    </mah:MetroContentControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="1" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel
+                Grid.Row="0"
+                Margin="10"
+                Orientation="Horizontal"
+                Visibility="Collapsed">
+                <Button Margin="0,0,10,0" Command="{Binding LoadDataCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Margin="0,0,8,0" Kind="Refresh" />
+                        <TextBlock Text="刷新数据" />
+                    </StackPanel>
+                </Button>
+
+            </StackPanel>
+            <DataGrid
+                Grid.Row="1"
+                MaxHeight="{Binding ActualHeight, ElementName=root, Converter={StaticResource MaxHeightConverter}}"
+                Margin="10"
+                d:ItemsSource="{d:SampleData ItemCount=10}"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                CanUserDeleteRows="False"
+                CanUserResizeColumns="True"
+                CanUserResizeRows="False"
+                CanUserSortColumns="False"
+                CellStyle="{StaticResource TextBlockCell}"
+                ColumnHeaderStyle="{StaticResource TextBlockCellHeader}"
+                IsReadOnly="True"
+                ItemsSource="{Binding TestResults}"
+                ScrollViewer.CanContentScroll="True"
+                ScrollViewer.IsDeferredScrollingEnabled="True">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="50" Header="选择">
+                        <DataGridTemplateColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <CheckBox
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Command="{Binding DataContext.SelectAllCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    IsChecked="{Binding DataContext.IsAllSelected, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.HeaderTemplate>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Command="{Binding DataContext.SelectionChangedCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"
+                                    IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn
+                        Width="60"
+                        Binding="{Binding Id}"
+                        Header="ID" />
+                    <DataGridTextColumn
+                        Width="100"
+                        Binding="{Binding Patient, Converter={StaticResource SafePatientPropertyConverter}, ConverterParameter=PatientName}"
+                        Header="姓名" />
+                    <DataGridTextColumn
+                        Width="60"
+                        Binding="{Binding T, Converter={StaticResource StringToDefaultConverter}}"
+                        Header="T值" />
+                    <DataGridTextColumn
+                        Width="60"
+                        Binding="{Binding C, Converter={StaticResource StringToDefaultConverter}}"
+                        Header="C值" />
+                    <DataGridTextColumn
+                        Width="70"
+                        Binding="{Binding Tc, Converter={StaticResource StringToDefaultConverter}}"
+                        Header="T/C值" />
+                    <DataGridTextColumn
+                        Width="70"
+                        Binding="{Binding Con, Converter={StaticResource StringToDefaultConverter}}"
+                        Header="浓度" />
+                    <DataGridTextColumn
+                        Width="70"
+                        Binding="{Binding TestVerdict, Converter={StaticResource StringToDefaultConverter}}"
+                        Header="结果" />
+                    <DataGridTemplateColumn Width="130" Header="状态">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal">
+                                    <Image
+                                        Width="30"
+                                        Height="30"
+                                        Margin="0,0,5,0"
+                                        d:Source="../Image/img_result_state_none.png"
+                                        Source="{Binding ResultState, Converter={StaticResource ResultToImageConverter}}" />
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Text="{Binding ResultState, Converter={StaticResource TrStateConverter}}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--<DataGridTextColumn
+                        Width="80"
+                        Binding="{Binding ResultState, Converter={StaticResource TrStateConverter}}"
+                        Header="状态" />-->
+
+                    <DataGridTextColumn
+                        Width="150"
+                        Binding="{Binding TestTime, Converter={StaticResource DTConvert}}"
+                        Header="检测时间" />
+                    <DataGridTextColumn
+                        Width="120"
+                        Binding="{Binding Project.ProjectName}"
+                        Header="项目" />
+                    <DataGridTextColumn
+                        Width="120"
+                        Binding="{Binding Barcode, Converter={StaticResource StringToDefaultConverter}}"
+                        Header="条码" />
+                    <DataGridTextColumn
+                        Width="100"
+                        Binding="{Binding TestNum, Converter={StaticResource StringToDefaultConverter}}"
+                        Header="检测编号" />
+                    <DataGridTemplateColumn Width="70" Header="操作">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button
+                                    Width="60"
+                                    Command="{Binding DataContext.ClickResultDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"
+                                    ToolTip="详情">
+                                    <materialDesign:PackIcon Kind="PersonDetails" />
+                                </Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn
+                        Width="60"
+                        Binding="{Binding Patient, Converter={StaticResource SafePatientPropertyConverter}, ConverterParameter=PatientAge}"
+                        Header="年龄" />
+                    <DataGridTextColumn
+                        Width="60"
+                        Binding="{Binding Patient, Converter={StaticResource SafePatientPropertyConverter}, ConverterParameter=PatientGender}"
+                        Header="性别" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <StackPanel
+                Grid.Row="2"
+                Background="Gray"
+                Orientation="Horizontal" />
+            <Grid Grid.Row="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button
+                    Grid.Column="0"
+                    MinWidth="100"
+                    Margin="20,0,0,0"
+                    Command="{Binding FilterConditionCommand}"
+                    Content="筛选"
+                    Style="{StaticResource Button.Accent}" />
+                <!--  分页控件  -->
+                <ctr:PagingControl
+                    x:Name="pagingControl"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    DataContext="{Binding PagingControlViewModel}" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+
+                    <Button
+                        MinWidth="80"
+                        Margin="20,0,0,0"
+                        Command="{Binding UploadItemsCommand}"
+                        Content="上传"
+                        Style="{StaticResource Button.Default}" />
+                    <Button
+                        MinWidth="80"
+                        Margin="20,0,0,0"
+                        ctr:ButtonPopupHelper.IsPopupOpen="{Binding IsExportMenuOpen, Mode=TwoWay}"
+                        ctr:ButtonPopupHelper.MenuItems="{Binding ExportMenuItems}"
+                        Command="{Binding ShowExportMenuCommand}"
+                        Content="导出Excel"
+                        Style="{StaticResource Button.Default}" />
+                    <Button
+                        MinWidth="80"
+                        Margin="20,0,0,0"
+                        ctr:ButtonPopupHelper.IsPopupOpen="{Binding IsPrintMenuOpen, Mode=TwoWay}"
+                        ctr:ButtonPopupHelper.MenuItems="{Binding PrintMenuItems}"
+                        Command="{Binding ShowPrintMenuCommand}"
+                        Content="打印报告"
+                        Style="{StaticResource Button.Default}" />
+                    <Button
+                        MinWidth="80"
+                        Margin="20,0,0,0"
+                        Command="{Binding DeleteSelectedCommand}"
+                        Content="删除"
+                        Style="{StaticResource Button.Default}" />
+                </StackPanel>
+            </Grid>
+
+        </Grid>
+
+
+
+        <!--  加载提示层  -->
+        <Grid
+            Grid.Row="0"
+            Width="{Binding ControlWidth}"
+            Height="{Binding ControlHeight}"
+            Background="#80000000"
+            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border
+                Grid.Row="1"
+                Grid.Column="1"
+                Padding="20"
+                Background="#80000000"
+                CornerRadius="5">
+                <StackPanel>
+                    <mah:ProgressRing
+                        Width="50"
+                        Height="50"
+                        Margin="0,0,0,10"
+                        Foreground="White"
+                        IsActive="True" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="16"
+                        Foreground="White"
+                        Text="正在加载数据..." />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</mah:MetroContentControl>

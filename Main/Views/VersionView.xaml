@@ -1,0 +1,43 @@
+﻿<UserControl
+    x:Class="FluorescenceFullAutomatic.Views.VersionView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:local="clr-namespace:FluorescenceFullAutomatic.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
+    d:Background="White"
+    d:DataContext="{d:DesignInstance vm:VersionViewModel}"
+    d:DesignHeight="700"
+    d:DesignWidth="1250"
+    DataContext="{Binding VersionViewModel, Source={StaticResource ServiceLocator}}"
+    mc:Ignorable="d">
+
+    <i:Interaction.Triggers>
+        <!--  当控件加载完成时  -->
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding UpdateVersionCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Margin="20" Orientation="Vertical">
+            <StackPanel Margin="0,10" Orientation="Horizontal">
+                <TextBlock
+                    d:Text="版本"
+                    FontSize="16"
+                    Text="{Binding Version}" />
+            </StackPanel>
+            <StackPanel Margin="0,10" Orientation="Horizontal">
+                <TextBlock
+                    d:Text="MCU版本"
+                    FontSize="16"
+                    Text="{Binding McuVersion}" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -1,0 +1,439 @@
+﻿<mah:MetroContentControl
+    x:Class="FluorescenceFullAutomatic.Views.Ctr.ResultDetailsControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:chart="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
+    xmlns:conv="clr-namespace:FluorescenceFullAutomatic.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ex="clr-namespace:FluorescenceFullAutomatic.Ex"
+    xmlns:local="clr-namespace:FluorescenceFullAutomatic.Views.Ctr"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
+    d:DataContext="{d:DesignInstance vm:ResultDetailsViewModel}"
+    d:DesignHeight="650"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <mah:MetroContentControl.Resources>
+        <conv:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+        <conv:DateTimeToStringConvert x:Key="DateTimeToStringConvert" />
+
+        <!--  基础样式 - 定义共同的属性  -->
+        <Style x:Key="BaseControlStyle">
+            <Setter Property="Control.Height" Value="30" />
+            <Setter Property="Control.VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!--  添加标签TextBlock的样式  -->
+        <Style
+            x:Key="TextBlockLabelDefaultStyle"
+            BasedOn="{StaticResource BaseControlStyle}"
+            TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="MinWidth" Value="70" />
+            <Setter Property="Padding" Value="13,7,0,7" />
+            <Setter Property="TextAlignment" Value="Left" />
+        </Style>
+
+    </mah:MetroContentControl.Resources>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="5" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="5" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="5" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="5" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!--  标题和详情按钮  -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    Margin="5,0,0,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="18"
+                    FontWeight="Bold"
+                    Text="结果详情" />
+
+                <Button
+                    Grid.Column="1"
+                    MinWidth="100"
+                    Margin="0,0,5,0"
+                    Command="{Binding ToggleDetailsCommand}"
+                    Content="{Binding DetailsButtonText}"
+                    Visibility="Collapsed" />
+            </Grid>
+
+            <!--  基本信息  -->
+            <Grid Grid.Row="2" Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="5" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="5" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Grid.Row="0"
+                    Style="{StaticResource TextBlockLabelDefaultStyle}"
+                    Text="姓名：" />
+                <TextBox
+                    Grid.Column="1"
+                    Style="{StaticResource TextBoxDefaultStyle}"
+                    Text="{Binding Patient.PatientName}" />
+                <TextBlock
+                    Grid.Column="2"
+                    Style="{StaticResource TextBlockLabelDefaultStyle}"
+                    Text="性别：" />
+                <TextBox
+                    Grid.Column="3"
+                    Style="{StaticResource TextBoxDefaultStyle}"
+                    Text="{Binding Patient.PatientGender}" />
+                <TextBlock
+                    Grid.Column="4"
+                    Style="{StaticResource TextBlockLabelDefaultStyle}"
+                    Text="年龄：" />
+                <TextBox
+                    Grid.Column="5"
+                    Style="{StaticResource TextBoxDefaultStyle}"
+                    Text="{Binding Patient.PatientAge}" />
+
+                <TextBlock
+                    Grid.Row="2"
+                    Style="{StaticResource TextBlockLabelDefaultStyle}"
+                    Text="项目名称：" />
+                <Border
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    MinWidth="180"
+                    Style="{StaticResource TextBlockBorderStyle}">
+                    <TextBlock
+                        MinWidth="180"
+                        Style="{StaticResource TextBlockInBorderDefaultStyle}"
+                        Text="{Binding Result.Project.ProjectName}" />
+                </Border>
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Style="{StaticResource TextBlockLabelDefaultStyle}"
+                    Text="条码：" />
+                <TextBox
+                    Grid.Row="2"
+                    Grid.Column="3"
+                    Style="{StaticResource TextBoxDefaultStyle}"
+                    Text="{Binding Result.Barcode}" />
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="4"
+                    Style="{StaticResource TextBlockLabelDefaultStyle}"
+                    Text="检测编号：" />
+                <TextBox
+                    Grid.Row="2"
+                    Grid.Column="5"
+                    Style="{StaticResource TextBoxDefaultStyle}"
+                    Text="{Binding Result.TestNum}" />
+
+                <TextBlock
+                    Grid.Row="4"
+                    Style="{StaticResource TextBlockLabelDefaultStyle}"
+                    Text="检测时间：" />
+                <Border
+                    Grid.Row="4"
+                    Grid.Column="1"
+                    MinWidth="180"
+                    Style="{StaticResource TextBlockBorderStyle}">
+                    <TextBlock
+                        MinWidth="180"
+                        Style="{StaticResource TextBlockInBorderDefaultStyle}"
+                        Text="{Binding Result.TestTime, Converter={StaticResource DateTimeToStringConvert}}" />
+                </Border>
+                <TextBlock
+                    Grid.Row="4"
+                    Grid.Column="2"
+                    Style="{StaticResource TextBlockLabelDefaultStyle}"
+                    Text="状态：" />
+                <Border
+                    Grid.Row="4"
+                    Grid.Column="3"
+                    MinWidth="180"
+                    Style="{StaticResource TextBlockBorderStyle}">
+                    <TextBlock
+                        MinWidth="180"
+                        Style="{StaticResource TextBlockInBorderDefaultStyle}"
+                        Text="{Binding Result.ResultState, Converter={StaticResource EnumDescriptionConverter}}" />
+                </Border>
+                <TextBlock
+                    Grid.Row="4"
+                    Grid.Column="4"
+                    Style="{StaticResource TextBlockLabelDefaultStyle}"
+                    Text="是否上传：" />
+                <Border
+                    Grid.Row="4"
+                    Grid.Column="5"
+                    MinWidth="180"
+                    Style="{StaticResource TextBlockBorderStyle}">
+                    <TextBlock
+                        MinWidth="180"
+                        Style="{StaticResource TextBlockInBorderDefaultStyle}"
+                        Text="{Binding Result.IsUploaded}" />
+                </Border>
+            </Grid>
+
+            <!--  详细信息部分  -->
+            <Grid Grid.Row="4" Visibility="{Binding IsDetailsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="5" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="5" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="5" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Style="{StaticResource TextBlockLabelDefaultStyle}" Text="送检日期：" />
+                <mah:DateTimePicker
+                    Grid.Column="1"
+                    Culture="zh-CN"
+                    SelectedDateFormat="Long"
+                    SelectedDateTime="{Binding Patient.InspectDate}"
+                    SelectedTimeFormat="Long" />
+                <TextBlock
+                    Grid.Column="2"
+                    Style="{StaticResource TextBlockLabelDefaultStyle}"
+                    Text="送检科室：" />
+                <TextBox
+                    Grid.Column="3"
+                    Style="{StaticResource TextBoxDefaultStyle}"
+                    Text="{Binding Patient.InspectDepartment}" />
+
+                <TextBlock
+                    Grid.Column="4"
+                    Style="{StaticResource TextBlockLabelDefaultStyle}"
+                    Text="送检医生：" />
+                <TextBox
+                    Grid.Column="5"
+                    Style="{StaticResource TextBoxDefaultStyle}"
+                    Text="{Binding Patient.InspectDoctor}" />
+                <TextBlock
+                    Grid.Row="2"
+                    Style="{StaticResource TextBlockLabelDefaultStyle}"
+                    Text="检验医生：" />
+                <TextBox
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Style="{StaticResource TextBoxDefaultStyle}"
+                    Text="{Binding Patient.TestDoctor}" />
+
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Style="{StaticResource TextBlockLabelDefaultStyle}"
+                    Text="审核医生：" />
+                <TextBox
+                    Grid.Row="2"
+                    Grid.Column="3"
+                    Style="{StaticResource TextBoxDefaultStyle}"
+                    Text="{Binding Patient.CheckDoctor}" />
+
+                <!--  单联卡 tc t c con  -->
+                <Grid
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Style="{StaticResource TextBlockLabelDefaultStyle}"
+                        Text="T值：" />
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        MinWidth="60"
+                        IsEnabled="{Binding IsDebugMode}"
+                        Style="{StaticResource TextBoxDefaultStyle}"
+                        Text="{Binding Result.T}" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Style="{StaticResource TextBlockLabelDefaultStyle}"
+                        Text="C值：" />
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="3"
+                        MinWidth="60"
+                        IsEnabled="{Binding IsDebugMode}"
+                        Style="{StaticResource TextBoxDefaultStyle}"
+                        Text="{Binding Result.C}" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="4"
+                        Style="{StaticResource TextBlockLabelDefaultStyle}"
+                        Text="TC值：" />
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="5"
+                        MinWidth="60"
+                        IsEnabled="{Binding IsDebugMode}"
+                        Style="{StaticResource TextBoxDefaultStyle}"
+                        Text="{Binding Result.Tc}" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="6"
+                        Style="{StaticResource TextBlockLabelDefaultStyle}"
+                        Text="浓度：" />
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="7"
+                        MinWidth="60"
+                        IsEnabled="{Binding IsDebugMode}"
+                        Style="{StaticResource TextBoxDefaultStyle}"
+                        Text="{Binding Result.Con}" />
+                </Grid>
+                <!--  双联卡 tc t c con  -->
+                <Grid
+                    Grid.Row="6"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="6"
+                    Visibility="{Binding IsDualCard, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Style="{StaticResource TextBlockLabelDefaultStyle}"
+                        Text="T2值：" />
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        MinWidth="60"
+                        IsEnabled="{Binding IsDebugMode}"
+                        Style="{StaticResource TextBoxDefaultStyle}"
+                        Text="{Binding Result.T2}" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Style="{StaticResource TextBlockLabelDefaultStyle}"
+                        Text="C2值：" />
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="3"
+                        MinWidth="60"
+                        IsEnabled="{Binding IsDebugMode}"
+                        Style="{StaticResource TextBoxDefaultStyle}"
+                        Text="{Binding Result.C2}" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="4"
+                        Style="{StaticResource TextBlockLabelDefaultStyle}"
+                        Text="TC2值：" />
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="5"
+                        MinWidth="60"
+                        IsEnabled="{Binding IsDebugMode}"
+                        Style="{StaticResource TextBoxDefaultStyle}"
+                        Text="{Binding Result.Tc2}" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="6"
+                        Style="{StaticResource TextBlockLabelDefaultStyle}"
+                        Text="浓度2：" />
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="7"
+                        MinWidth="60"
+                        IsEnabled="{Binding IsDebugMode}"
+                        Style="{StaticResource TextBoxDefaultStyle}"
+                        Text="{Binding Result.Con2}" />
+                </Grid>
+
+            </Grid>
+
+        </Grid>
+
+        <!--  图表  -->
+        <chart:WpfPlot
+            Name="plotView"
+            Grid.Row="2"
+            Height="300"
+            Margin="0,10" />
+        <StackPanel
+            Grid.Row="4"
+            Margin="0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button
+                Grid.Row="4"
+                MinWidth="100"
+                HorizontalAlignment="Right"
+                Command="{Binding ConfirmSaveCommand}"
+                Content="保存信息"
+                Style="{StaticResource Button.Accent}" />
+            <Button
+                Grid.Row="4"
+                MinWidth="100"
+                Margin="20,0,0,0"
+                HorizontalAlignment="Right"
+                Command="{Binding ClickCloseCommand}"
+                Content="关闭"
+                Style="{StaticResource Button.Default}" />
+        </StackPanel>
+    </Grid>
+</mah:MetroContentControl>

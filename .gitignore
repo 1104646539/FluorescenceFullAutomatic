@@ -1,0 +1,92 @@
+# 生成的文件和目录
+bin/
+obj/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet 缓存
+packages/
+
+# 测试结果
+TestResults/
+
+# 发布输出
+publish/
+
+# 临时文件
+*.tmp
+*.temp
+
+# 日志文件
+*.log
+*.log.txt
+
+# 特定于 Visual Studio 的文件
+.vs/
+
+# 项目调试文件
+*.vspscc
+*.vssscc
+
+# 解决方案用户选项文件
+*.suo
+
+# 资源管理器状态
+.vs/slnx.sqlite
+
+# 构建系统文件
+_ReSharper*/
+*.resharper
+
+# 用户特定的文档
+*.docstates
+
+# 文件夹设计器文件
+Folder.profile
+
+# 报告文件
+*.report
+
+# 自定义工具缓存
+*.cache
+
+# 依赖项检查缓存
+DependencyValidation/
+
+# 性能分析器文件
+*.perf
+*.coverage
+*.coveragexml
+
+# 临时生成的文件
+*.Generated.cs
+
+# 特定于 WPF 的生成文件
+GeneratedCode/
+
+# 打包文件
+*.nupkg
+*.nuspec
+
+# 符号文件
+*.pdb
+
+# 测试存根
+*.testsettings
+*.runsettings
+
+# 应用程序包
+AppPackages/
+
+# 发布配置文件
+*.pubxml
+*.pubxml.user
+
+# 自定义控件库缓存
+*.cache
+
+# 资源字典生成的文件
+*.g.cs
+*.g.i.cs

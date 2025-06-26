@@ -1,0 +1,34 @@
+﻿<mah:MetroWindow
+    x:Class="FluorescenceFullAutomatic.Views.DialogWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:att="clr-namespace:FluorescenceFullAutomatic.Attached"
+    xmlns:behaviors="clr-namespace:FluorescenceFullAutomatic.Behaviors"
+    xmlns:ctr="clr-namespace:FluorescenceFullAutomatic.Views.Ctr"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    xmlns:local="clr-namespace:FluorescenceFullAutomatic.Views"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
+    Title="{Binding Title}"
+    MinWidth="{Binding MinWidth}"
+    MinHeight="{Binding MinHeight}"
+    d:Background="White"
+    d:DataContext="{d:DesignInstance vm:DialogViewModel}"
+    d:DesignHeight="1080"
+    d:DesignWidth="1800"
+    mah:DialogParticipation.Register="{Binding}"
+    ResizeMode="{Binding ResizeMode}"
+    ShowCloseButton="{Binding ShowCloseButton}"
+    SizeToContent="{Binding SizeToContent}"
+    WindowStartupLocation="CenterOwner"
+    WindowState="{Binding WindowState}"
+    WindowStyle="None"
+    mc:Ignorable="d">
+    <Grid>
+        <UserControl Content="{Binding Page}" />
+    </Grid>
+</mah:MetroWindow>

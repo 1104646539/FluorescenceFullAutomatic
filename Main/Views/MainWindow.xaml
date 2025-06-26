@@ -1,0 +1,255 @@
+﻿<mah:MetroWindow
+    x:Class="FluorescenceFullAutomatic.Views.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    xmlns:local="clr-namespace:FluorescenceFullAutomatic.Views"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
+    Width="1370"
+    Height="857"
+    Dialog:DialogParticipation.Register="{Binding}"
+    DataContext="{Binding MainViewModel, Source={StaticResource ServiceLocator}}"
+    Left="0"
+    Top="0"
+    mc:Ignorable="d">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <Style x:Key="TopHeaderStyle" TargetType="{x:Type TextBlock}">
+                <Setter Property="FontSize" Value="24" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+            </Style>
+            <Style x:Key="BottomTextStyle" TargetType="{x:Type TextBlock}">
+                <Setter Property="FontSize" Value="22" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+            </Style>
+            <DataTemplate x:Key="MenuItemTemplate" DataType="{x:Type mah:HamburgerMenuIconItem}">
+                <Grid Height="48">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type mah:HamburgerMenu}}, Path=CompactPaneLength}" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl
+                        Grid.Column="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Content="{Binding Icon}"
+                        Focusable="False"
+                        IsTabStop="False" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        FontSize="16"
+                        Foreground="Black"
+                        Text="{Binding Label}" />
+                </Grid>
+            </DataTemplate>
+            <Style
+                x:Key="MahApps.Styles.HamburgerMenu.Ripple"
+                BasedOn="{StaticResource MahApps.Styles.HamburgerMenu}"
+                TargetType="{x:Type mah:HamburgerMenu}">
+                <Setter Property="PaneBackground" Value="{DynamicResource MahApps.Brushes.ThemeBackground}" />
+                <Setter Property="PaneForeground" Value="{DynamicResource MahApps.Brushes.Text}" />
+                <Setter Property="ShowSelectionIndicator" Value="false" />
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!--  region 顶部导航栏  -->
+            <Grid
+                Grid.Row="0"
+                Height="80"
+                Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!--  Logo区域  -->
+                <TextBlock
+                    Grid.Column="0"
+                    Margin="10,0"
+                    VerticalAlignment="Center"
+                    Text="Logo">
+                    <TextBlock.InputBindings>
+                        <MouseBinding 
+                            Command="{Binding ClickLogoCommand}"
+                            MouseAction="LeftClick" />
+                    </TextBlock.InputBindings>
+                </TextBlock>
+
+                <!--  标题区域  -->
+                <ListBox
+                    Grid.Column="1"
+                    Margin="20,0,0,0"
+                    VerticalAlignment="Center"
+                    d:SelectedIndex="0"
+                    ItemsSource="{Binding NavItems}"
+                    SelectedIndex="{Binding SelectedIndex}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Height="50" Margin="15,0">
+                                <Grid.InputBindings>
+                                    <MouseBinding
+                                        Command="{Binding DataContext.NavCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                        CommandParameter="{Binding Index}"
+                                        MouseAction="LeftClick" />
+                                </Grid.InputBindings>
+
+                                <Border
+                                    Grid.Row="1"
+                                    Background="Transparent"
+                                    CornerRadius="10">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                    <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Accent}" />
+                                                    <Setter Property="CornerRadius" Value="10" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Style="{StaticResource TopHeaderStyle}" Text="{Binding Header}" />
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.Style>
+                        <Style BasedOn="{StaticResource MahApps.Styles.ListBox}" TargetType="ListBox">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+                            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+                            <Setter Property="ItemContainerStyle">
+                                <Setter.Value>
+                                    <Style BasedOn="{StaticResource MahApps.Styles.ListBoxItem}" TargetType="ListBoxItem">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="Padding" Value="0" />
+                                        <Setter Property="Margin" Value="0" />
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                                    </Style>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.Style>
+                </ListBox>
+
+                <!--  右侧区域  -->
+                <Border Grid.Column="2" MinWidth="200">
+                    <Image
+                        Margin="10"
+                        d:Source="../Image/start_success.png"
+                        Source="{Binding ImgStartTest}">
+                        <Image.InputBindings>
+                            <MouseBinding
+                                Command="{Binding DataContext.ClickTestCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}"
+                                MouseAction="LeftClick" />
+                        </Image.InputBindings>
+                    </Image>
+                </Border>
+
+            </Grid>
+            <!--  endregion  -->
+            <!--  内容区域  -->
+            <ContentPresenter Grid.Row="1" Content="{Binding SelectedContent, UpdateSourceTrigger=PropertyChanged}" />
+            <!--  region 底部状态栏  -->
+            <Border
+                Grid.Row="2"
+                Height="auto"
+                Background="AliceBlue">
+                <Grid Height="50" Margin="0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" MinWidth="300" />
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Image
+                        Grid.Column="0"
+                        Margin="10,0"
+                        Source="../Image/shutdown.png">
+                        <Image.InputBindings>
+                            <MouseBinding
+                                Command="{Binding DataContext.ClickShutdownCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}"
+                                MouseAction="LeftClick" />
+                        </Image.InputBindings>
+                    </Image>
+                    <TextBlock
+                        Grid.Column="1"
+                        d:Text="已就绪"
+                        Style="{StaticResource BottomTextStyle}"
+                        Text="{Binding CurrentStatus}" />
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <Image
+                            Margin="10,0"
+                            d:Source="../Image/barcode_open.png"
+                            Source="{Binding ImgBarcode}" />
+                        <Image
+                            Margin="10,0"
+                            d:Source="../Image/upload_connected.png"
+                            Source="{Binding ImgUpload}" />
+                        <Image
+                            Margin="10,0"
+                            d:Source="../Image/printer_success.png"
+                            Source="{Binding ImgPrinter}" />
+                        <Image
+                            Margin="10,0"
+                            d:Source="../Image/temp_standard.png"
+                            Source="{Binding ImgTemp}" />
+                    </StackPanel>
+                    <StackPanel
+                        Grid.Column="3"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            Margin="10,0"
+                            d:Text="2025/03/05 12:50"
+                            Style="{StaticResource BottomTextStyle}"
+                            Text="{Binding CurrentDate}" />
+                        <TextBlock
+                            MinWidth="300"
+                            Margin="10,0"
+                            HorizontalAlignment="Right"
+                            d:Text="暂无消息"
+                            Style="{StaticResource BottomTextStyle}"
+                            Text="{Binding CurrentMsg}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <!--  endregion  -->
+        </Grid>
+
+    </Grid>
+</mah:MetroWindow>

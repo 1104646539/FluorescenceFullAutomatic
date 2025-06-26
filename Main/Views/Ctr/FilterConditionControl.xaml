@@ -1,0 +1,154 @@
+﻿<mah:MetroContentControl
+    x:Class="FluorescenceFullAutomatic.Views.Ctr.FilterConditionControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:FluorescenceFullAutomatic.Views.Ctr"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
+    d:DataContext="{d:DesignInstance vm:FilterConditionViewModel}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <mah:MetroContentControl.Resources />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel
+            Grid.Row="0"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal">
+            <TextBlock Text="筛选条件" />
+        </StackPanel>
+
+        <StackPanel
+            Grid.Row="1"
+            Margin="10"
+            Orientation="Vertical">
+            <StackPanel Margin="0,5" Orientation="Horizontal">
+                <TextBlock
+                    Width="60"
+                    VerticalAlignment="Center"
+                    Text="姓名" />
+                <TextBox
+                    x:Name="PatientNameTextBox"
+                    Width="140"
+                    Height="30"
+                    Margin="0,0,20,0"
+                    Style="{StaticResource TextBoxDefaultStyle}"
+                    Text="{Binding Condition.PatientName}" />
+                <TextBlock
+                    Width="60"
+                    VerticalAlignment="Center"
+                    Text="条码" />
+                <TextBox
+                    x:Name="BarcodeTextBox"
+                    Width="140"
+                    Style="{StaticResource TextBoxDefaultStyle}"
+                    Text="{Binding Condition.Barcode}" />
+            </StackPanel>
+            <StackPanel Margin="0,5" Orientation="Horizontal">
+                <TextBlock
+                    Width="60"
+                    VerticalAlignment="Center"
+                    Text="项目名" />
+                <Border Style="{StaticResource TextBlockBorderStyle}">
+                    <ComboBox
+                        x:Name="ProjectNameComboBox"
+                        Height="30"
+                        MinWidth="200"
+                        ItemsSource="{Binding ProjectNameList}"
+                        SelectedItem="{Binding Condition.ProjectName}" />
+                </Border>
+            </StackPanel>
+            <StackPanel Margin="0,5" Orientation="Horizontal">
+                <TextBlock
+                    Width="60"
+                    VerticalAlignment="Center"
+                    Text="结果" />
+                <Border Style="{StaticResource TextBlockBorderStyle}">
+                    <ComboBox
+                        x:Name="TestVerdictComboBox"
+                        Height="30"
+                        MinWidth="200"
+                        ItemsSource="{Binding TestVerdictList}"
+                        SelectedItem="{Binding Condition.TestVerdict}" />
+                </Border>
+            </StackPanel>
+            <StackPanel Margin="0,5" Orientation="Horizontal">
+                <TextBlock
+                    Width="60"
+                    VerticalAlignment="Center"
+                    Text="浓度范围" />
+                <TextBox
+                    x:Name="ConcentrationMinTextBox"
+                    Width="160"
+                    Height="30"
+                    Style="{StaticResource TextBoxDefaultStyle}"
+                    Text="{Binding Condition.ConcentrationMin}" />
+                <TextBlock
+                    Width="auto"
+                    Margin="5,0,5,0"
+                    VerticalAlignment="Center"
+                    Text="至" />
+                <TextBox
+                    x:Name="ConcentrationMaxTextBox"
+                    Width="160"
+                    Height="30"
+                    Style="{StaticResource TextBoxDefaultStyle}"
+                    Text="{Binding Condition.ConcentrationMax}" />
+            </StackPanel>
+            <StackPanel Margin="0,5" Orientation="Horizontal">
+                <TextBlock
+                    Width="60"
+                    VerticalAlignment="Center"
+                    Text="检测时间" />
+                <mah:DateTimePicker
+                    Grid.Column="1"
+                    MinWidth="160"
+                    Culture="zh-CN"
+                    SelectedDateFormat="Long"
+                    SelectedDateTime="{Binding Condition.TestTimeMin}"
+                    SelectedTimeFormat="Long" />
+                <TextBlock
+                    Margin="5,0,5,0"
+                    VerticalAlignment="Center"
+                    Text="至" />
+                <mah:DateTimePicker
+                    Grid.Column="1"
+                    MinWidth="160"
+                    Culture="zh-CN"
+                    SelectedDateFormat="Long"
+                    SelectedDateTime="{Binding Condition.TestTimeMax}"
+                    SelectedTimeFormat="Long" />
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel
+            Grid.Row="2"
+            Margin="0,0,0,20"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button
+                MinWidth="100"
+                Command="{Binding ConfirmCommand}"
+                Content="确定"
+                Style="{StaticResource Button.Accent}" />
+            <Button
+                MinWidth="100"
+                Margin="30,0,0,0"
+                Command="{Binding ClearCommand}"
+                Content="重置"
+                Style="{StaticResource Button.Secondary}" />
+            <Button
+                MinWidth="100"
+                Margin="30,0,30,0"
+                Command="{Binding CancelCommand}"
+                Content="取消" />
+        </StackPanel>
+    </Grid>
+</mah:MetroContentControl>
