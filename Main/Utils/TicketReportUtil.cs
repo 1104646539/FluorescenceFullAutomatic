@@ -130,7 +130,7 @@ namespace FluorescenceFullAutomatic.Utils
         /// </summary>
         /// <param name="trs"></param>
         /// <param name="failedAction"></param>
-        public void PrintTestResult(List<TestResult> trs, Action<string> successAction, Action<string> failedAction){
+        public void PrintTicket(List<TestResult> trs, Action<string> successAction, Action<string> failedAction){
             int index = 0;
             int count = trs.Count;
             Action nextAction = null;
@@ -144,7 +144,7 @@ namespace FluorescenceFullAutomatic.Utils
             nextAction = ()=>{
                 if (index < trs.Count)
                 {
-                    PrintTestResult(trs[index++], success, failed);
+                    PrintTicket(trs[index++], success, failed);
                 }
                 else {
                     Log.Information("打印完成");
@@ -154,7 +154,7 @@ namespace FluorescenceFullAutomatic.Utils
            nextAction();
         }
       
-        public void PrintTestResult(TestResult tr,Action<string> successAction,Action<string> failedAction){
+        public void PrintTicket(TestResult tr,Action<string> successAction,Action<string> failedAction){
             this.failedAction = failedAction;
             this.successAction = successAction;
             msg = GetPrintTestResultMsg(tr);

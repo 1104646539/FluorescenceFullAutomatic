@@ -70,6 +70,25 @@ namespace FluorescenceFullAutomatic.Model
         [property: SugarColumn(IsNullable = true)]
         public string checkDoctor;
 
-           
+        /// <summary>
+        /// 克隆Patient对象
+        /// </summary>
+        /// <param name="newId">新的ID，如果不传入则复制原ID</param>
+        /// <returns>克隆的Patient对象</returns>
+        public Patient Clone(int? newId = null)
+        {
+            return new Patient
+            {
+                        Id = newId ?? this.Id,
+                PatientName = this.PatientName,
+                PatientGender = this.PatientGender,
+                PatientAge = this.PatientAge,       
+                InspectDate = this.InspectDate,
+                InspectDepartment = this.InspectDepartment,
+                InspectDoctor = this.InspectDoctor,
+                TestDoctor = this.TestDoctor,
+                CheckDoctor = this.CheckDoctor
+            };
+        }
     }
 }

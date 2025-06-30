@@ -62,5 +62,26 @@ namespace FluorescenceFullAutomatic.Model
         {
             
         }
+
+        /// <summary>
+        /// 克隆Point对象
+        /// </summary>
+        /// <param name="newId">新的ID，如果不传入则复制原ID</param>
+        /// <returns>克隆的Point对象</returns>
+        public Point Clone(int? newId = null)
+        {
+            return new Point
+            {
+                Id = newId ?? this.Id,
+                Points = this.Points,   
+                T = this.T, 
+                C = this.C,
+                Tc = this.Tc,
+                T2 = this.T2,
+                C2 = this.C2,
+                Tc2 = this.Tc2,
+                Location = this.Location    
+            };
+        }
     }
 }

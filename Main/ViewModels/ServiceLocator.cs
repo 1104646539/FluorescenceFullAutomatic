@@ -1,4 +1,5 @@
 using FluorescenceFullAutomatic.Model;
+using FluorescenceFullAutomatic.Repositorys;
 using FluorescenceFullAutomatic.Services;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,22 @@ namespace FluorescenceFullAutomatic.ViewModels
             serviceCollection.AddSingleton<IRunningLogService,RunningLogService>();
             serviceCollection.AddSingleton<ILisService, LisService>();
             serviceCollection.AddSingleton<IExcelExportService, ExcelExportService>();
+
+            //repository
+            serviceCollection.AddSingleton<IApplyTestRepository, ApplyTestRepository>();
+            serviceCollection.AddSingleton<IConfigRepository, ConfigRepository>();
+            serviceCollection.AddSingleton<IDialogRepository, DialogRepository>();
+            serviceCollection.AddSingleton<IExportExcelRepository, ExportExcelRepository>();
+            serviceCollection.AddSingleton<ILisRepository, LisRepository>();
+            serviceCollection.AddSingleton<IPatientRepository, PatientRepository>();
+            serviceCollection.AddSingleton<IPointRepository, PointRepository>();
+            serviceCollection.AddSingleton<IPrintRepository, PrintRepository>();
+            serviceCollection.AddSingleton<IProjectRepository, ProjectRepository>();
+            serviceCollection.AddSingleton<ITestResultRepository, TestResultRepository>();
+            serviceCollection.AddSingleton<IToolRepository, ToolRepository>();
+            serviceCollection.AddSingleton<IUploadConfigRepository, UploadConfigRepository>();
+            serviceCollection.AddSingleton<IDispatcherService, DispatcherService>();
+
 
             serviceCollection.AddSingleton<MainViewModel>();
             serviceCollection.AddSingleton<HomeViewModel>();

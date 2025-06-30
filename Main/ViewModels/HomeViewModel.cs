@@ -498,36 +498,15 @@ namespace FluorescenceFullAutomatic.ViewModels
         [RelayCommand]
         public void ClickTest3()
         {
-            //// 测试HL7连接功能
-            //if (HL7Helper.Instance.IsConnected())
-            //{
-            //    Log.Information("HL7当前已连接，正在断开连接...");
-            //    HL7Helper.Instance.Disconnect();
-            //}
-            //else
-            //{
-            //    Log.Information("HL7当前未连接，正在尝试连接...");
-            //    HL7Helper.Instance.Start();
-            //}
+ 
         }
 
         [RelayCommand]
         public void ClickTest4()
         {
-            //HL7Helper.GetInstance().testWrite();
+           
         }
 
-        private void HL7Test()
-        {
-            //HL7Helper.GetInstance().connect("192.168.0.111",21110);
-        }
-
-        private void PrintPDFTest()
-        {
-            //PdfDocument doc = new PdfDocument();
-            //doc.LoadFromFile("C:\\Users\\wl\\Desktop\\test.pdf");
-            //doc.Print();
-        }
 
         public void GetDeviceInfos()
         {
@@ -779,20 +758,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         [RelayCommand]
         public void Insert()
         {
-            //Log.Information($"before {DateTime.Now.ToString("HH:mm:ss.fff")}");
-            //var id = SqlHelper
-            //    .getInstance()
-            //    .GetDB()
-            //    .Db.Insertable(new TestResult() { Name = "test", Gender = "??" })
-            //    .ExecuteReturnBigIdentity();
-            //// Log.Information($"after id={id} {DateTime.Now.ToString("HH:mm:ss.fff")}");
-            //// GlobalConfig.Instance.MainPortName = "COM"+ new Random().Next(20);
-            // Log.Information($"before {DateTime.Now.ToString("HH:mm:ss.fff")}");
-            //GlobalConfig.Instance.MainPortName = "COM" + new Random().Next(60);
-            //GlobalConfig.Instance.AddSampleVolume = new Random().Next(60);
-            //Log.Information($"after {DateTime.Now.ToString("HH:mm:ss.fff")}");
-
-            //RefreshData();
+     
         }
 
         private void RefreshAdd(int id)
@@ -820,10 +786,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         [RelayCommand]
         public void ShowDialog()
         {
-            //ShowHiltDialog(dialogCoordinator, "提示", "缺水", "好的", (d,dialog) => { }, "结束", (d,dialog) => { });
-            //ScanBarcode();
-            //string portName = GlobalConfig.Instance.MainPortName;
-            //Log.Information($"portName={portName}");
+          
         }
 
         /// <summary>
@@ -915,12 +878,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             {
                 return "";
             }
-            // 排除2101和2201
-            //data = data.Where(x => x != "2101" && x != "2201").ToList();
-            //if (data.Count == 0)
-            //{
-            //    return "";
-            //}
+            
             // 将代号转换为实际错误信息，并格式化输出
             var errorMessages = data.Select(item =>
                     $"错误代码：{item}，错误信息：{configService.GetString($"error_{item}")}"
@@ -1551,28 +1509,9 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
 
             homeService.UpdateTestResult(func(testResult));
-            //更新样本架结果
-            //UpdateSampleItemsForId(testResult);
+        
         }
 
-        //private void UpdateSampleItemsForId(TestResult tr)
-        //{
-        //    if (tr != null && tr.Id > 0)
-        //    {
-        //        if (SampleShelfViewModel.GetTestResultIndex(tr.Id, out int row, out int col)) {
-        //            SampleShelfViewModel.UpdateSampleItems(
-        //                row,
-        //                col,
-        //                (item) =>
-        //                {
-        //                    item.TestResult = tr;
-        //                    return item;
-        //                }
-        //            );
-        //        }
-
-        //    }
-        //}
 
         /// <summary>
         /// 更新这排样本管内的检测结果
@@ -2199,7 +2138,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             A4ReportUtil.AutoExecReport(temp,configService.IsAutoPrintA4Report(),false,configService.GetPrinterName());
             //打印小票
             if (configService.IsAutoPrintTicket()) {
-                TicketReportUtil.Instance.PrintTestResult(temp, (msg) => { }, (err) => { });
+                TicketReportUtil.Instance.PrintTicket(temp, (msg) => { }, (err) => { });
             }
         }
         /// <summary>

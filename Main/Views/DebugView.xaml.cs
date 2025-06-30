@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using FluorescenceFullAutomatic.ViewModels;
 
 namespace FluorescenceFullAutomatic.Views
 {
@@ -24,6 +25,12 @@ namespace FluorescenceFullAutomatic.Views
         public DebugView()
         {
             InitializeComponent();
+        }
+
+        public DebugView(DebugViewModel viewModel)
+        {
+            InitializeComponent();
+            this.DataContext = viewModel;
         }
     }
 }

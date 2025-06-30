@@ -1,11 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FluorescenceFullAutomatic.Model;
+using FluorescenceFullAutomatic.Services;
 using FluorescenceFullAutomatic.Views;
+using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -14,8 +18,15 @@ namespace FluorescenceFullAutomatic.ViewModels
         [ObservableProperty]
         private int selectedTabIndex = 0;
 
+        
+        public SettingsViewModel()
+        {
+        }
+
         [RelayCommand]
-        public void ClickDebug() {
+        public void ClickDebug() 
+        {
+            Log.Information("ClickDebug 命令执行");
             DebugView debugView = new DebugView();
             debugView.ShowDialog();
         }
@@ -23,8 +34,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         [RelayCommand]
         public void SelectTab(int index)
         {
+            Log.Information($"SelectTab 命令执行，选择索引: {index}");
             SelectedTabIndex = index;
         }
-    
     }
 }

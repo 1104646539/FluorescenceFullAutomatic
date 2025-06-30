@@ -152,6 +152,43 @@ namespace FluorescenceFullAutomatic.Model
         [property: SugarColumn(IsNullable = true)]
         public string peakDistance;
 
-      
+
+        /// <summary>
+        /// 克隆Project对象
+        /// </summary>
+        /// <param name="newId">新的ID，如果不传入则复制原ID</param>
+        /// <returns>克隆的Project对象</returns>
+        public Project Clone(int? newId = null)
+        {
+            return new Project
+            {
+                Id = newId ?? this.Id,
+                ProjectName = this.ProjectName,
+                BatchNum = this.BatchNum,
+                IdentifierCode = this.IdentifierCode,
+                ProjectCode = this.ProjectCode,
+                ProjectUnit = this.ProjectUnit,
+                ProjectLjz = this.ProjectLjz,
+                A1 = this.A1,
+                A2 = this.A2,
+                X0 = this.X0,
+                P = this.P,
+                ProjectUnit2 = this.ProjectUnit2,
+                ProjectLjz2 = this.ProjectLjz2,
+                ConMax = this.ConMax,
+                A12 = this.A12,
+                A22 = this.A22,
+                X02 = this.X02,
+                P2 = this.P2,
+                ConMax2 = this.ConMax2,
+                ProjectType = this.ProjectType,
+                TestType = this.TestType,
+                IsDefault = this.IsDefault,
+                ScanStart = this.ScanStart,
+                ScanEnd = this.ScanEnd,
+                PeakWidth = this.PeakWidth,
+                PeakDistance = this.PeakDistance    
+            };
+        }
     }
 }

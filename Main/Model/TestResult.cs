@@ -150,5 +150,43 @@ namespace FluorescenceFullAutomatic.Model
         [JsonIgnore]
         [property: SugarColumn(IsNullable = true)]
         public bool isUploaded;
-    }
+
+        /// <summary>
+        /// 克隆TestResult对象
+        /// </summary>
+        /// <param name="newId">新的ID，如果不传入则复制原ID</param>
+        /// <returns>克隆的TestResult对象</returns>
+        public TestResult Clone(int? newId = null)
+        {
+            return new TestResult
+            {
+            Id = newId ?? this.Id,
+            Barcode = this.Barcode,
+            CardQRCode = this.CardQRCode,
+            TestNum = this.TestNum,
+            FrameNum = this.FrameNum,
+            TestTime = this.TestTime,
+            T = this.T,
+            C = this.C,
+            Tc = this.Tc,
+            Con = this.Con,
+            Result = this.Result,
+            T2 = this.T2,
+            C2 = this.C2,
+            Tc2 = this.Tc2,
+            Con2 = this.Con2,
+            Result2 = this.Result2,
+            TestVerdict = this.TestVerdict,
+            ProjectId = this.ProjectId,
+            Project = this.Project?.Clone(),
+            PointId = this.PointId,
+            Point = this.Point?.Clone(),
+            PatientId = this.PatientId,
+            Patient = this.Patient?.Clone(),
+            ResultState = this.ResultState,
+            IsSelected = this.IsSelected,
+            IsUploaded = this.IsUploaded
+            };
+        }
+}
 }

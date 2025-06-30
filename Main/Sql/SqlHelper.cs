@@ -591,13 +591,6 @@ namespace FluorescenceFullAutomatic.Sql
         {
             return getTestResultCondition(condition)
                                 .CountAsync();
-            // DateTime now = DateTime.Now;
-            // return db.Db.CopyNew().Queryable<TestResult>()
-            //     //.Includes(it => it.Project)
-            //     //.Includes(it => it.Patient)
-            //     //.OrderByDescending(t => t.Id)
-            //     //.Where(t => !string.IsNullOrEmpty(t.TestVerdict) && t.TestTime.Date == now.Date)
-            //     .CountAsync();
         }
         /// <summary>
         /// 插入检测结果，不带项目，不带图像
@@ -657,13 +650,6 @@ namespace FluorescenceFullAutomatic.Sql
         {
             return getTestResultCondition(condition)
                .ToListAsync();
-            // return db
-            //         .Db.CopyNew().QueryableWithAttr<TestResult>()
-            //     .Includes(it => it.Project)
-            //     .Includes(it => it.Patient)
-            //     .OrderByDescending(t => t.Id)
-            //     //.Where(t => !string.IsNullOrEmpty(t.TestVerdict))
-            //     .ToListAsync();
         }
 
         /// <summary>
@@ -675,13 +661,6 @@ namespace FluorescenceFullAutomatic.Sql
             return getTestResultCondition(condition)
                 .ToPageListAsync(page, pageSize);
 
-            // return db
-            //         .Db.CopyNew().QueryableWithAttr<TestResult>()
-            //     .Includes(it => it.Project)
-            //     .Includes(it => it.Patient)
-            //     .OrderByDescending(t => t.Id)
-            //     //.Where(t => !string.IsNullOrEmpty(t.TestVerdict) && t.TestTime.Date == now.Date)
-            //     .ToPageListAsync(page, pageSize);
         }
         public ISugarQueryable<TestResult> getTestResultCondition(ConditionModel condition) {
             return db.Db.CopyNew().QueryableWithAttr<TestResult>()
@@ -804,7 +783,7 @@ namespace FluorescenceFullAutomatic.Sql
             return db.Db.CopyNew().Updateable(patient).ExecuteCommand() > 0;
         }
 
-        public Patient GetPatient(int id)
+        public Patient GetPatientForID(int id)
         {
             return db.Db.CopyNew().Queryable<Patient>().Single(it => it.Id == id);
         }

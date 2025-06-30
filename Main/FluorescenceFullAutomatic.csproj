@@ -2,6 +2,9 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
+   <Version>1.0.520.0</Version>
+       <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{BC56B4BA-C323-4946-9C45-CB22DC34337F}</ProjectGuid>
@@ -18,7 +21,6 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <LangVersion>8.0</LangVersion>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -537,9 +539,12 @@
     <Compile Include="Model\VersionModel.cs" />
     <Compile Include="Repositorys\IApplyTestRepository.cs" />
     <Compile Include="Repositorys\IConfigRepository.cs" />
+    <Compile Include="Repositorys\IDialogRepository.cs" />
     <Compile Include="Repositorys\IExportExcelRepository.cs" />
     <Compile Include="Repositorys\ILisRepository.cs" />
+    <Compile Include="Repositorys\IPatientRepository.cs" />
     <Compile Include="Repositorys\IPointRepository.cs" />
+    <Compile Include="Repositorys\IPrintRepository.cs" />
     <Compile Include="Repositorys\IProjectRepository.cs" />
     <Compile Include="Repositorys\ITestResultRepository.cs" />
     <Compile Include="Repositorys\IToolRepository.cs" />
@@ -547,6 +552,7 @@
     <Compile Include="Services\IApplyTestService.cs" />
     <Compile Include="Services\IConfigService.cs" />
     <Compile Include="Services\IDataManagerService.cs" />
+    <Compile Include="Services\IDispatcherService.cs" />
     <Compile Include="Services\IExcelExportService.cs" />
     <Compile Include="Services\IHomeService.cs" />
     <Compile Include="Services\ILisService.cs" />

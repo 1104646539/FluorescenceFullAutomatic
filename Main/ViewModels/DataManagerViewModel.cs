@@ -35,11 +35,7 @@ namespace FluorescenceFullAutomatic.ViewModels
     {
         private readonly IDataManagerService _dataManagerService;
         private readonly IDialogCoordinator _dialogCoordinator;
-        private readonly IHomeService _homeService;
-        private readonly IExcelExportService _excelExportService;
-
-        private readonly IConfigService _configService;
-        private readonly IApplyTestService _applyTestService;
+        private readonly IDispatcherService _dispatcherService;
         [ObservableProperty]
         ObservableCollection<TestResult> testResults;  
         private bool _isFirstLoad = true;
@@ -146,7 +142,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             {
                 return;
             }
-            GlobalUtil.ShowHiltDialog("提示", "确定删除数据吗？删除后不可恢复", "确定", async (vm, d) => {
+            _dataManagerService.ShowHiltDialog("提示", "确定删除数据吗？删除后不可恢复", "确定", async (vm, d) => {
                 await MainWindow.Instance.HideMetroDialogAsync(d);
                 DeleteData();
             }, "取消", (vm, d) => {});
@@ -156,7 +152,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             int retCount = _dataManagerService.DeleteTestResult(SelectedItems.ToList());
 
-            GlobalUtil.ShowHiltDialog("提示", $"删除成功", "确定", (vm, d) => { });
+            _dataManagerService.ShowHiltDialog("提示", $"删除成功", "确定", (vm, d) => { });
             if (retCount > 0)
             {
                 await LoadData();
@@ -166,7 +162,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             if (SelectedItems == null || SelectedItems.Count <= 0)
             {
-                GlobalUtil.ShowHiltDialog("提示", "未选择数据", "确定", (vm, d) => { });
+                _dataManagerService.ShowHiltDialog("提示", "未选择数据", "确定", (vm, d) => { });
                 return true;
             }
             return VerifyRunning();
@@ -175,7 +171,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         private bool VerifyRunning() {
             if (SystemGlobal.MachineStatus.IsRunning())
             {
-                GlobalUtil.ShowHiltDialog("提示", "正在检测中，请等待检测结束", "确定", (vm, d) => { });
+                _dataManagerService.ShowHiltDialog("提示", "正在检测中，请等待检测结束", "确定", (vm, d) => { });
                 return true;
             }
             return false;
@@ -203,26 +199,25 @@ namespace FluorescenceFullAutomatic.ViewModels
                     string detail = string.Join(",", call.Select(c => $"\n数据{c.TestResultId},{c.ResultType}"));
                     hilt = $"上传完成，本次上传成功{success}条数据,失败{call.Count}条。具体为{detail}";
                 }
-                GlobalUtil.ShowHiltDialog("提示", hilt, "确定", (_,d) => { });
+                _dataManagerService.ShowHiltDialog("提示", hilt, "确定", (_,d) => { });
             });
 
         }
 
-        public DataManagerViewModel(IDataManagerService dataManagerService, IHomeService homeService, 
-            IDialogCoordinator dialogCoordinator, IExcelExportService excelExportService, IApplyTestService applyTestService,IConfigService configService)
+        public DataManagerViewModel(IDataManagerService dataManagerService, 
+            IDialogCoordinator dialogCoordinator, IDispatcherService dispatcherService)
         {
             _dataManagerService = dataManagerService;
             _dialogCoordinator = dialogCoordinator;
-            _homeService = homeService;
-            _excelExportService = excelExportService;
-            _configService = configService;
-            _applyTestService = applyTestService;
+            _dispatcherService = dispatcherService;
 
             PagingControlViewModel = new PagingControlViewModel();
             PagingControlViewModel.PageChanged += OnPageChanged;
             PagingControlViewModel.SetPageSize(PageSize);
             RegisterMsg();
-           
+
+            CurrentPage = 1;
+
             TestResults = new ObservableCollection<TestResult>();
             SelectedItems = new ObservableCollection<TestResult>();
 
@@ -284,10 +279,11 @@ namespace FluorescenceFullAutomatic.ViewModels
                 for (int i = 0; i < TestResults.Count; i++)
                 {
                     if (TestResults[i].Id == id) {
-                        App.Current.Dispatcher.Invoke(() =>
+                        _dispatcherService.Invoke(() =>
                         {
                             TestResults[i] = tr;
                         });
+                      
                     }
                 }
             }
@@ -346,7 +342,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         [RelayCommand]
         public void ClickResultDetails(TestResult testResult){
             Log.Information($"点击详情: {JsonConvert.SerializeObject(testResult)}");
-            testResult = _homeService.GetTestResultAndPoint(testResult.Id);
+            testResult = _dataManagerService.GetTestResultAndPoint(testResult.Id);
             ResultDetailsViewModel resultDetailsViewModel = new ResultDetailsViewModel();
             resultDetailsViewModel.Result = testResult;
             resultDetailsViewModel.CloseAction = () =>
@@ -397,17 +393,17 @@ namespace FluorescenceFullAutomatic.ViewModels
                 if (tempPatient.Id == 0)
                 {
                     //保存
-                   int id =  _applyTestService.InsertPatient(tempPatient);
+                   int id =  _dataManagerService.InsertPatient(tempPatient);
                    tempPatient.Id = id;
                 }
                 else {
                     //更新
-                    _applyTestService.UpdatePatient(tempPatient);
+                    _dataManagerService.UpdatePatient(tempPatient);
                 }
                 tr.Patient = tempPatient;
                 tr.PatientId = tempPatient.Id;
             }
-            _homeService.UpdateTestResult(tr);
+            _dataManagerService.UpdateTestResult(tr);
             RunChangeData(tr.Id);
         }
 
@@ -441,18 +437,18 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             if (SelectedItems == null || SelectedItems.Count <= 0)
             {
-                GlobalUtil.ShowHiltDialog("提示", "请选择要打印的数据", "确定", (vm, d) => { });
+                _dataManagerService.ShowHiltDialog("提示", "请选择要打印的数据", "确定", (vm, d) => { });
                 return;
             }
-            A4ReportUtil.PrintReport(SelectedItems.ToList(), _configService.GetPrinterName(), (msg) => {
-                App.Current.Dispatcher.Invoke(() =>
+            _dataManagerService.PrintReport(SelectedItems.ToList(), _dataManagerService.GetPrinterName(), (msg) => {
+                _dispatcherService.Invoke(() =>
                 {
-                    GlobalUtil.ShowHiltDialog("提示", $"打印完成,{msg}", "确定", (vm, d) => { });
+                    _dataManagerService.ShowHiltDialog("提示", $"打印完成,{msg}", "确定", (vm, d) => { });
                 });
             }, (err) => {
-                App.Current.Dispatcher.Invoke(() =>
+                _dispatcherService.Invoke(() =>
                 {
-                    GlobalUtil.ShowHiltDialog("提示", $"打印失败,{err}", "确定", (vm, d) => { });
+                    _dataManagerService.ShowHiltDialog("提示", $"打印失败,{err}", "确定", (vm, d) => { });
                 });
             });
              
@@ -462,18 +458,18 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             if (SelectedItems == null || SelectedItems.Count <= 0)
             {
-                GlobalUtil.ShowHiltDialog("提示", "请选择要打印的数据", "确定", (vm, d) => { });
+                _dataManagerService.ShowHiltDialog("提示", "请选择要打印的数据", "确定", (vm, d) => { });
                 return;
             }
-            TicketReportUtil.Instance.PrintTestResult(SelectedItems.ToList(), (msg)=> {
-                App.Current.Dispatcher.Invoke(() =>
+            _dataManagerService.PrintTicket(SelectedItems.ToList(), (msg)=> {
+                _dispatcherService.Invoke(() =>
                 {
-                    GlobalUtil.ShowHiltDialog("提示", $"打印完成", "确定", (vm, d) => { });
+                    _dataManagerService.ShowHiltDialog("提示", $"打印完成", "确定", (vm, d) => { });
                 });
             },(err) => {
-                App.Current.Dispatcher.Invoke(() =>
+                _dispatcherService.Invoke(() =>
                 {
-                    GlobalUtil.ShowHiltDialog("提示", $"打印失败：{err}", "确定", (vm, d) => { });
+                    _dataManagerService.ShowHiltDialog("提示", $"打印失败：{err}", "确定", (vm, d) => { });
                 });
             });
         }
@@ -482,7 +478,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             if (SelectedItems == null || SelectedItems.Count <= 0)
             {
-                GlobalUtil.ShowHiltDialog("提示", "请选择要导出的数据", "确定", (vm, d) => { });
+                _dataManagerService.ShowHiltDialog("提示", "请选择要导出的数据", "确定", (vm, d) => { });
                 return;
             }
 
@@ -494,7 +490,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             int count = await _dataManagerService.GetAllTestResultCount(condition);
             if (count > Max_Export_Count) {
-                GlobalUtil.ShowHiltDialog("提示", $"导出失败，一次导出数量不能超过{Max_Export_Count}条，当前选择了{count}条", "确定", (vm, d) => { });
+                _dataManagerService.ShowHiltDialog("提示", $"导出失败，一次导出数量不能超过{Max_Export_Count}条，当前选择了{count}条", "确定", (vm, d) => { });
                 return;
             }
             List<TestResult> tempTr = await _dataManagerService.GetAllTestResult(condition);
@@ -521,23 +517,23 @@ namespace FluorescenceFullAutomatic.ViewModels
 
                 try
                 {
-                    var success = await _excelExportService.ExportTestResultsToExcelAsync(dataToExport, saveFileDialog.FileName);
+                    var success = await _dataManagerService.ExportTestResultsToExcelAsync(dataToExport, saveFileDialog.FileName);
                     await controller.CloseAsync();
 
                     if (success)
                     {
-                        GlobalUtil.ShowHiltDialog("提示", "导出成功", "确定", (vm, d) => { });
+                        _dataManagerService.ShowHiltDialog("提示", "导出成功", "确定", (vm, d) => { });
                     }
                     else
                     {
-                        GlobalUtil.ShowHiltDialog("提示", "导出失败", "确定", (vm, d) => { });
+                        _dataManagerService.ShowHiltDialog("提示", "导出失败", "确定", (vm, d) => { });
                     }
                 }
                 catch (Exception ex)
                 {
                     await controller.CloseAsync();
                     Log.Error(ex, "导出Excel时发生错误");
-                    GlobalUtil.ShowHiltDialog("错误", "导出过程中发生错误", "确定", (vm, d) => { });
+                    _dataManagerService.ShowHiltDialog("错误", "导出过程中发生错误", "确定", (vm, d) => { });
                 }
             }
         }
