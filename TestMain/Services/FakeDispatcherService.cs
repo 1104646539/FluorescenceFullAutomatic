@@ -13,5 +13,10 @@ namespace TestMain.Services
         {
             action?.Invoke();
         }
+
+        public void InvokeAsync(Action action)
+        {
+            action?.Invoke();
+        }
     }
 }

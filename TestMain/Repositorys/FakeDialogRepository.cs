@@ -21,5 +21,10 @@ namespace TestMain.Repositorys
         {
             
         }
+
+        public Task<ProgressDialogController> ShowProgressAsync(object context, string title, string message, bool isCancelable = false, MetroDialogSettings settings = null)
+        {
+            return null;
+        }
     }
 }

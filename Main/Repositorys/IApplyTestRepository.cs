@@ -21,6 +21,9 @@ namespace FluorescenceFullAutomatic.Repositorys
         ApplyTest GetApplyTestForID(int id);
 
         void UpdateApplyTestCompleted(ApplyTest applyTest);
+
+        Task<ApplyTest> GetApplyTestAsync(int testResultId, string barcode, string testNum);
+
     }
     public class ApplyTestRepository : IApplyTestRepository
     {
@@ -60,5 +63,37 @@ namespace FluorescenceFullAutomatic.Repositorys
             applyTest.ApplyTestType = ApplyTestType.TestEnd;
             SqlHelper.getInstance().UpdateApplyTest(applyTest);
         }
+        /// <summary>
+        /// 根据条码或检测编号， 获取申请检测信息
+        /// 获取规则，先从Lis远端获取，如果没有，则从本地数据库获取
+        /// 1、先从条码获取
+        /// 2、如果没有条码，则从检测编号获取
+        /// </summary>
+        /// <param name="testResultId"></param>
+        /// <param name="barcode"></param>
+        /// <param name="testNum"></param>
+        /// <returns></returns>
+        public async Task<ApplyTest> GetApplyTestAsync(int testResultId, string barcode, string testNum)
+        {
+            if (string.IsNullOrEmpty(barcode) && string.IsNullOrEmpty(barcode))
+            {
+                return null;
+            }
+            ApplyTest applyTest;
+            if (!string.IsNullOrEmpty(barcode))
+            {
+                applyTest = SqlHelper.getInstance().GetApplyTestForBarcode(barcode);
+            }
+            else
+            {
+                applyTest = SqlHelper.getInstance().GetApplyTestForTestNum(testNum);
+            }
+            if (applyTest != null)
+            {
+                applyTest.TestResultId = testResultId;
+            }
+            return applyTest;
+        }
+
     }
 }

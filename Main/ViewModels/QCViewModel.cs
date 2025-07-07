@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.Web.ApplicationServices;
 using static MaterialDesignThemes.Wpf.Theme.ToolBar;
 using CommunityToolkit.Mvvm.Messaging;
+using FluorescenceFullAutomatic.Repositorys;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -31,7 +32,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IConfigService configService;
         private readonly IDialogCoordinator dialogCoordinator;
         private readonly IHomeService homeService;
-
+        private readonly IReactionAreaQueueRepository reactionAreaQueueRepository;
         // 命令执行 状态跟踪
         /// <summary>
         /// 取样命令是否完成
@@ -301,12 +302,14 @@ namespace FluorescenceFullAutomatic.ViewModels
 
 
         #endregion
-        public QCViewModel(IHomeService homeService, ISerialPortService serialService, IConfigService configService, IDialogCoordinator dialogCoordinator)
+        public QCViewModel(IHomeService homeService, ISerialPortService serialService, IConfigService configService
+            , IDialogCoordinator dialogCoordinator,IReactionAreaQueueRepository reactionAreaQueueRepository)
         {
             this.homeService = homeService;
             this.serialPortService = serialService;
             this.configService = configService;
             this.dialogCoordinator = dialogCoordinator;
+            this.reactionAreaQueueRepository = reactionAreaQueueRepository;
             ReactionAreaViewModel = ReactionAreaViewModel.Instance;
             serialPortService.AddReceiveData(this);
             //serialPortService.OnAddDequeue(OnReactionAreaDequeue);
@@ -444,7 +447,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private bool ReactionAreaIsEmpty()
         {
-            return serialPortService.DequeueCount() > 0;
+            return reactionAreaQueueRepository.Count() > 0;
         }
 
         public void ReceiveAddingSampleModel(BaseResponseModel<AddingSampleModel> model)
@@ -663,7 +666,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// <param name="item"></param>
         private void Enqueue(ReactionAreaItem item)
         {
-            serialPortService.Enqueue(item);
+            reactionAreaQueueRepository.Enqueue(item);
         }
 
         public void ReceiveMoveSampleModel(BaseResponseModel<MoveSampleModel> model)
@@ -1220,48 +1223,5 @@ namespace FluorescenceFullAutomatic.ViewModels
         }
         private CustomDialog customDialog;
 
-        //private void ShowHiltDialog(IDialogCoordinator coordinator, string title, string msg,
-        //string confirmText, Action<HiltDialogViewModel, CustomDialog> actionConfirm,
-        //string cancelText = null, Action<HiltDialogViewModel, CustomDialog> actionCancel = null,
-        //string closeText = null, Action<HiltDialogViewModel, CustomDialog> actionClose = null,
-        //bool autoCloseDialog = true)
-        //{
-        //    CustomDialog customDialog = new CustomDialog();
-        //    HiltDialogViewModel hiltDialogVM = new HiltDialogViewModel((d) =>
-        //    {
-        //        if (autoCloseDialog)
-        //        {
-        //            MainWindow.Instance.HideMetroDialogAsync(customDialog);
-        //        }
-        //        actionConfirm?.Invoke(d, customDialog);
-        //    }, (d) =>
-        //    {
-        //        if (autoCloseDialog)
-        //        {
-        //            MainWindow.Instance.HideMetroDialogAsync(customDialog);
-        //        }
-        //        actionCancel?.Invoke(d, customDialog);
-        //    }, (d) =>
-        //    {
-        //        if (autoCloseDialog)
-        //        {
-        //            MainWindow.Instance.HideMetroDialogAsync(customDialog);
-        //        }
-        //        actionClose?.Invoke(d, customDialog);
-        //    })
-        //    {
-        //        Title = title,
-        //        Msg = msg,
-        //        ConfirmText = confirmText,
-        //        CancelText = cancelText,
-        //        CloseText = closeText,
-        //    };
-        //    customDialog.Content = new HiltDialog() { DataContext = hiltDialogVM };
-
-        //    Log.Information($"this= {this}");
-
-        //    MainWindow.Instance.ShowMetroDialogAsync(customDialog);
-        //    //coordinator.ShowMetroDialogAsync(this, customDialog);
-        //}
     }
 }

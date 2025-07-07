@@ -362,7 +362,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             
             _dialogCoordinator.ShowMetroDialogAsync(this, customDialog);
         }
-        ConditionModel condition = new ConditionModel();
+        public ConditionModel condition = new ConditionModel();
         /// <summary>
         /// 筛选数据
         /// </summary>

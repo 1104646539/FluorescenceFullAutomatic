@@ -47,16 +47,14 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IHomeService homeService;
         private readonly IConfigService configService;
         private readonly ISerialPortService serialPortService;
-        private readonly ILisService lisService;
-        private readonly IUploadService uploadService;
-        private readonly IApplyTestService applyTestService;
+        private readonly IDispatcherService dispatcherService;
 
         [ObservableProperty]
         public ReactionAreaViewModel reactionAreaViewModel;
 
         [ObservableProperty]
         public SampleShelfViewModel sampleShelfViewModel;
-        public IDialogCoordinator dialogCoordinator;
+        //public IDialogCoordinator dialogCoordinator;
 
         /// <summary>
         /// 获取温度间隔
@@ -335,20 +333,14 @@ namespace FluorescenceFullAutomatic.ViewModels
             ISerialPortService serialPortService,
             IHomeService homeService,
             IConfigService configService,
-            ILisService lisService,
-            IUploadService uploadService,
-            IApplyTestService applyTestService,
-            IDialogCoordinator dialogCoordinator
+            IDispatcherService dispatcherService
         )
         {
             this.serialPortService = serialPortService;
             this.homeService = homeService;
             this.configService = configService;
-            this.dialogCoordinator = dialogCoordinator;
-            this.uploadService = uploadService;
-            this.lisService = lisService;
-            this.applyTestService = applyTestService;
-            this.serialPortService.OnAddDequeue(OnReactionAreaDequeue);
+            this.dispatcherService = dispatcherService;
+            this.homeService._dequeueCallback += OnReactionAreaDequeue;
             this.serialPortService.AddReceiveData(this);
             SampleShelfViewModel = new SampleShelfViewModel();
             ReactionAreaViewModel = ReactionAreaViewModel.Instance;
@@ -360,138 +352,25 @@ namespace FluorescenceFullAutomatic.ViewModels
             RegisterMsg();
             UpdateState();
 
-            // 移除HL7连接回调代码
-            HL7Helper.Instance.IsRunning();
+            homeService.Hl7IsRunning();
             Test();
         }
 
         private void Test()
         {
-            //for (int i = 0; i < 50; i++)
-            //{
-            //    TestResult tr = SqlHelper.getInstance().GetTestResult(1);
-            //}
-
-            //Task.Run(() => {
-            //    for (int i = 0; i < 50; i++)
-            //    {
-            //        TestResult tr = SqlHelper.getInstance().GetTestResult(1);
-            //    }
-            //});
+          
         }
 
         [RelayCommand]
         public void ClickTest1()
         {
-            Task.Run(async () =>
-            {
-                TestResult tr = new TestResult();
-                // 病人信息
-                tr.Patient = new Patient
-                {
-                    PatientName = "张三",
-                    PatientGender = "男", 
-                    PatientAge = "35",
-                    InspectDate = DateTime.Now.AddDays(1),
-                    InspectDepartment = "内科",
-                    InspectDoctor = "李医生",
-                    TestDoctor = "王医生",
-                    CheckDoctor = "赵医生"
-                };
-                
-                // 项目信息
-                tr.Project = new Project
-                {
-                    ProjectCode = "FOB",
-                    ProjectName = "血红蛋白",
-                    ProjectUnit = "mg/L",
-                    ProjectLjz = 100,
-                    BatchNum = "20240401",
-                    IdentifierCode = "FBHB001",
-                    A1 = 1.2,
-                    A2 = 0.8,
-                    X0 = 10,
-                    P = 1.5,
-                    ProjectUnit2 = "ng/mL",
-                    ProjectLjz2 = 80,
-                    ConMax = 200,
-                    A12 = 1.0,
-                    A22 = 0.6,
-                    X02 = 8,
-                    P2 = 1.2,
-                    ConMax2 = 150,
-                    ProjectType = Project.Project_Type_Single,
-                    TestType = Project.Test_Type_Stadard,
-                    IsDefault = 0,
-                    ScanStart = "100",
-                    ScanEnd = "500",
-                    PeakWidth = "2.5",
-                    PeakDistance = "5"
-                };
-                
-                // 检测信息
-                Random random = new Random();
-                int[] randomPoints = new int[600];
-                for (int i = 0; i < 600; i++)
-                {
-                    randomPoints[i] = random.Next(0, 5000);
-                }
-                
-                tr.Point = new Point
-                {
-                    Points = randomPoints,
-                    Location = new int[] { 1, 2 },
-                    T = "10.5",
-                    C = "5.2",
-                    Tc = "2",
-                    T2 = "8.7",
-                    C2 = "4.3",
-                    Tc2 = "1.5"
-                };
-                
-                // 设置基本检测信息
-                tr.Barcode = "BarCode001";
-                tr.CardQRCode = "QR100200300";
-                tr.TestNum = "10000";
-                tr.FrameNum = "1";
-                tr.TestTime = DateTime.Now.AddMonths(5);
-                
-                // 设置检测结果
-                tr.T = "10.5";
-                tr.C = "5.2";
-                tr.Tc = "2";
-                tr.Con = "10.5";
-                tr.Result = "正常";
-                tr.T2 = "8.7";
-                tr.C2 = "4.3";
-                tr.Tc2 = "1.5";
-                tr.Con2 = "8.7";
-                tr.Result2 = "正常";
-                tr.TestVerdict = "合格";
-
-                // 上传结果
-                Hl7Result.UploadResult ur = await HL7Helper.Instance.UploadTestResultAsync(tr);
-                Log.Information($"上传结果={ur.ResultType}");
-            });
+           
         }
 
         [RelayCommand]
         public void ClickTest2()
         {
-            Task.Run(async () =>
-            {
-                QueryType queryType = QueryType.BC;
-                string condition1 = "100";
-                string condition2 = "";
-                Hl7Result.QueryResult qr = await HL7Helper.Instance.QueryApplyTestAsync(
-                    queryType,
-                    condition1,
-                    condition2
-                );
-                Log.Information(
-                    $"查询结果={qr.ResultType} {JsonConvert.SerializeObject(qr.ApplyTests)}"
-                );
-            });
+           
             
         }
 
@@ -578,7 +457,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private void ChangeTestSettings()
         {
-            this.serialPortService.SetEnqueueDuration(configService.ReactionDuration());
+            this.homeService.SetDequeueDuration(configService.ReactionDuration());
         }
 
         [RelayCommand]
@@ -588,6 +467,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             if (FirstLoad)
             {
                 FirstLoad = false;
+
                 if (SystemGlobal.IsCodeDebug)
                 {
                     GoGetSelfMachineStatus();
@@ -736,7 +616,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             if (!string.IsNullOrEmpty(errorMsg))
             {
                 Log.Information("仪器状态异常，请检查仪器状态。");
-                GlobalUtil.ShowHiltDialog(
+                homeService.ShowHiltDialog(
                     "提示",
                     errorMsg,
                     "好的",
@@ -823,7 +703,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             {
                 SetMachineStatus(MachineStatus.SelfInspectionSuccess);
                 GetMachineState();
-                GlobalUtil.ShowHiltDialog(
+                homeService.ShowHiltDialog(
                     "提示",
                     "自检完成",
                     "好的",
@@ -835,7 +715,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
             else
             {
-                GlobalUtil.ShowHiltDialog(
+                homeService.ShowHiltDialog(
                     "提示",
                     $"自检失败{error}",
                     "重新自检",
@@ -861,7 +741,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// </summary>
         private void ClearWaitTestCard()
         {
-            ReactionAreaQueue.getInstance().Clear();
+            homeService.ReactionAreaQueueClear();
         }
 
         /// <summary>
@@ -944,7 +824,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                     string msg =
                         $"仪器状态异常,{(CardExist == false ? "卡仓不存在," : "")}{(CardNum <= 0 ? "检测卡不足," : "")}{(CleanoutFluidExist == false ? "清洗液不存在," : "")}{(SampleShelf.Any(x => x == true) ? "" : "样本架不存在")}";
                     msg = msg.TrimEnd(',');
-                    GlobalUtil.ShowHiltDialog(
+                    homeService.ShowHiltDialog(
                         "提示",
                         msg,
                         "重新获取",
@@ -983,7 +863,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                     string confirmText = !CardExist ? "重新检查" : "已添加";
                     msg = msg.TrimEnd(',');
                     Log.Information($"推卡失败，没卡");
-                    GlobalUtil.ShowHiltDialog(
+                    homeService.ShowHiltDialog(
                         "提示",
                         msg,
                         confirmText,
@@ -1023,7 +903,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                     msg = msg.TrimEnd(',');
                     Log.Information(msg);
 
-                    GlobalUtil.ShowHiltDialog(
+                    homeService.ShowHiltDialog(
                         "提示",
                         msg,
                         confirmText,
@@ -1226,7 +1106,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 {
                     //已经移动到最后一个样本架，则检测结束
                     Log.Information("检测结束,没有样本");
-                    GlobalUtil.ShowHiltDialog(
+                    homeService.ShowHiltDialog(
                         "提示",
                         "检测结束,没有样本",
                         "好的",
@@ -1346,7 +1226,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             if (SystemGlobal.MachineStatus.IsRunning())
             {
-                App.Current.Dispatcher.Invoke(() =>
+                dispatcherService.Invoke(() =>
                 {
                     ScanFailed();
                 });
@@ -1357,7 +1237,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             if (SystemGlobal.MachineStatus.IsRunning())
             {
-                App.Current.Dispatcher.Invoke(() =>
+                dispatcherService.Invoke(() =>
                 {
                     ScanSuccess(barcode);
                 });
@@ -1408,11 +1288,11 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// <param name="tr"></param>
         private void RealTimeGetApplyTest(TestResult tr)
         {
-            Task.Run(async () =>
+            dispatcherService.InvokeAsync(async () =>
             {
-                bool isNeedLisGet = uploadService.GetOpenUpload() && uploadService.GetTwoWay() && uploadService.GetAutoGetApplyTest();
-                bool isMatchingBarcode = uploadService.GetMatchBarcode();
-                QueryResult qr = await lisService.QueryApplyTestAsync(
+                bool isNeedLisGet = homeService.isNeedLisGet();
+                bool isMatchingBarcode = homeService.isMatchingBarcode();
+                QueryResult qr = await homeService.QueryApplyTestAsync(
                     isNeedLisGet,
                     isMatchingBarcode,
                     tr.Barcode ?? "",
@@ -1424,15 +1304,15 @@ namespace FluorescenceFullAutomatic.ViewModels
                     //接收到一个数据，更新检测结果
                     if (applyTest != null)
                     {
-                        App.Current.Dispatcher.Invoke(() =>
+                        dispatcherService.Invoke(() =>
                         {
                             applyTest.Patient.InspectDate = DateTime.Now;
                             Patient patientTemp = applyTest.Patient;
-                            int patientId =  applyTestService.InsertPatient(patientTemp);
+                            int patientId =  homeService.InsertPatient(patientTemp);
                             patientTemp.Id = patientId;
                             applyTest.PatientId = patientId;
                             applyTest.ApplyTestType = ApplyTestType.TestEnd;
-                            int applyTestId = applyTestService.InsertApplyTest(applyTest);
+                            int applyTestId = homeService.InsertApplyTest(applyTest);
                             Log.Information($"插入了 patient={patientId} applyTestId={applyTestId}");
                             UpdateTestResultForId(
                                 tr.Id,
@@ -1613,7 +1493,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// <returns></returns>
         private bool ReactionAreaIsFull()
         {
-            return serialPortService.DequeueCount() >= 30;
+            return homeService.ReactionAreaQueueIsFull();
         }
 
         /// <summary>
@@ -1727,14 +1607,14 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             if (CleanoutSamplingProbeFinished && MoveSampleShelfFinished)
             {
-                GlobalUtil.ShowHiltDialog(
+                homeService.ShowHiltDialog(
                     "提示",
                     "" + TestFinishedHiltMsg,
                     "好的",
                     (d, dialog) => { }
                 );
 
-                if (serialPortService.DequeueCount() == 0)
+                if (homeService.ReactionAreaQueueIsEmpty())
                 {
                     //没有待检测的检测卡，则直接结束检测
                     SetMachineStatus(MachineStatus.TestingEnd);
@@ -1774,7 +1654,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 TestFinishedHiltMsg = "取样结束。";
                 TestFinishedAction();
             }
-            else if (serialPortService.DequeueCount() == 29) {//反应区是否已经满了,29+当前这个
+            else if (homeService.ReactionAreaQueueCount() == 29) {//反应区是否已经满了,29+当前这个
                 Log.Information("反应区已满，暂时结束检测");
                 restoreMoveSampleNextGetMachineState = true;
             }
@@ -1821,7 +1701,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             if (ReactionAreaIsFull())
             {
-                Log.Information($"反应区已满 {serialPortService.DequeueCount()}");
+                Log.Information($"反应区已满 {homeService.ReactionAreaQueueCount()}");
                 return false;
             }
 
@@ -1972,7 +1852,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// <param name="item"></param>
         private void Enqueue(ReactionAreaItem item)
         {
-            serialPortService.Enqueue(item);
+            homeService.Enqueue(item);
         }
 
         /// <summary>
@@ -2091,7 +1971,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             );
 
             //检测完了
-            if (serialPortService.DequeueCount() == 0)
+            if (homeService.ReactionAreaQueueIsEmpty())
             {
                 if (
                     SystemGlobal.MachineStatus == MachineStatus.SamplingFinished
@@ -2135,11 +2015,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// <param name="temp"></param>
         private void AutoPrint(TestResult temp)
         {
-            A4ReportUtil.AutoExecReport(temp,configService.IsAutoPrintA4Report(),false,configService.GetPrinterName());
-            //打印小票
-            if (configService.IsAutoPrintTicket()) {
-                TicketReportUtil.Instance.PrintTicket(temp, (msg) => { }, (err) => { });
-            }
+            homeService.AutoPrintReport(temp, configService.IsAutoPrintA4Report(),false, configService.IsAutoPrintTicket(), configService.GetPrinterName());
+            
         }
         /// <summary>
         /// 自动上传检测结果
@@ -2148,16 +2025,16 @@ namespace FluorescenceFullAutomatic.ViewModels
         private void AutoUpload(TestResult temp)
         {
             //已连接并且自动上传已开启
-            if (HL7Helper.Instance.IsConnected() && UploadConfig.Instance.AutoUpload) {
-                Task.Run(async() =>
+            if (homeService.Hl7NeedAutoUpload()) {
+                dispatcherService.InvokeAsync(async() =>
                 {
                     Log.Information($"开始上传: {temp.Id}");
                     //上传检测结果
-                    UploadResult ur =  await HL7Helper.Instance.UploadTestResultAsync(temp);
+                    UploadResult ur =  await homeService.UploadTestResultAsync(temp);
                     if (ur != null && ur.ResultType == UploadResultType.Success)
                     {
                         Log.Information($"上传检测结果成功: {ur?.TestResultId}");
-                        App.Current.Dispatcher.Invoke(() =>
+                        dispatcherService.Invoke(() =>
                         {
                             //更新检测结果状态
                             UpdateTestResultForId(
@@ -2260,7 +2137,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         private async void ShowSelfMachineDialog()
         {
             Log.Information("显示自检对话框");
-            showSelfController = await dialogCoordinator.ShowProgressAsync(
+            showSelfController = await homeService.ShowProgressAsync(
                 this,
                 "提示",
                 "正在自检……"
@@ -2460,7 +2337,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
             RunningErrorMsg = $"运行错误，请联系经销商人员维护。\n错误信息: {model.Error}";
             // 显示错误信息
-            GlobalUtil.ShowHiltDialog("提示", RunningErrorMsg, "确定", (d, dialog) => { });
+            homeService.ShowHiltDialog("提示", RunningErrorMsg, "确定", (d, dialog) => { });
         }
 
         public void ReceiveVersionModel(BaseResponseModel<VersionModel> model)

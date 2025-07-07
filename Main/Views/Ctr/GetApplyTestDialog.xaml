@@ -8,10 +8,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
     x:Name="getApplyTestDialogControl"
-    Width="600"
+    MinWidth="450"
     d:DataContext="{d:DesignInstance vm:GetApplyTestDialogViewModel}"
     d:DesignHeight="450"
-    d:DesignWidth="600"
+    d:DesignWidth="450"
     mc:Ignorable="d">
     <Grid Grid.IsSharedSizeScope="True">
         <Grid.RowDefinitions>
@@ -34,7 +34,6 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-
 
             <StackPanel
                 Grid.Row="0"
@@ -63,7 +62,10 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <Grid Grid.Column="0" Visibility="{Binding TextBoxVisibility}">
+                <Grid
+                    Grid.Column="0"
+                    Grid.ColumnSpan="3"
+                    Visibility="{Binding TextBoxVisibility}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -79,6 +81,7 @@
                         Grid.Column="1"
                         Margin="0,0,10,0"
                         VerticalAlignment="Center"
+                        FontSize="18"
                         Text="至"
                         Visibility="{Binding EndVisibility}" />
 
@@ -101,21 +104,25 @@
                     </Grid.ColumnDefinitions>
                     <DatePicker
                         Grid.Column="0"
-                        MinWidth="140"
+                        MinWidth="180"
                         Margin="0,0,10,0"
+                        d:Visibility="Collapsed"
                         SelectedDate="{Binding StartApplyTime, Mode=TwoWay}" />
 
                     <TextBlock
                         Grid.Column="1"
                         Margin="0,0,10,0"
                         VerticalAlignment="Center"
+                        d:Visibility="Collapsed"
+                        FontSize="18"
                         Text="至"
                         Visibility="{Binding EndVisibility}" />
 
                     <DatePicker
                         Grid.Column="2"
-                        MinWidth="140"
+                        MinWidth="180"
                         Margin="0,0,10,0"
+                        d:Visibility="Collapsed"
                         SelectedDate="{Binding EndApplyTime, Mode=TwoWay}"
                         Visibility="{Binding EndVisibility}" />
                 </Grid>

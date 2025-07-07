@@ -20,6 +20,11 @@
 
     <Window.Resources>
         <ResourceDictionary>
+            <SolidColorBrush x:Key="ListItemNormalBackground" Color="#eceff1" />
+            <SolidColorBrush x:Key="ListItemNormalForeground" Color="#FF333333" />
+            <SolidColorBrush x:Key="ListItemSelectedBackground" Color="#607d8b" />
+            <SolidColorBrush x:Key="ListItemSelectedForeground" Color="White" />
+
             <Style x:Key="TopHeaderStyle" TargetType="{x:Type TextBlock}">
                 <Setter Property="FontSize" Value="24" />
                 <Setter Property="VerticalAlignment" Value="Center" />
@@ -30,35 +35,125 @@
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="HorizontalAlignment" Value="Center" />
             </Style>
-            <DataTemplate x:Key="MenuItemTemplate" DataType="{x:Type mah:HamburgerMenuIconItem}">
-                <Grid Height="48">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type mah:HamburgerMenu}}, Path=CompactPaneLength}" />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <ContentControl
-                        Grid.Column="0"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Content="{Binding Icon}"
-                        Focusable="False"
-                        IsTabStop="False" />
-                    <TextBlock
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        FontSize="16"
-                        Foreground="Black"
-                        Text="{Binding Label}" />
-                </Grid>
-            </DataTemplate>
-            <Style
-                x:Key="MahApps.Styles.HamburgerMenu.Ripple"
-                BasedOn="{StaticResource MahApps.Styles.HamburgerMenu}"
-                TargetType="{x:Type mah:HamburgerMenu}">
-                <Setter Property="PaneBackground" Value="{DynamicResource MahApps.Brushes.ThemeBackground}" />
-                <Setter Property="PaneForeground" Value="{DynamicResource MahApps.Brushes.Text}" />
-                <Setter Property="ShowSelectionIndicator" Value="false" />
+
+
+            <Style x:Key="ListBoxStyle1" TargetType="{x:Type ListBox}">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+                <!--  设置项目面板为水平方向  -->
+                <Setter Property="ItemsPanel">
+                    <Setter.Value>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ListBox}">
+                            <Border
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                                <ScrollViewer Padding="{TemplateBinding Padding}" Focusable="False">
+                                    <ItemsPresenter />
+                                </ScrollViewer>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <Grid MinHeight="60" Margin="10,0">
+                                <Grid.InputBindings>
+                                    <MouseBinding
+                                        Command="{Binding DataContext.NavCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                        CommandParameter="{Binding Index}"
+                                        MouseAction="LeftClick" />
+                                </Grid.InputBindings>
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Style="{StaticResource TopHeaderStyle}"
+                                    Text="{Binding Header}" />
+                            </Grid>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
+            <Style x:Key="ListBoxItemStyle1" TargetType="{x:Type ListBoxItem}">
+                <Setter Property="Background" Value="{StaticResource ListItemNormalBackground}" />
+                <Setter Property="Foreground" Value="{StaticResource ListItemNormalForeground}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="15,2" />
+                <Setter Property="Margin" Value="0,0,5,0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="2" />
+                                </Grid.RowDefinitions>
+                                <!--  底部指示条  -->
+                                <Border
+                                    x:Name="BottomIndicator"
+                                    Grid.Row="1"
+                                    Height="2"
+                                    VerticalAlignment="Bottom"
+                                    Background="{DynamicResource ListItemSelectedBackground}"
+                                    Opacity="0" />
+
+                                <!--  内容区域  -->
+                                <Border
+                                    x:Name="MainBorder"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="6">
+                                    <ContentPresenter
+                                        x:Name="contentPresenter"
+                                        Margin="{TemplateBinding Padding}"
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                </Border>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <!--  选中状态  -->
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource ListItemSelectedForeground}" />
+                                    <Setter Property="Background" Value="{StaticResource ListItemSelectedBackground}" />
+                                    <Setter TargetName="BottomIndicator" Property="Opacity" Value="0" />
+                                </Trigger>
+                                <!--  鼠标悬停  -->
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="BottomIndicator" Property="Opacity" Value="1" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!--<Style x:Key="ListBoxStyle" TargetType="{x:Type ListBox}">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style BasedOn="{StaticResource MahApps.Styles.ListBoxItem}" TargetType="ListBoxItem">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+            </Style>-->
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
@@ -80,7 +175,7 @@
             <Grid
                 Grid.Row="0"
                 Height="80"
-                Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
+                Background="{StaticResource ListItemNormalBackground}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -94,9 +189,7 @@
                     VerticalAlignment="Center"
                     Text="Logo">
                     <TextBlock.InputBindings>
-                        <MouseBinding 
-                            Command="{Binding ClickLogoCommand}"
-                            MouseAction="LeftClick" />
+                        <MouseBinding Command="{Binding ClickLogoCommand}" MouseAction="LeftClick" />
                     </TextBlock.InputBindings>
                 </TextBlock>
 
@@ -107,60 +200,12 @@
                     VerticalAlignment="Center"
                     d:SelectedIndex="0"
                     ItemsSource="{Binding NavItems}"
-                    SelectedIndex="{Binding SelectedIndex}">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Height="50" Margin="15,0">
-                                <Grid.InputBindings>
-                                    <MouseBinding
-                                        Command="{Binding DataContext.NavCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                        CommandParameter="{Binding Index}"
-                                        MouseAction="LeftClick" />
-                                </Grid.InputBindings>
-
-                                <Border
-                                    Grid.Row="1"
-                                    Background="Transparent"
-                                    CornerRadius="10">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                                                    <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Accent}" />
-                                                    <Setter Property="CornerRadius" Value="10" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                    <TextBlock Style="{StaticResource TopHeaderStyle}" Text="{Binding Header}" />
-                                </Border>
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                    <ListBox.Style>
-                        <Style BasedOn="{StaticResource MahApps.Styles.ListBox}" TargetType="ListBox">
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="BorderThickness" Value="0" />
-                            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
-                            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
-                            <Setter Property="ItemContainerStyle">
-                                <Setter.Value>
-                                    <Style BasedOn="{StaticResource MahApps.Styles.ListBoxItem}" TargetType="ListBoxItem">
-                                        <Setter Property="Background" Value="Transparent" />
-                                        <Setter Property="Padding" Value="0" />
-                                        <Setter Property="Margin" Value="0" />
-                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                        <Setter Property="VerticalContentAlignment" Value="Stretch" />
-                                    </Style>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListBox.Style>
+                    SelectedIndex="{Binding SelectedIndex}"
+                    Style="{StaticResource ListBoxStyle1}">
+                    <ListBox.Resources>
+                        <!--  应用ListBoxItem样式  -->
+                        <Style BasedOn="{StaticResource ListBoxItemStyle1}" TargetType="ListBoxItem" />
+                    </ListBox.Resources>
                 </ListBox>
 
                 <!--  右侧区域  -->
@@ -186,7 +231,7 @@
             <Border
                 Grid.Row="2"
                 Height="auto"
-                Background="AliceBlue">
+                Background="#cfd8dc">
                 <Grid Height="50" Margin="0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="auto" />

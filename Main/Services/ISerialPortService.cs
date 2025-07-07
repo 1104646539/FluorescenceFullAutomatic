@@ -69,11 +69,7 @@ namespace FluorescenceFullAutomatic.Services
 
         void AddOriginSendDataListener(Action<string> result);
         void RemoveOriginSendDataListener(Action<string> result);
-        void Enqueue(ReactionAreaItem item);
-        void OnAddDequeue(Func<ReactionAreaItem,bool> onDequeue);
-        void OnRemoveDequeue(Func<ReactionAreaItem,bool> onDequeue);
-
-        int DequeueCount();
+          
 
         void ScanBarcode();
         void StopScanBarcode();
@@ -82,7 +78,6 @@ namespace FluorescenceFullAutomatic.Services
 
         string GetMainPortName();
 
-        void SetEnqueueDuration(int duration);
     }
 
     public class SerialPortService : ISerialPortService
@@ -109,14 +104,10 @@ namespace FluorescenceFullAutomatic.Services
            _reactionAreaQueue._dequeueCallback -= onDequeue;
 
         }
-        public void SetEnqueueDuration(int duration)
-        {
-            _reactionAreaQueue.SetEnqueueDuration(duration);
-        }
+   
         public SerialPortService()
         {
             _serialPortHelper = SerialPortHelper.Instance;
-            _reactionAreaQueue = ReactionAreaQueue.getInstance();
             //_reactionAreaQueue.SetEnqueueDuration(10);
         }
 
@@ -251,10 +242,7 @@ namespace FluorescenceFullAutomatic.Services
             _serialPortHelper.SerialPortConnectReceived += result;
         }
 
-        public int DequeueCount()
-        {
-            return _reactionAreaQueue.Count;
-        }
+       
 
         public void ScanBarcode()
         {

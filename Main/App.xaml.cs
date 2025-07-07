@@ -2,6 +2,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
+using ControlzEx.Theming;
 using FluorescenceFullAutomatic.Sql;
 using FluorescenceFullAutomatic.ViewModels;
 using FluorescenceFullAutomatic.Views;
@@ -19,7 +20,6 @@ namespace FluorescenceFullAutomatic
             // this.DispatcherUnhandledException += App_DispatcherUnhandledException;
             base.OnStartup(e);
             AppDomain.CurrentDomain.UnhandledException += HandleUnhandledException;
-
         }
 
         private void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -31,7 +31,10 @@ namespace FluorescenceFullAutomatic
             }
         }
 
-        private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        private void App_DispatcherUnhandledException(
+            object sender,
+            DispatcherUnhandledExceptionEventArgs e
+        )
         {
             Log.Error($"发生了错误 {e.Exception}");
             //e.Handled = true;
@@ -41,7 +44,7 @@ namespace FluorescenceFullAutomatic
         {
             InitLog();
             InitDB();
-            
+
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
         }

@@ -58,7 +58,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             serviceCollection.AddSingleton<IToolRepository, ToolRepository>();
             serviceCollection.AddSingleton<IUploadConfigRepository, UploadConfigRepository>();
             serviceCollection.AddSingleton<IDispatcherService, DispatcherService>();
-
+            serviceCollection.AddSingleton<IReactionAreaQueueRepository, ReactionAreaQueueRepository>();
 
             serviceCollection.AddSingleton<MainViewModel>();
             serviceCollection.AddSingleton<HomeViewModel>();

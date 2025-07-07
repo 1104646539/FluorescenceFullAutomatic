@@ -96,12 +96,26 @@
                 <TabItem.Header>
                     <TextBlock Style="{StaticResource TabHeaderStyle}" Text="调试" />
                 </TabItem.Header>
-                <Grid Margin="10">
+                <Button Content="Button" Height="75" HorizontalAlignment="Left" Margin="27,12,0,0" Name="btnImgBrush" VerticalAlignment="Top" Width="160" Background="LightGray">
+                    <Button.Triggers>
+                        <EventTrigger RoutedEvent="Button.MouseLeave">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation To="Green" 
+                                    Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" 
+                                    FillBehavior="Stop" 
+                                    Duration="0:0:1"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Button.Triggers>
+                </Button>
+                <!--<Grid Margin="10">
                     <Button
                         Height="60"
                         Command="{Binding ClickDebugCommand}"
                         Content="调试" />
-                </Grid>
+                </Grid>-->
             </TabItem>
             <!--  版本信息  -->
             <TabItem Style="{StaticResource SettingsTabItem}">

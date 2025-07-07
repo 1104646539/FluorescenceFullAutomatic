@@ -75,5 +75,9 @@ namespace FluorescenceFullAutomatic.Model
         /// 检测完成
         /// </summary>
         TestEnd = 1,
+        /// <summary>
+        /// 全部
+        /// </summary>
+        All = 2,
     }
 }

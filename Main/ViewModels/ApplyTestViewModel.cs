@@ -21,15 +21,18 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IApplyTestService _applyTestService;
         private readonly ILisService _lisService;
 
-        // 单选按钮绑定
+        // 状态过滤选项
         [ObservableProperty]
-        private bool isWaitTestChecked = true;
+        private ObservableCollection<ApplyTestType> filterTypes =
+            new ObservableCollection<ApplyTestType>
+            {
+                ApplyTestType.WaitTest,
+                ApplyTestType.TestEnd,
+                ApplyTestType.All,
+            };
 
         [ObservableProperty]
-        private bool isTestedChecked;
-
-        [ObservableProperty]
-        private bool isAllChecked;
+        private ApplyTestType selectedFilterType = ApplyTestType.WaitTest;
 
         // 列表数据
         [ObservableProperty]
@@ -84,6 +87,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 }
             );
         }
+
         /// <summary>
         /// 刷新状态
         /// </summary>
@@ -106,11 +110,11 @@ namespace FluorescenceFullAutomatic.ViewModels
                 {
                     return;
                 }
-                if (IsAllChecked)
+                if (SelectedFilterType == ApplyTestType.All)
                 {
                     ApplyTestList[index] = applyTest;
                 }
-                else if (IsWaitTestChecked)
+                else if (SelectedFilterType == ApplyTestType.WaitTest)
                 {
                     ApplyTestList.Remove(ApplyTestList[index]);
                 }
@@ -121,32 +125,15 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
         }
 
-        partial void OnIsWaitTestCheckedChanged(bool value)
+        partial void OnSelectedFilterTypeChanged(ApplyTestType value)
         {
-            if (value)
-                LoadApplyTestList(ApplyTestType.WaitTest);
-        }
-
-        partial void OnIsTestedCheckedChanged(bool value)
-        {
-            if (value)
-                LoadApplyTestList(ApplyTestType.TestEnd);
-        }
-
-        partial void OnIsAllCheckedChanged(bool value)
-        {
-            if (value)
-                LoadApplyTestList(null);
+            LoadApplyTestList(value);
         }
 
         // 加载列表
-        private async void LoadApplyTestList(ApplyTestType? type)
+        private async void LoadApplyTestList(ApplyTestType type)
         {
-            var list = type.HasValue
-                ? await _applyTestService.GetApplyTests(type.Value)
-                : (await _applyTestService.GetApplyTests(ApplyTestType.WaitTest))
-                    .Concat(await _applyTestService.GetApplyTests(ApplyTestType.TestEnd))
-                    .ToList();
+            var list = await _applyTestService.GetApplyTests(type);
 
             // 确保所有项的选中状态为false
             foreach (var item in list)
@@ -165,6 +152,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             ChangeAddMode();
         }
+
         [RelayCommand]
         private void GetApplyTest()
         {
@@ -195,7 +183,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                                 TestNum = test.TestNum,
                                 ApplyTestType = ApplyTestType.WaitTest,
                                 PatientId = patientId,
-                                Patient = test.Patient
+                                Patient = test.Patient,
                             };
 
                             // 插入ApplyTest记录
@@ -203,24 +191,21 @@ namespace FluorescenceFullAutomatic.ViewModels
                         }
 
                         // 重新加载列表
-                        LoadApplyTestList(
-                            IsWaitTestChecked
-                                ? ApplyTestType.WaitTest
-                                : (IsTestedChecked ? ApplyTestType.TestEnd : (ApplyTestType?)null)
-                        );
+                        LoadApplyTestList(SelectedFilterType);
                         // 关闭对话框
                         await MainWindow.Instance.HideMetroDialogAsync(customDialog);
 
                         //显示提示
                         GlobalUtil.ShowHiltDialog(
-                  "提示",
-                  $"成功添加 {applyTests.Count} 条记录",
-                  "确定",
-                  (d, dialog) =>
-                  {
-                      Log.Information($"成功添加 {applyTests.Count} 条记录");
-                  }
-              ); }
+                            "提示",
+                            $"成功添加 {applyTests.Count} 条记录",
+                            "确定",
+                            (d, dialog) =>
+                            {
+                                Log.Information($"成功添加 {applyTests.Count} 条记录");
+                            }
+                        );
+                    }
                 },
                 vm =>
                 {
@@ -233,8 +218,8 @@ namespace FluorescenceFullAutomatic.ViewModels
             content.DataContext = viewModel;
             customDialog.Content = content;
             MainWindow.Instance.ShowMetroDialogAsync(customDialog);
-
         }
+
         /// <summary>
         /// 删除
         /// </summary>
@@ -245,11 +230,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             {
                 _applyTestService.DeleteApplyTest(item);
             }
-            LoadApplyTestList(
-                IsWaitTestChecked
-                    ? ApplyTestType.WaitTest
-                    : (IsTestedChecked ? ApplyTestType.TestEnd : (ApplyTestType?)null)
-            );
+            LoadApplyTestList(SelectedFilterType);
         }
 
         // 新增测试数据
@@ -269,7 +250,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                     InspectDepartment = "内科",
                     InspectDoctor = "李四",
                     TestDoctor = "王五",
-                    CheckDoctor = "赵六"
+                    CheckDoctor = "赵六",
                 };
                 int patientId = _applyTestService.InsertPatient(patient);
                 var test = new ApplyTest
@@ -281,11 +262,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 };
                 _applyTestService.InsertApplyTest(test);
             }
-            LoadApplyTestList(
-                IsWaitTestChecked
-                    ? ApplyTestType.WaitTest
-                    : (IsTestedChecked ? ApplyTestType.TestEnd : (ApplyTestType?)null)
-            );
+            LoadApplyTestList(SelectedFilterType);
         }
 
         /// <summary>
@@ -294,10 +271,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         private void ChangeAddMode()
         {
             IsAddMode = true;
-            EditTest = new ApplyTest
-            {
-                Patient = new Patient() { InspectDate = DateTime.Now },
-            };
+            EditTest = new ApplyTest { Patient = new Patient() { InspectDate = DateTime.Now } };
             SelectedApplyTest = null;
             OnPropertyChanged(nameof(CanSave));
             OnPropertyChanged(nameof(CanDelete));
@@ -317,11 +291,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                     int patientId = _applyTestService.InsertPatient(EditTest.Patient);
                     EditTest.PatientId = patientId;
                     int applyTestId = _applyTestService.InsertApplyTest(EditTest);
-                    LoadApplyTestList(
-                        IsWaitTestChecked
-                            ? ApplyTestType.WaitTest
-                            : (IsTestedChecked ? ApplyTestType.TestEnd : (ApplyTestType?)null)
-                    );
+                    LoadApplyTestList(SelectedFilterType);
                 });
             }
             else
@@ -331,11 +301,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 {
                     _applyTestService.UpdatePatient(EditTest.Patient);
                     _applyTestService.UpdateApplyTest(EditTest);
-                    LoadApplyTestList(
-                        IsWaitTestChecked
-                            ? ApplyTestType.WaitTest
-                            : (IsTestedChecked ? ApplyTestType.TestEnd : (ApplyTestType?)null)
-                    );
+                    LoadApplyTestList(SelectedFilterType);
                 });
             }
             //IsAddMode = false;
@@ -354,11 +320,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             _applyTestService.DeletePatient(EditTest.Patient);
             _applyTestService.DeleteApplyTest(EditTest);
             // 刷新
-            LoadApplyTestList(
-                IsWaitTestChecked
-                    ? ApplyTestType.WaitTest
-                    : (IsTestedChecked ? ApplyTestType.TestEnd : (ApplyTestType?)null)
-            );
+            LoadApplyTestList(SelectedFilterType);
             EditTest = null;
             OnPropertyChanged(nameof(CanSave));
             OnPropertyChanged(nameof(CanDelete));

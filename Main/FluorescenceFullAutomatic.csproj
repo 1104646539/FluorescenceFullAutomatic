@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\Costura.Fody.4.1.0\build\Costura.Fody.props" Condition="Exists('packages\Costura.Fody.4.1.0\build\Costura.Fody.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-   <Version>1.0.520.0</Version>
-       <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-
+    <Version>1.0.520.0</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{BC56B4BA-C323-4946-9C45-CB22DC34337F}</ProjectGuid>
@@ -39,12 +39,13 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <DebugType>embedded</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowedReferenceRelatedFileExtensions>.allowedextension</AllowedReferenceRelatedFileExtensions>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -54,6 +55,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowedReferenceRelatedFileExtensions>.allowedextension</AllowedReferenceRelatedFileExtensions>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>FluorescenceFullAutomatic.App</StartupObject>
@@ -64,6 +66,9 @@
     </Reference>
     <Reference Include="CommunityToolkit.Mvvm, Version=8.2.0.0, Culture=neutral, PublicKeyToken=4aff67a105548ee2, processorArchitecture=MSIL">
       <HintPath>packages\CommunityToolkit.Mvvm.8.2.2\lib\netstandard2.0\CommunityToolkit.Mvvm.dll</HintPath>
+    </Reference>
+    <Reference Include="Costura, Version=4.1.0.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
+      <HintPath>packages\Costura.Fody.4.1.0\lib\net40\Costura.dll</HintPath>
     </Reference>
     <Reference Include="Enums.NET, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7ea1c1650d506225, processorArchitecture=MSIL">
       <HintPath>packages\Enums.NET.4.0.1\lib\net45\Enums.NET.dll</HintPath>
@@ -483,6 +488,7 @@
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DoubleValidationConverter.cs" />
     <Compile Include="Converters\EnumDescriptionConverter.cs" />
+    <Compile Include="Converters\EnumToStringConverter.cs" />
     <Compile Include="Converters\IntValidationConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityInverseConverter.cs" />
     <Compile Include="Converters\DateTimeToStringConvert.cs" />
@@ -549,6 +555,7 @@
     <Compile Include="Repositorys\ITestResultRepository.cs" />
     <Compile Include="Repositorys\IToolRepository.cs" />
     <Compile Include="Repositorys\IUploadConfigRepository.cs" />
+    <Compile Include="Repositorys\IReactionAreaQueueRepository.cs" />
     <Compile Include="Services\IApplyTestService.cs" />
     <Compile Include="Services\IConfigService.cs" />
     <Compile Include="Services\IDataManagerService.cs" />
@@ -650,6 +657,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Page>
+    <Page Include="Style\SelfAccent.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Style\SelfAppTheme.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Style\zh-CN.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -801,6 +816,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="FodyWeavers.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -821,7 +839,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <EmbeddedResource Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Components\" />
@@ -872,7 +890,8 @@
     <Resource Include="Image\img_result_state_finish.png" />
     <Resource Include="Image\img_result_state_none.png" />
     <Resource Include="Image\img_result_state_error.png" />
-    <Content Include="System.Data.SQLite.dll">
+    <Resource Include="FodyWeavers.xml" />
+    <Content Include="Dll\System.Data.SQLite.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="x64\SQLite.Interop.dll">
@@ -897,6 +916,8 @@
     <Error Condition="!Exists('packages\SkiaSharp.NativeAssets.Win32.2.88.9\build\net462\SkiaSharp.NativeAssets.Win32.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\SkiaSharp.NativeAssets.Win32.2.88.9\build\net462\SkiaSharp.NativeAssets.Win32.targets'))" />
     <Error Condition="!Exists('packages\HarfBuzzSharp.NativeAssets.Linux.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.Linux.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\HarfBuzzSharp.NativeAssets.Linux.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.Linux.targets'))" />
     <Error Condition="!Exists('packages\SkiaSharp.NativeAssets.Linux.NoDependencies.2.88.9\build\net462\SkiaSharp.NativeAssets.Linux.NoDependencies.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\SkiaSharp.NativeAssets.Linux.NoDependencies.2.88.9\build\net462\SkiaSharp.NativeAssets.Linux.NoDependencies.targets'))" />
+    <Error Condition="!Exists('packages\Fody.6.8.2\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Fody.6.8.2\build\Fody.targets'))" />
+    <Error Condition="!Exists('packages\Costura.Fody.4.1.0\build\Costura.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Costura.Fody.4.1.0\build\Costura.Fody.props'))" />
   </Target>
   <Import Project="packages\MaterialDesignThemes.5.2.1\build\MaterialDesignThemes.targets" Condition="Exists('packages\MaterialDesignThemes.5.2.1\build\MaterialDesignThemes.targets')" />
   <Import Project="packages\HarfBuzzSharp.NativeAssets.macOS.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.macOS.targets" Condition="Exists('packages\HarfBuzzSharp.NativeAssets.macOS.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.macOS.targets')" />
@@ -905,4 +926,5 @@
   <Import Project="packages\SkiaSharp.NativeAssets.Win32.2.88.9\build\net462\SkiaSharp.NativeAssets.Win32.targets" Condition="Exists('packages\SkiaSharp.NativeAssets.Win32.2.88.9\build\net462\SkiaSharp.NativeAssets.Win32.targets')" />
   <Import Project="packages\HarfBuzzSharp.NativeAssets.Linux.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.Linux.targets" Condition="Exists('packages\HarfBuzzSharp.NativeAssets.Linux.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.Linux.targets')" />
   <Import Project="packages\SkiaSharp.NativeAssets.Linux.NoDependencies.2.88.9\build\net462\SkiaSharp.NativeAssets.Linux.NoDependencies.targets" Condition="Exists('packages\SkiaSharp.NativeAssets.Linux.NoDependencies.2.88.9\build\net462\SkiaSharp.NativeAssets.Linux.NoDependencies.targets')" />
+  <Import Project="packages\Fody.6.8.2\build\Fody.targets" Condition="Exists('packages\Fody.6.8.2\build\Fody.targets')" />
 </Project>

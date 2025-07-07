@@ -708,7 +708,7 @@ namespace FluorescenceFullAutomatic.Sql
         /// <returns></returns>
         public Task<List<ApplyTest>> GetAllApplyTest(ApplyTestType applyTest)
         {
-            if (applyTest == null)
+            if (applyTest == null || applyTest == ApplyTestType.All)
             {
                 return db.Db.CopyNew().Queryable<ApplyTest>().Includes(it => it.Patient).ToListAsync();
             }
