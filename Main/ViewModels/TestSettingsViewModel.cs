@@ -13,6 +13,7 @@ using FluorescenceFullAutomatic.Config;
 using System.Collections.ObjectModel;
 using Microsoft.Win32;
 using System.Drawing.Printing;
+using FluorescenceFullAutomatic.Repositorys;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -51,10 +52,11 @@ namespace FluorescenceFullAutomatic.ViewModels
          private bool isAutoPrintA4Report;
 
          private readonly IConfigService _configService;
-
-         public TestSettingsViewModel(IConfigService configService)
+         private readonly IDialogRepository _dialogRepository;
+         public TestSettingsViewModel(IConfigService configService,IDialogRepository dialogRepository)
          {
              _configService = configService;
+             _dialogRepository = dialogRepository;
              LoadSettings();
              WeakReferenceMessenger.Default.Register<EventMsg<string>>(this, (r, m) =>
              {
@@ -133,41 +135,41 @@ namespace FluorescenceFullAutomatic.ViewModels
          private void SaveSettings()
          {
             if (SystemGlobal.MachineStatus.IsRunning()) {
-                GlobalUtil.ShowHiltDialog("提示", "当前仪器正在运行，请先等待检测完毕！", "确定", (m, d) => { });
+                _dialogRepository.ShowHiltDialog("提示", "当前仪器正在运行，请先等待检测完毕！", "确定", (m, d) => { });
                 return;
             }
              // 检测编号校验
              if (!int.TryParse(TestNum, out int testNumValue) || testNumValue <= 0)
              {
-                GlobalUtil.ShowHiltDialog("提示", "检测编号必须是大于0的整数！", "确定", (m,d)=>{ });
+                _dialogRepository.ShowHiltDialog("提示", "检测编号必须是大于0的整数！", "确定", (m,d)=>{ });
                  return;
              }
              
              // 取样量校验
              if (SamplingVolumn <= 1 || SamplingVolumn >= 300)
              {
-                GlobalUtil.ShowHiltDialog("提示", "取样量必须大于1且小于300！", "确定", (m, d) => { });
+                _dialogRepository.ShowHiltDialog("提示", "取样量必须大于1且小于300！", "确定", (m, d) => { });
                  return;
              }
              
              // 清洗时长校验
              if (CleanoutDuration <= 10 || CleanoutDuration > 10000)
             {
-                GlobalUtil.ShowHiltDialog("提示", "清洗时长必须大于10且不超过10000！", "确定", (m, d) => { });
+                _dialogRepository.ShowHiltDialog("提示", "清洗时长必须大于10且不超过10000！", "确定", (m, d) => { });
                  return;
              }
              
              // 反应时长校验
              if (ReactionDuration <= 0 || ReactionDuration > 3600)
             {
-                GlobalUtil.ShowHiltDialog("提示", "反应时长必须大于0且不超过3600！", "确定", (m, d) => { });
+                _dialogRepository.ShowHiltDialog("提示", "反应时长必须大于0且不超过3600！", "确定", (m, d) => { });
                  return;
              }
 
             // SingleReportTemplatePath 和 DoubleReportTemplatePath 校验
             if (string.IsNullOrEmpty(SingleReportTemplatePath) || string.IsNullOrEmpty(DoubleReportTemplatePath))
             {
-                GlobalUtil.ShowHiltDialog("提示", "请选择单联和双联报告模板！", "确定", (m, d) => { });
+                _dialogRepository.ShowHiltDialog("提示", "请选择单联和双联报告模板！", "确定", (m, d) => { });
                  return;
             }
             
@@ -185,7 +187,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             _configService.SetDoubleReportTemplatePath(DoubleReportTemplatePath);
             _configService.SetPrinterName(SelectedPrinter);
            
-            GlobalUtil.ShowHiltDialog("提示", "设置已保存！", "确定", (m, d) => { });
+            _dialogRepository.ShowHiltDialog("提示", "设置已保存！", "确定", (m, d) => { });
             WeakReferenceMessenger.Default.Send(new EventMsg<string>("") { What = EventWhat.WHAT_CHANGE_TEST_SETTINGS});
             return;
         }

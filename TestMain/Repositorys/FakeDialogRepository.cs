@@ -17,7 +17,7 @@ namespace TestMain.Repositorys
             return Task.FromResult(true);
         }
 
-        public void ShowHiltDialog(string title, string msg, string confirmText, Action<HiltDialogViewModel, CustomDialog> actionConfirm, string cancelText = null, Action<HiltDialogViewModel, CustomDialog> actionCancel = null, string closeText = null, Action<HiltDialogViewModel, CustomDialog> actionClose = null, bool autoCloseDialog = true)
+        public void ShowHiltDialog(string title, string msg, string confirmText, Action<HintDialogViewModel, CustomDialog> actionConfirm, string cancelText = null, Action<HintDialogViewModel, CustomDialog> actionCancel = null, string closeText = null, Action<HintDialogViewModel, CustomDialog> actionClose = null, bool autoCloseDialog = true)
         {
             
         }

@@ -1,12 +1,13 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="Title">FluorescenceFullAutomatic</sys:String>
     <sys:String x:Key="HomeTitle">样本分析2</sys:String>
     <sys:String x:Key="DataManagerTitle">数据管理2</sys:String>
     <sys:String x:Key="ApplyTestTitle">申请测试2</sys:String>
     <sys:String x:Key="ProjectListTitle">项目列表2</sys:String>
-    <sys:String x:Key="SettingsTitle">设置2</sys:String>
+    <sys:String x:Key="SettingsTitle">参数设置2</sys:String>
     <sys:String x:Key="QCTitle">拟合质控</sys:String>
     <sys:String x:Key="DebugTitle">调试2</sys:String>
     <sys:String x:Key="result_positive">Positive</sys:String>

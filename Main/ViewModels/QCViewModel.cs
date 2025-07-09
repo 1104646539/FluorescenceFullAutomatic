@@ -33,6 +33,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IDialogCoordinator dialogCoordinator;
         private readonly IHomeService homeService;
         private readonly IReactionAreaQueueRepository reactionAreaQueueRepository;
+
+        private readonly IDialogRepository dialogRepository;
         // 命令执行 状态跟踪
         /// <summary>
         /// 取样命令是否完成
@@ -303,13 +305,14 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         #endregion
         public QCViewModel(IHomeService homeService, ISerialPortService serialService, IConfigService configService
-            , IDialogCoordinator dialogCoordinator,IReactionAreaQueueRepository reactionAreaQueueRepository)
+            , IDialogCoordinator dialogCoordinator,IReactionAreaQueueRepository reactionAreaQueueRepository,IDialogRepository dialogRepository)
         {
             this.homeService = homeService;
             this.serialPortService = serialService;
             this.configService = configService;
             this.dialogCoordinator = dialogCoordinator;
             this.reactionAreaQueueRepository = reactionAreaQueueRepository;
+            this.dialogRepository = dialogRepository;
             ReactionAreaViewModel = ReactionAreaViewModel.Instance;
             serialPortService.AddReceiveData(this);
             //serialPortService.OnAddDequeue(OnReactionAreaDequeue);
@@ -432,7 +435,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             if (!string.IsNullOrEmpty(errorMsg))
             {
                 Log.Information("仪器状态异常，请检查仪器状态。");
-                GlobalUtil.ShowHiltDialog(
+                dialogRepository.ShowHiltDialog(
                     "提示",
                     errorMsg,
                     "好的",
@@ -510,7 +513,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                     string msg =
                         $"仪器状态异常,{(CardExist == false ? "卡仓不存在," : "")}{(CardNum <= 0 ? "检测卡不足," : "")}";
                     msg = msg.TrimEnd(',');
-                    GlobalUtil.ShowHiltDialog(
+                    dialogRepository.ShowHiltDialog(
                         "提示",
                         msg,
                         "重新获取",
@@ -712,7 +715,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 {
                     Log.Information("此项目不是质控项目");
                     //此项目不是质控项目
-                    GlobalUtil.ShowHiltDialog(
+                    dialogRepository.ShowHiltDialog(
                         "提示",
                         "此项目不是质控项目",
                         "再次推卡",
@@ -964,7 +967,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
             RunningErrorMsg = $"运行错误，请联系经销商人员维护。\n错误信息: {model.Error}";
             // 显示错误信息
-            GlobalUtil.ShowHiltDialog("提示", RunningErrorMsg, "确定", (d, dialog) => { });
+            dialogRepository.ShowHiltDialog("提示", RunningErrorMsg, "确定", (d, dialog) => { });
         }
         public void ReceiveVersionModel(BaseResponseModel<VersionModel> model)
         {

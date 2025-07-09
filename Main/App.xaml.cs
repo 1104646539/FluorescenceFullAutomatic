@@ -1,11 +1,16 @@
 ﻿using System;
-using System.IO;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Threading;
-using ControlzEx.Theming;
+using FluorescenceFullAutomatic.Repositorys;
+using FluorescenceFullAutomatic.Services;
 using FluorescenceFullAutomatic.Sql;
 using FluorescenceFullAutomatic.ViewModels;
 using FluorescenceFullAutomatic.Views;
+using FluorescenceFullAutomatic.Views.Ctr;
+using MahApps.Metro.Controls.Dialogs;
+using Prism.Ioc;
+using Prism.Unity;
 using Serilog;
 
 namespace FluorescenceFullAutomatic
@@ -13,14 +18,67 @@ namespace FluorescenceFullAutomatic
     /// <summary>
     /// App.xaml 的交互逻辑
     /// </summary>
-    public partial class App : Application
+    public partial class App : PrismApplication
     {
-        protected override void OnStartup(StartupEventArgs e)
+        protected override Window CreateShell()
         {
-            // this.DispatcherUnhandledException += App_DispatcherUnhandledException;
-            base.OnStartup(e);
             AppDomain.CurrentDomain.UnhandledException += HandleUnhandledException;
+            return Container.Resolve<MainWindow>();
         }
+
+        protected override void RegisterTypes(IContainerRegistry containerRegistry) {
+            containerRegistry.RegisterSingleton<IHomeService, HomeService>();
+            containerRegistry.RegisterSingleton<IConfigService, ConfigService>();
+            containerRegistry.RegisterSingleton<ISerialPortService, SerialPortService>();
+            containerRegistry.RegisterSingleton<IDialogCoordinator, DialogCoordinator>();
+            containerRegistry.RegisterSingleton<IDataManagerService, DataManagerService>();
+            containerRegistry.RegisterSingleton<IProjectService, ProjectService>();
+            containerRegistry.RegisterSingleton<ISettingsService, SettingsService>();
+            containerRegistry.RegisterSingleton<IApplyTestService, ApplyTestService>();
+            containerRegistry.RegisterSingleton<IQCService, QCService>();
+            containerRegistry.RegisterSingleton<IUploadService, UploadService>();
+            containerRegistry.RegisterSingleton<IRunningLogService, RunningLogService>();
+            containerRegistry.RegisterSingleton<ILisService, LisService>();
+            containerRegistry.RegisterSingleton<IExcelExportService, ExcelExportService>();
+
+            //repository
+            containerRegistry.RegisterSingleton<IApplyTestRepository, ApplyTestRepository>();
+            containerRegistry.RegisterSingleton<IConfigRepository, ConfigRepository>();
+            containerRegistry.RegisterSingleton<IDialogRepository, DialogRepository>();
+            containerRegistry.RegisterSingleton<IExportExcelRepository, ExportExcelRepository>();
+            containerRegistry.RegisterSingleton<ILisRepository, LisRepository>();
+            containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
+            containerRegistry.RegisterSingleton<IPointRepository, PointRepository>();
+            containerRegistry.RegisterSingleton<IPrintRepository, PrintRepository>();
+            containerRegistry.RegisterSingleton<IProjectRepository, ProjectRepository>();
+            containerRegistry.RegisterSingleton<ITestResultRepository, TestResultRepository>();
+            containerRegistry.RegisterSingleton<IToolRepository, ToolRepository>();
+            containerRegistry.RegisterSingleton<IUploadConfigRepository, UploadConfigRepository>();
+            containerRegistry.RegisterSingleton<IDispatcherService, DispatcherService>();
+            containerRegistry.RegisterSingleton<IReactionAreaQueueRepository, ReactionAreaQueueRepository>();
+
+            
+            //serviceCollection.AddSingleton<MainViewModel>();
+            //serviceCollection.AddSingleton<HomeViewModel>();
+            //serviceCollection.AddSingleton<DebugViewModel>();
+            //serviceCollection.AddSingleton<DataManagerViewModel>();
+            //serviceCollection.AddSingleton<ProjectListViewModel>();
+            ////serviceCollection.AddSingleton<ProjectDetailsViewModel>();
+            //serviceCollection.AddSingleton<SettingsViewModel>();
+            //serviceCollection.AddSingleton<ApplyTestViewModel>();
+            //serviceCollection.AddSingleton<QCViewModel>();
+            //serviceCollection.AddSingleton<TestSettingsViewModel>();
+            //serviceCollection.AddSingleton<UploadSettingsViewModel>();
+            //serviceCollection.AddSingleton<RunningLogViewModel>();
+            //serviceCollection.AddSingleton<VersionViewModel>();
+        }
+
+        //protected override void OnStartup(StartupEventArgs e)
+        //{
+        //    // this.DispatcherUnhandledException += App_DispatcherUnhandledException;
+        //    base.OnStartup(e);
+            
+        //}
 
         private void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {

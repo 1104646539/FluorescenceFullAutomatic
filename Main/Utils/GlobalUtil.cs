@@ -150,16 +150,16 @@ namespace FluorescenceFullAutomatic.Utils
             string title,
             string msg,
             string confirmText,
-            Action<HiltDialogViewModel, CustomDialog> actionConfirm,
+            Action<HintDialogViewModel, CustomDialog> actionConfirm,
             string cancelText = null,
-            Action<HiltDialogViewModel, CustomDialog> actionCancel = null,
+            Action<HintDialogViewModel, CustomDialog> actionCancel = null,
             string closeText = null,
-            Action<HiltDialogViewModel, CustomDialog> actionClose = null,
+            Action<HintDialogViewModel, CustomDialog> actionClose = null,
             bool autoCloseDialog = true
         )
         {
             CustomDialog customDialog = new CustomDialog();
-            HiltDialogViewModel hiltDialogVM = new HiltDialogViewModel(
+            HintDialogViewModel hiltDialogVM = new HintDialogViewModel(
                 (d) =>
                 {
                     if (autoCloseDialog)
@@ -192,7 +192,7 @@ namespace FluorescenceFullAutomatic.Utils
                 CancelText = cancelText,
                 CloseText = closeText,
             };
-            customDialog.Content = new HiltDialog() { DataContext = hiltDialogVM };
+            customDialog.Content = new HintDialog() { DataContext = hiltDialogVM };
 
             MainWindow.Instance.ShowMetroDialogAsync(customDialog);
         }

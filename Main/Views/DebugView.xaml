@@ -12,6 +12,7 @@
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:prism="http://prismlibrary.com/"
     xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
     Width="1370"
     Height="857"
@@ -19,7 +20,7 @@
     d:DesignHeight="857"
     d:DesignWidth="1370"
     mah:DialogParticipation.Register="{Binding}"
-    DataContext="{Binding DebugViewModel, Source={StaticResource ServiceLocator}}"
+    prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Closed">

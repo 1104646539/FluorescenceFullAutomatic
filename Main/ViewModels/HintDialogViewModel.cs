@@ -1,5 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Prism.Commands;
+using Prism.Services.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,7 @@ using System.Windows;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
-    public partial class HiltDialogViewModel : ObservableRecipient
+    public partial class HintDialogViewModel : ObservableRecipient
     {
         [ObservableProperty]
         string title;
@@ -30,11 +32,11 @@ namespace FluorescenceFullAutomatic.ViewModels
         [ObservableProperty]
         Visibility showClose;
 
-        Action<HiltDialogViewModel> actionConfirm;
-        Action<HiltDialogViewModel> actionCancel;
-        Action<HiltDialogViewModel> actionClose;
-        public HiltDialogViewModel(Action<HiltDialogViewModel> actionConfirm, Action<HiltDialogViewModel> actionCancel = null
-            , Action<HiltDialogViewModel> actionClose = null)
+        Action<HintDialogViewModel> actionConfirm;
+        Action<HintDialogViewModel> actionCancel;
+        Action<HintDialogViewModel> actionClose;
+        public HintDialogViewModel(Action<HintDialogViewModel> actionConfirm, Action<HintDialogViewModel> actionCancel = null
+            , Action<HintDialogViewModel> actionClose = null)
         {
             this.Title = "";
             this.actionConfirm = actionConfirm;

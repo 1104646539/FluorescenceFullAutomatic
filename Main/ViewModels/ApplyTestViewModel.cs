@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FluorescenceFullAutomatic.Model;
+using FluorescenceFullAutomatic.Repositorys;
 using FluorescenceFullAutomatic.Services;
 using FluorescenceFullAutomatic.Utils;
 using FluorescenceFullAutomatic.Views;
@@ -20,6 +21,8 @@ namespace FluorescenceFullAutomatic.ViewModels
     {
         private readonly IApplyTestService _applyTestService;
         private readonly ILisService _lisService;
+        private readonly IDialogRepository _dialogRepository;
+
 
         // 状态过滤选项
         [ObservableProperty]
@@ -60,10 +63,11 @@ namespace FluorescenceFullAutomatic.ViewModels
         // 删除按钮可用性
         public bool CanDelete => !IsAddMode && EditTest != null;
 
-        public ApplyTestViewModel(IApplyTestService applyTestService, ILisService lisService)
+        public ApplyTestViewModel(IApplyTestService applyTestService, ILisService lisService, IDialogRepository dialogRepository)
         {
             _applyTestService = applyTestService;
             _lisService = lisService;
+            _dialogRepository = dialogRepository;
             // 默认加载待检
             LoadApplyTestList(ApplyTestType.WaitTest);
             ChangeAddMode();
@@ -196,7 +200,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                         await MainWindow.Instance.HideMetroDialogAsync(customDialog);
 
                         //显示提示
-                        GlobalUtil.ShowHiltDialog(
+                        _dialogRepository.ShowHiltDialog(
                             "提示",
                             $"成功添加 {applyTests.Count} 条记录",
                             "确定",

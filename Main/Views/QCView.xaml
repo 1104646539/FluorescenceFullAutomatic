@@ -7,12 +7,13 @@
     xmlns:local="clr-namespace:FluorescenceFullAutomatic.Views"
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:prism="http://prismlibrary.com/"
     xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
     d:Background="White"
     d:DataContext="{d:DesignInstance vm:QCViewModel}"
     d:DesignHeight="700"
     d:DesignWidth="1370"
-    DataContext="{Binding QCViewModel, Source={StaticResource ServiceLocator}}"
+    prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d">
     <mah:MetroContentControl.Resources>
         <converters:ReactionAreaProjectTypeToVisibilityConverter x:Key="ReactionAreaProjectTypeToVisibilityConverter" />

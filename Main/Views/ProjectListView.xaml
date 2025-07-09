@@ -1,26 +1,30 @@
-﻿<mah:MetroContentControl x:Class="FluorescenceFullAutomatic.Views.ProjectListView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
-             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-             xmlns:local="clr-namespace:FluorescenceFullAutomatic.Views.Ctr"
-             xmlns:conv="clr-namespace:FluorescenceFullAutomatic.Converters"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             d:DataContext="{d:DesignInstance vm:ProjectListViewModel}"
-             DataContext="{Binding ProjectListViewModel,Source={StaticResource ServiceLocator}}"
-             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
-             mc:Ignorable="d" 
-              d:DesignHeight="1080" d:DesignWidth="1800" d:Background="White">
-             <i:Interaction.Triggers>
-                <i:EventTrigger EventName="Loaded">
-                    <i:InvokeCommandAction Command="{Binding LoadedCommand}" />
-                </i:EventTrigger>
-             </i:Interaction.Triggers>
+﻿<mah:MetroContentControl
+    x:Class="FluorescenceFullAutomatic.Views.ProjectListView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="clr-namespace:FluorescenceFullAutomatic.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+    xmlns:local="clr-namespace:FluorescenceFullAutomatic.Views.Ctr"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:prism="http://prismlibrary.com/"
+    xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
+    d:Background="White"
+    d:DataContext="{d:DesignInstance vm:ProjectListViewModel}"
+    d:DesignHeight="1080"
+    d:DesignWidth="1800"
+    prism:ViewModelLocator.AutoWireViewModel="True"
+    mc:Ignorable="d">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadedCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
 
     <mah:MetroContentControl.Resources>
-        <conv:BooleanToVisibilityInverseConverter x:Key="BooleanToVisibilityConverterInverse"/>
+        <conv:BooleanToVisibilityInverseConverter x:Key="BooleanToVisibilityConverterInverse" />
     </mah:MetroContentControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -29,84 +33,117 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock Text="{Binding Title}"/>
-        <!--Visibility="{Binding IsDefault, Converter={StaticResource BooleanToVisibilityConverterInverse}}"-->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10" >
-            <Button Command="{Binding ChangeProjectDefaultCommand}"
-                    Margin="0,0,10,0">
+        <TextBlock Text="{Binding Title}" />
+        <!--  Visibility="{Binding IsDefault, Converter={StaticResource BooleanToVisibilityConverterInverse}}"  -->
+        <StackPanel
+            Grid.Row="1"
+            Margin="10"
+            Orientation="Horizontal">
+            <Button Margin="0,0,10,0" Command="{Binding ChangeProjectDefaultCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="MoreCircle" Margin="0,0,8,0"/>
-                    <TextBlock Text="{Binding BtnContent}"/>
+                    <materialDesign:PackIcon Margin="0,0,8,0" Kind="MoreCircle" />
+                    <TextBlock Text="{Binding BtnContent}" />
                 </StackPanel>
             </Button>
         </StackPanel>
 
-        <DataGrid Grid.Row="2"
-                  ItemsSource="{Binding Projects}"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  IsReadOnly="True"
-                  EnableRowVirtualization="True"
-                  EnableColumnVirtualization="True"
-                  VirtualizingPanel.IsVirtualizing="True"
-                  VirtualizingPanel.VirtualizationMode="Recycling"
-                  CanUserResizeRows="False"
-                  CanUserResizeColumns="True"
-                  CanUserSortColumns="True"
-                  Margin="10">
+        <DataGrid
+            Grid.Row="2"
+            Margin="10"
+            AutoGenerateColumns="False"
+            CanUserAddRows="False"
+            CanUserDeleteRows="False"
+            CanUserResizeColumns="True"
+            CanUserResizeRows="False"
+            CanUserSortColumns="True"
+            EnableColumnVirtualization="True"
+            EnableRowVirtualization="True"
+            IsReadOnly="True"
+            ItemsSource="{Binding Projects}"
+            VirtualizingPanel.IsVirtualizing="True"
+            VirtualizingPanel.VirtualizationMode="Recycling">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="项目名称" Binding="{Binding ProjectName}" Width="150"/>
-                <DataGridTextColumn Header="批次号" Binding="{Binding BatchNum}" Width="120"/>
-                <DataGridTextColumn Header="识别码" Binding="{Binding IdentifierCode}" Width="120"/>
-                <DataGridTextColumn Header="项目代码" Binding="{Binding ProjectCode}" Width="120"/>
-                <DataGridTextColumn Header="项目单位" Binding="{Binding ProjectUnit}" Width="100"/>
-                <DataGridTextColumn Header="项目类型" Binding="{Binding ProjectType}" Width="100"/>
-                <DataGridTextColumn Header="检测类型" Binding="{Binding TestType}" Width="100"/>
-                <DataGridTextColumn Header="是否默认" Binding="{Binding IsDefault}" Width="80"/>
+                <DataGridTextColumn
+                    Width="150"
+                    Binding="{Binding ProjectName}"
+                    Header="项目名称" />
+                <DataGridTextColumn
+                    Width="120"
+                    Binding="{Binding BatchNum}"
+                    Header="批次号" />
+                <DataGridTextColumn
+                    Width="120"
+                    Binding="{Binding IdentifierCode}"
+                    Header="识别码" />
+                <DataGridTextColumn
+                    Width="120"
+                    Binding="{Binding ProjectCode}"
+                    Header="项目代码" />
+                <DataGridTextColumn
+                    Width="100"
+                    Binding="{Binding ProjectUnit}"
+                    Header="项目单位" />
+                <DataGridTextColumn
+                    Width="100"
+                    Binding="{Binding ProjectType}"
+                    Header="项目类型" />
+                <DataGridTextColumn
+                    Width="100"
+                    Binding="{Binding TestType}"
+                    Header="检测类型" />
+                <DataGridTextColumn
+                    Width="80"
+                    Binding="{Binding IsDefault}"
+                    Header="是否默认" />
                 <DataGridTemplateColumn Header="操作">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="编辑" Command="{Binding DataContext.EditCommand,RelativeSource={RelativeSource AncestorType=DataGrid}}" 
-                                   CommandParameter="{Binding}" />
+                            <Button
+                                Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                CommandParameter="{Binding}"
+                                Content="编辑" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
 
-        <!-- 加载提示层 -->
-        <Grid Grid.Row="2" 
-              Background="#80000000" 
-              Width="{Binding ControlWidth}"
-              Height="{Binding ControlHeight}"
-              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <!--  加载提示层  -->
+        <Grid
+            Grid.Row="2"
+            Width="{Binding ControlWidth}"
+            Height="{Binding ControlHeight}"
+            Background="#80000000"
+            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            
-            <Border Grid.Row="1" 
-                    Grid.Column="1"
-                    Background="#80000000"
-                    CornerRadius="5"
-                    Padding="20">
+
+            <Border
+                Grid.Row="1"
+                Grid.Column="1"
+                Padding="20"
+                Background="#80000000"
+                CornerRadius="5">
                 <StackPanel>
-                    <mah:ProgressRing IsActive="True" 
-                                    Foreground="White"
-                                    Width="50" 
-                                    Height="50"
-                                    Margin="0,0,0,10"/>
-                    <TextBlock Text="正在加载数据..." 
-                             Foreground="White"
-                             FontSize="16"
-                             HorizontalAlignment="Center"/>
+                    <mah:ProgressRing
+                        Width="50"
+                        Height="50"
+                        Margin="0,0,0,10"
+                        Foreground="White"
+                        IsActive="True" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="16"
+                        Foreground="White"
+                        Text="正在加载数据..." />
                 </StackPanel>
             </Border>
         </Grid>

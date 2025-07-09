@@ -26,7 +26,7 @@ using System.IO;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
-    public partial class MainViewModel : ObservableObject
+    public partial class MainWindowViewModel : ObservableObject
     {
         [ObservableProperty]
         private string title;
@@ -110,7 +110,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
         }
         
-        public MainViewModel(
+        public MainWindowViewModel(
             IHomeService homeService,
             IConfigService configService,
             IDialogCoordinator dialogCoordinator
@@ -234,7 +234,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// <summary>
         /// 析构函数，移除事件订阅
         /// </summary>
-        ~MainViewModel()
+        ~MainWindowViewModel()
         {
             // 移除HL7连接回调
             HL7Helper.Instance.RemoveConnectionSucceededHandler(OnHL7ConnectionSucceeded);

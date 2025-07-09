@@ -10,17 +10,16 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace FluorescenceFullAutomatic.Views.Ctr
+namespace FluorescenceFullAutomatic.Views
 {
     /// <summary>
-    /// HiltDialog.xaml 的交互逻辑
+    /// NoTitleWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class HiltDialog : UserControl
+    public partial class NoTitleWindow : Window
     {
-        public HiltDialog()
+        public NoTitleWindow()
         {
             InitializeComponent();
         }

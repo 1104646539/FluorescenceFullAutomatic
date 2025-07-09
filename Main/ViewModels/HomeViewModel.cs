@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using ControlzEx.Standard;
 using FluorescenceFullAutomatic.Config;
 using FluorescenceFullAutomatic.Ex;
 using FluorescenceFullAutomatic.Model;
@@ -19,16 +20,18 @@ using FluorescenceFullAutomatic.Services;
 using FluorescenceFullAutomatic.Sql;
 using FluorescenceFullAutomatic.Upload;
 using FluorescenceFullAutomatic.Utils;
+using FluorescenceFullAutomatic.ViewModels;
 using FluorescenceFullAutomatic.Views;
 using FluorescenceFullAutomatic.Views.Ctr;
-using FluorescenceFullAutomatic.ViewModels;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using Main.Upload;
 using MaterialDesignThemes.Wpf;
 using Newtonsoft.Json;
+using Prism.Services.Dialogs;
 using Serilog;
 using Spire.Pdf;
+using Spire.Pdf.Exporting.XPS.Schema.Mc;
 using SqlSugar;
 using static Main.Upload.Hl7Result;
 using Point = FluorescenceFullAutomatic.Model.Point;
@@ -54,6 +57,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         [ObservableProperty]
         public SampleShelfViewModel sampleShelfViewModel;
+
         //public IDialogCoordinator dialogCoordinator;
 
         /// <summary>
@@ -258,10 +262,12 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// 检测结束要显示的提示
         /// </summary>
         string TestFinishedHiltMsg = "";
+
         /// <summary>
         /// 是否因为自检结束而获取仪器状态
         /// </summary>
         private bool IsSelfMachineGetMachineState = false;
+
         /// <summary>
         /// 是否因为移动样本而获取仪器状态
         /// </summary>
@@ -327,7 +333,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         [ObservableProperty]
         private string imgCleanout;
-
+        Prism.Services.Dialogs.IDialogService dialogService;
         #endregion
         public HomeViewModel(
             ISerialPortService serialPortService,
@@ -336,6 +342,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             IDispatcherService dispatcherService
         )
         {
+            this.dialogService = dialogService;
             this.serialPortService = serialPortService;
             this.homeService = homeService;
             this.configService = configService;
@@ -356,36 +363,27 @@ namespace FluorescenceFullAutomatic.ViewModels
             Test();
         }
 
-        private void Test()
-        {
-          
-        }
+        private void Test() { }
 
         [RelayCommand]
         public void ClickTest1()
         {
-           
+    
         }
 
         [RelayCommand]
-        public void ClickTest2()
+        public async void ClickTest2()
         {
-           
-            
+          
         }
 
-        [RelayCommand]
-        public void ClickTest3()
-        {
  
-        }
 
         [RelayCommand]
-        public void ClickTest4()
-        {
-           
-        }
+        public void ClickTest3() { }
 
+        [RelayCommand]
+        public void ClickTest4() { }
 
         public void GetDeviceInfos()
         {
@@ -636,10 +634,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         }
 
         [RelayCommand]
-        public void Insert()
-        {
-     
-        }
+        public void Insert() { }
 
         private void RefreshAdd(int id)
         {
@@ -664,10 +659,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         }
 
         [RelayCommand]
-        public void ShowDialog()
-        {
-          
-        }
+        public void ShowDialog() { }
 
         /// <summary>
         /// 检查是否为正常检测类型
@@ -695,7 +687,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             IsTestGetSelfMachineState = false;
             SelfInspectionFinished = true;
             Log.Information($"接收到 自检: {JsonConvert.SerializeObject(model)}");
-            await CloseSelfMachineDialog();
+            CloseSelfMachineDialog();
 
             StartGetReactionTempTask();
             string error = JoinSelfMachineError(model.Data);
@@ -758,7 +750,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             {
                 return "";
             }
-            
+
             // 将代号转换为实际错误信息，并格式化输出
             var errorMessages = data.Select(item =>
                     $"错误代码：{item}，错误信息：{configService.GetString($"error_{item}")}"
@@ -800,8 +792,8 @@ namespace FluorescenceFullAutomatic.ViewModels
             Log.Information(
                 $"接收到 仪器状态: {JsonConvert.SerializeObject(model)} SampleCurrentPos={SampleCurrentPos} IsFirstGetMachineState={IsFirstGetMachineState} IsPushCardGetMachineState={IsPushCardGetMachineState} IsMoveSampleGetMachineState={IsMoveSampleGetMachineState}"
             );
-            
-            if (IsFirstGetMachineState)  // 点击开始后第一次获取仪器状态
+
+            if (IsFirstGetMachineState) // 点击开始后第一次获取仪器状态
             {
                 ParseMachineStatus(model.Data);
                 //如果仪器状态正常（卡仓存在，卡仓有卡，清洗液存在，样本架存在）,
@@ -1308,12 +1300,14 @@ namespace FluorescenceFullAutomatic.ViewModels
                         {
                             applyTest.Patient.InspectDate = DateTime.Now;
                             Patient patientTemp = applyTest.Patient;
-                            int patientId =  homeService.InsertPatient(patientTemp);
+                            int patientId = homeService.InsertPatient(patientTemp);
                             patientTemp.Id = patientId;
                             applyTest.PatientId = patientId;
                             applyTest.ApplyTestType = ApplyTestType.TestEnd;
                             int applyTestId = homeService.InsertApplyTest(applyTest);
-                            Log.Information($"插入了 patient={patientId} applyTestId={applyTestId}");
+                            Log.Information(
+                                $"插入了 patient={patientId} applyTestId={applyTestId}"
+                            );
                             UpdateTestResultForId(
                                 tr.Id,
                                 (item) =>
@@ -1389,9 +1383,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
 
             homeService.UpdateTestResult(func(testResult));
-        
         }
-
 
         /// <summary>
         /// 更新这排样本管内的检测结果
@@ -1654,7 +1646,8 @@ namespace FluorescenceFullAutomatic.ViewModels
                 TestFinishedHiltMsg = "取样结束。";
                 TestFinishedAction();
             }
-            else if (homeService.ReactionAreaQueueCount() == 29) {//反应区是否已经满了,29+当前这个
+            else if (homeService.ReactionAreaQueueCount() == 29)
+            { //反应区是否已经满了,29+当前这个
                 Log.Information("反应区已满，暂时结束检测");
                 restoreMoveSampleNextGetMachineState = true;
             }
@@ -1997,11 +1990,12 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
             IsTesting = false;
         }
+
         /// <summary>
         /// 单个样本检测完毕
         /// 1、上传
         /// 2、打印
-        /// 
+        ///
         /// </summary>
         /// <param name="temp"></param>
         private void SingleSampleTestFinished(TestResult temp)
@@ -2009,15 +2003,22 @@ namespace FluorescenceFullAutomatic.ViewModels
             AutoUpload(temp);
             AutoPrint(temp);
         }
+
         /// <summary>
         /// 自动打印检测结果
         /// </summary>
         /// <param name="temp"></param>
         private void AutoPrint(TestResult temp)
         {
-            homeService.AutoPrintReport(temp, configService.IsAutoPrintA4Report(),false, configService.IsAutoPrintTicket(), configService.GetPrinterName());
-            
+            homeService.AutoPrintReport(
+                temp,
+                configService.IsAutoPrintA4Report(),
+                false,
+                configService.IsAutoPrintTicket(),
+                configService.GetPrinterName()
+            );
         }
+
         /// <summary>
         /// 自动上传检测结果
         /// </summary>
@@ -2025,12 +2026,13 @@ namespace FluorescenceFullAutomatic.ViewModels
         private void AutoUpload(TestResult temp)
         {
             //已连接并且自动上传已开启
-            if (homeService.Hl7NeedAutoUpload()) {
-                dispatcherService.InvokeAsync(async() =>
+            if (homeService.Hl7NeedAutoUpload())
+            {
+                dispatcherService.InvokeAsync(async () =>
                 {
                     Log.Information($"开始上传: {temp.Id}");
                     //上传检测结果
-                    UploadResult ur =  await homeService.UploadTestResultAsync(temp);
+                    UploadResult ur = await homeService.UploadTestResultAsync(temp);
                     if (ur != null && ur.ResultType == UploadResultType.Success)
                     {
                         Log.Information($"上传检测结果成功: {ur?.TestResultId}");
@@ -2046,12 +2048,14 @@ namespace FluorescenceFullAutomatic.ViewModels
                                 }
                             );
                         });
-                      
+
                         RefreshChange(ur.TestResultId);
                     }
                     else
                     {
-                        Log.Information($"上传检测结果失败: {ur?.TestResultId} {JsonConvert.SerializeObject(temp)}");
+                        Log.Information(
+                            $"上传检测结果失败: {ur?.TestResultId} {JsonConvert.SerializeObject(temp)}"
+                        );
                     }
                 });
             }

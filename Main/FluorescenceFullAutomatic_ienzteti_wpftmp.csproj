@@ -1,0 +1,579 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\Costura.Fody.4.1.0\build\Costura.Fody.props" Condition="Exists('packages\Costura.Fody.4.1.0\build\Costura.Fody.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Version>1.0.520.0</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BC56B4BA-C323-4946-9C45-CB22DC34337F}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>FluorescenceFullAutomatic</RootNamespace>
+    <AssemblyName>全自动荧光免疫定量分析仪</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <LangVersion>8.0</LangVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowedReferenceRelatedFileExtensions>.allowedextension</AllowedReferenceRelatedFileExtensions>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowedReferenceRelatedFileExtensions>.allowedextension</AllowedReferenceRelatedFileExtensions>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>FluorescenceFullAutomatic.App</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attached\TextBoxAttachedProperties.cs" />
+    <Compile Include="Behaviors\ScrollViewerExtensions.cs" />
+    <Compile Include="Config\ConnectConfig.cs" />
+    <Compile Include="Config\UploadConfig.cs" />
+    <Compile Include="Config\JsonConfigBase.cs" />
+    <Compile Include="Config\GlobalConfig.cs" />
+    <Compile Include="Config\MachineStatus.cs" />
+    <Compile Include="Config\QCCard.cs" />
+    <Compile Include="Config\SerialGlobal.cs" />
+    <Compile Include="Config\SystemGlobal.cs" />
+    <Compile Include="Config\TestType.cs" />
+    <Compile Include="Converters\BooleanToCheckedInverseConverter.cs" />
+    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\DoubleValidationConverter.cs" />
+    <Compile Include="Converters\EnumDescriptionConverter.cs" />
+    <Compile Include="Converters\EnumToStringConverter.cs" />
+    <Compile Include="Converters\IntValidationConverter.cs" />
+    <Compile Include="Converters\BooleanToVisibilityInverseConverter.cs" />
+    <Compile Include="Converters\DateTimeToStringConvert.cs" />
+    <Compile Include="Converters\IntArrayToStringConvert.cs" />
+    <Compile Include="Converters\InverseBooleanConverter.cs" />
+    <Compile Include="Converters\MaxHeightConverter.cs" />
+    <Compile Include="Converters\ReactionAreaProjectTypeToVisibilityConverter.cs" />
+    <Compile Include="Converters\ResultToImageConverter.cs" />
+    <Compile Include="Converters\SafePatientPropertyConverter.cs" />
+    <Compile Include="Converters\StringToDefaultConverter.cs" />
+    <Compile Include="Converters\TestResultStateConverter .cs" />
+    <Compile Include="Converters\SampleItemNumConverter.cs" />
+    <Compile Include="Converters\SampleItemResultConverter.cs" />
+    <Compile Include="Converters\SampleItemBarcodeConverter.cs" />
+    <Compile Include="Converters\SampleItemStateConverter.cs" />
+    <Compile Include="Ex\DateTimeEx.cs" />
+    <Compile Include="Ex\EnumEx.cs" />
+    <Compile Include="Model\AddingSampleModel.cs" />
+    <Compile Include="Model\ApplyTest.cs" />
+    <Compile Include="Model\BaseResponseModel.cs" />
+    <Compile Include="Model\CleanoutFluidModel.cs" />
+    <Compile Include="Model\CleanoutSamplingProbeModel.cs" />
+    <Compile Include="Model\ClearReactionAreaModel.cs" />
+    <Compile Include="Model\ConditionModel.cs" />
+    <Compile Include="Model\DataChangeMsg.cs" />
+    <Compile Include="Model\DrainageModel.cs" />
+    <Compile Include="Model\ExportType.cs" />
+    <Compile Include="Model\MachineStatusModel.cs" />
+    <Compile Include="Model\MainStatusChangeMsg.cs" />
+    <Compile Include="Model\MotorModel.cs" />
+    <Compile Include="Model\MoveReactionAreaModel.cs" />
+    <Compile Include="Model\MoveSampleModel.cs" />
+    <Compile Include="Model\MoveSampleShelfModel.cs" />
+    <Compile Include="Model\NavItem.cs" />
+    <Compile Include="Model\Patient.cs" />
+    <Compile Include="Model\PiercedModel.cs" />
+    <Compile Include="Model\Point.cs" />
+    <Compile Include="Model\Project.cs" />
+    <Compile Include="Model\PushCardModel.cs" />
+    <Compile Include="Model\ReactionTempModel.cs" />
+    <Compile Include="Model\ResetParamsModel.cs" />
+    <Compile Include="Model\ResultState.cs" />
+    <Compile Include="Model\RunningLogModel.cs" />
+    <Compile Include="Model\SampleItem.cs" />
+    <Compile Include="Model\ShutdownModel.cs" />
+    <Compile Include="Model\SqlVersion.cs" />
+    <Compile Include="Model\TestResult.cs" />
+    <Compile Include="Model\SamleShelfModel.cs" />
+    <Compile Include="Model\SamplingModel.cs" />
+    <Compile Include="Model\SqueezingModel.cs" />
+    <Compile Include="Model\TestModel.cs" />
+    <Compile Include="Model\UpdateModel.cs" />
+    <Compile Include="Model\ReactionAreaItem.cs" />
+    <Compile Include="Model\VersionModel.cs" />
+    <Compile Include="Repositorys\IApplyTestRepository.cs" />
+    <Compile Include="Repositorys\IConfigRepository.cs" />
+    <Compile Include="Repositorys\IDialogRepository.cs" />
+    <Compile Include="Repositorys\IExportExcelRepository.cs" />
+    <Compile Include="Repositorys\ILisRepository.cs" />
+    <Compile Include="Repositorys\IPatientRepository.cs" />
+    <Compile Include="Repositorys\IPointRepository.cs" />
+    <Compile Include="Repositorys\IPrintRepository.cs" />
+    <Compile Include="Repositorys\IProjectRepository.cs" />
+    <Compile Include="Repositorys\ITestResultRepository.cs" />
+    <Compile Include="Repositorys\IToolRepository.cs" />
+    <Compile Include="Repositorys\IUploadConfigRepository.cs" />
+    <Compile Include="Repositorys\IReactionAreaQueueRepository.cs" />
+    <Compile Include="Services\IApplyTestService.cs" />
+    <Compile Include="Services\IConfigService.cs" />
+    <Compile Include="Services\IDataManagerService.cs" />
+    <Compile Include="Services\IDialogService.cs" />
+    <Compile Include="Services\IDispatcherService.cs" />
+    <Compile Include="Services\IExcelExportService.cs" />
+    <Compile Include="Services\IHomeService.cs" />
+    <Compile Include="Services\ILisService.cs" />
+    <Compile Include="Services\IProjectService.cs" />
+    <Compile Include="Services\IQCService.cs" />
+    <Compile Include="Services\IRunningLogService.cs" />
+    <Compile Include="Services\ISerialPortService.cs" />
+    <Compile Include="Services\ISettingsService.cs" />
+    <Compile Include="Services\IUploadService.cs" />
+    <Compile Include="Sql\DB.cs" />
+    <Compile Include="Sql\SqlHelper.cs" />
+    <Compile Include="Upload\BaseCommunicationService.cs" />
+    <Compile Include="Upload\HL7CommunicationFactory.cs" />
+    <Compile Include="Upload\HL7ConfigService.cs" />
+    <Compile Include="Upload\HL7Helper.cs" />
+    <Compile Include="Upload\HL7MessageBuilder.cs" />
+    <Compile Include="Upload\Hl7Result.cs" />
+    <Compile Include="Upload\IHL7CommunicationService.cs" />
+    <Compile Include="Upload\MLLPProtocol.cs" />
+    <Compile Include="Upload\SerialCommunicationService.cs" />
+    <Compile Include="Upload\TcpCommunicationService.cs" />
+    <Compile Include="Upload\UploadUtil.cs" />
+    <Compile Include="Utils\BarcodeHelper.cs" />
+    <Compile Include="Utils\CRC16.cs" />
+    <Compile Include="Utils\EventMsg.cs" />
+    <Compile Include="Utils\EventWhat.cs" />
+    <Compile Include="Utils\FakaBarcodeSerialPort.cs" />
+    <Compile Include="Utils\FakaTicketSerialPort.cs" />
+    <Compile Include="Utils\FakeSerialPortImpl.cs" />
+    <Compile Include="Utils\GlobalUtil.cs" />
+    <Compile Include="Utils\ISerialPort.cs" />
+    <Compile Include="Utils\IReceiveData.cs" />
+    <Compile Include="Utils\Keys.cs" />
+    <Compile Include="Utils\TicketReportUtil.cs" />
+    <Compile Include="Utils\ReactionAreaQueue.cs" />
+    <Compile Include="Utils\A4ReportUtil.cs" />
+    <Compile Include="Utils\SerialPortImpl.cs" />
+    <Compile Include="Utils\SerialPortHelper.cs" />
+    <Compile Include="Utils\SerialUtils.cs" />
+    <Compile Include="ViewModels\ApplyTestViewModel.cs" />
+    <Compile Include="ViewModels\DataManagerViewModel.cs" />
+    <Compile Include="ViewModels\DebugViewModel.cs" />
+    <Compile Include="ViewModels\DialogViewModel.cs" />
+    <Compile Include="ViewModels\FilterConditionViewModel.cs" />
+    <Compile Include="ViewModels\GetApplyTestDialogViewModel.cs" />
+    <Compile Include="ViewModels\ProgressDialogViewModel.cs" />
+    <Compile Include="ViewModels\HomeViewModel.cs" />
+    <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\MenuItemViewModel.cs" />
+    <Compile Include="ViewModels\ProjectDetailsViewModel.cs" />
+    <Compile Include="ViewModels\QCViewModel.cs" />
+    <Compile Include="ViewModels\RunningLogViewModel.cs" />
+    <Compile Include="ViewModels\SettingsViewModel.cs" />
+    <Compile Include="ViewModels\TestSettingsViewModel.cs" />
+    <Compile Include="ViewModels\UploadSettingsViewModel.cs" />
+    <Compile Include="ViewModels\VersionViewModel.cs" />
+    <Compile Include="Views\ApplyTestView.xaml.cs">
+      <DependentUpon>ApplyTestView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Ctr\ButtonPopupHelper.cs" />
+    <Compile Include="Views\Ctr\FilterConditionControl.xaml.cs">
+      <DependentUpon>FilterConditionControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Ctr\GetApplyTestDialog.xaml.cs">
+      <DependentUpon>GetApplyTestDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Ctr\ProgressDialog.xaml.cs">
+      <DependentUpon>ProgressDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DialogWindow.xaml.cs">
+      <DependentUpon>DialogWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Ctr\ProjectDetailsControl.xaml.cs">
+      <DependentUpon>ProjectDetailsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\NoTitleWindow.xaml.cs">
+      <DependentUpon>NoTitleWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\QCView.xaml.cs">
+      <DependentUpon>QCView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RunningLogView.xaml.cs">
+      <DependentUpon>RunningLogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SettingsView.xaml.cs">
+      <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TestSettingsView.xaml.cs">
+      <DependentUpon>TestSettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\UploadSettingsView.xaml.cs">
+      <DependentUpon>UploadSettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\VersionView.xaml.cs">
+      <DependentUpon>VersionView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewModels\ProjectListViewModel.cs" />
+    <Compile Include="ViewModels\PagingControlViewModel.cs" />
+    <Compile Include="Views\Ctr\HintDialog.xaml.cs">
+      <DependentUpon>HintDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\HintDialogViewModel.cs" />
+    <Compile Include="Views\ProjectListView.xaml.cs">
+      <DependentUpon>ProjectListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Ctr\ResultDetailsControl.xaml.cs">
+      <DependentUpon>ResultDetailsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\ResultDetailsViewModel.cs" />
+    <Compile Include="Views\Ctr\SampleShelfControl.xaml.cs">
+      <DependentUpon>SampleShelfControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\SampleShelfViewModel.cs" />
+    <Compile Include="Views\Ctr\ReactionAreaControl.xaml.cs">
+      <DependentUpon>ReactionAreaControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\ReactionAreaViewModel.cs" />
+    <Compile Include="Views\DataManagerView.xaml.cs">
+      <DependentUpon>DataManagerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DebugView.xaml.cs">
+      <DependentUpon>DebugView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\HomeView.xaml.cs">
+      <DependentUpon>HomeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\Ctr\PagingControl.xaml.cs">
+      <DependentUpon>PagingControl.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="FodyWeavers.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="OpenTK.dll.config" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="template\A4-双联卡.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="template\A4.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="template\双联卡模板.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="template\模板.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Components\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="packages\CommunityToolkit.Mvvm.8.2.2\analyzers\dotnet\roslyn4.0\cs\CommunityToolkit.Mvvm.CodeFixers.dll" />
+    <Analyzer Include="packages\CommunityToolkit.Mvvm.8.2.2\analyzers\dotnet\roslyn4.0\cs\CommunityToolkit.Mvvm.SourceGenerators.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Dll\Spire.License.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Dll\Spire.Pdf.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Dll\System.Data.SQLite.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x64\SQLite.Interop.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\SQLite.Interop.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="packages\CommunityToolkit.Mvvm.8.2.2\build\netstandard2.0\CommunityToolkit.Mvvm.targets" Condition="Exists('packages\CommunityToolkit.Mvvm.8.2.2\build\netstandard2.0\CommunityToolkit.Mvvm.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>
+      </ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\CommunityToolkit.Mvvm.8.2.2\build\netstandard2.0\CommunityToolkit.Mvvm.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\CommunityToolkit.Mvvm.8.2.2\build\netstandard2.0\CommunityToolkit.Mvvm.targets'))" />
+    <Error Condition="!Exists('packages\MaterialDesignThemes.5.2.1\build\MaterialDesignThemes.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\MaterialDesignThemes.5.2.1\build\MaterialDesignThemes.targets'))" />
+    <Error Condition="!Exists('packages\HarfBuzzSharp.NativeAssets.macOS.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.macOS.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\HarfBuzzSharp.NativeAssets.macOS.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.macOS.targets'))" />
+    <Error Condition="!Exists('packages\HarfBuzzSharp.NativeAssets.Win32.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.Win32.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\HarfBuzzSharp.NativeAssets.Win32.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.Win32.targets'))" />
+    <Error Condition="!Exists('packages\SkiaSharp.NativeAssets.macOS.2.88.9\build\net462\SkiaSharp.NativeAssets.macOS.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\SkiaSharp.NativeAssets.macOS.2.88.9\build\net462\SkiaSharp.NativeAssets.macOS.targets'))" />
+    <Error Condition="!Exists('packages\SkiaSharp.NativeAssets.Win32.2.88.9\build\net462\SkiaSharp.NativeAssets.Win32.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\SkiaSharp.NativeAssets.Win32.2.88.9\build\net462\SkiaSharp.NativeAssets.Win32.targets'))" />
+    <Error Condition="!Exists('packages\HarfBuzzSharp.NativeAssets.Linux.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.Linux.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\HarfBuzzSharp.NativeAssets.Linux.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.Linux.targets'))" />
+    <Error Condition="!Exists('packages\SkiaSharp.NativeAssets.Linux.NoDependencies.2.88.9\build\net462\SkiaSharp.NativeAssets.Linux.NoDependencies.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\SkiaSharp.NativeAssets.Linux.NoDependencies.2.88.9\build\net462\SkiaSharp.NativeAssets.Linux.NoDependencies.targets'))" />
+    <Error Condition="!Exists('packages\Fody.6.8.2\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Fody.6.8.2\build\Fody.targets'))" />
+    <Error Condition="!Exists('packages\Costura.Fody.4.1.0\build\Costura.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Costura.Fody.4.1.0\build\Costura.Fody.props'))" />
+  </Target>
+  <Import Project="packages\MaterialDesignThemes.5.2.1\build\MaterialDesignThemes.targets" Condition="Exists('packages\MaterialDesignThemes.5.2.1\build\MaterialDesignThemes.targets')" />
+  <Import Project="packages\HarfBuzzSharp.NativeAssets.macOS.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.macOS.targets" Condition="Exists('packages\HarfBuzzSharp.NativeAssets.macOS.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.macOS.targets')" />
+  <Import Project="packages\HarfBuzzSharp.NativeAssets.Win32.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.Win32.targets" Condition="Exists('packages\HarfBuzzSharp.NativeAssets.Win32.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.Win32.targets')" />
+  <Import Project="packages\SkiaSharp.NativeAssets.macOS.2.88.9\build\net462\SkiaSharp.NativeAssets.macOS.targets" Condition="Exists('packages\SkiaSharp.NativeAssets.macOS.2.88.9\build\net462\SkiaSharp.NativeAssets.macOS.targets')" />
+  <Import Project="packages\SkiaSharp.NativeAssets.Win32.2.88.9\build\net462\SkiaSharp.NativeAssets.Win32.targets" Condition="Exists('packages\SkiaSharp.NativeAssets.Win32.2.88.9\build\net462\SkiaSharp.NativeAssets.Win32.targets')" />
+  <Import Project="packages\HarfBuzzSharp.NativeAssets.Linux.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.Linux.targets" Condition="Exists('packages\HarfBuzzSharp.NativeAssets.Linux.7.3.0.3\build\net462\HarfBuzzSharp.NativeAssets.Linux.targets')" />
+  <Import Project="packages\SkiaSharp.NativeAssets.Linux.NoDependencies.2.88.9\build\net462\SkiaSharp.NativeAssets.Linux.NoDependencies.targets" Condition="Exists('packages\SkiaSharp.NativeAssets.Linux.NoDependencies.2.88.9\build\net462\SkiaSharp.NativeAssets.Linux.NoDependencies.targets')" />
+  <Import Project="packages\Fody.6.8.2\build\Fody.targets" Condition="Exists('packages\Fody.6.8.2\build\Fody.targets')" />
+  <ItemGroup>
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\BouncyCastle.Cryptography.2.3.1\lib\net461\BouncyCastle.Cryptography.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\CommunityToolkit.Mvvm.8.2.2\lib\netstandard2.0\CommunityToolkit.Mvvm.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\ControlzEx.4.4.0\lib\net462\ControlzEx.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Costura.Fody.4.1.0\lib\net40\Costura.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Enums.NET.4.0.1\lib\net45\Enums.NET.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\ExtendedNumerics.BigDecimal.2025.1001.2.129\lib\net472\ExtendedNumerics.BigDecimal.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\OpenTK.GLWpfControl.3.3.0\lib\net452\GLWpfControl.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\HarfBuzzSharp.7.3.0.3\lib\net462\HarfBuzzSharp.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\SharpZipLib.1.4.2\lib\netstandard2.0\ICSharpCode.SharpZipLib.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\ini-parser.2.5.2\lib\net20\INIFileParser.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.2.4.10\lib\net47\MahApps.Metro.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.BootstrapIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.BootstrapIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.BoxIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.BoxIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.CircumIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.CircumIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Codicons.5.1.0\lib\net47\MahApps.Metro.IconPacks.Codicons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Coolicons.5.1.0\lib\net47\MahApps.Metro.IconPacks.Coolicons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Core.5.1.0\lib\net47\MahApps.Metro.IconPacks.Core.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.5.1.0\lib\net47\MahApps.Metro.IconPacks.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Entypo.5.1.0\lib\net47\MahApps.Metro.IconPacks.Entypo.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.EvaIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.EvaIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.FeatherIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.FeatherIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.FileIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.FileIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Fontaudio.5.1.0\lib\net47\MahApps.Metro.IconPacks.Fontaudio.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.FontAwesome.5.1.0\lib\net47\MahApps.Metro.IconPacks.FontAwesome.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Fontisto.5.1.0\lib\net47\MahApps.Metro.IconPacks.Fontisto.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.ForkAwesome.5.1.0\lib\net47\MahApps.Metro.IconPacks.ForkAwesome.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.GameIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.GameIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Ionicons.5.1.0\lib\net47\MahApps.Metro.IconPacks.Ionicons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.JamIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.JamIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Lucide.5.1.0\lib\net47\MahApps.Metro.IconPacks.Lucide.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Material.5.1.0\lib\net47\MahApps.Metro.IconPacks.Material.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.MaterialDesign.5.1.0\lib\net47\MahApps.Metro.IconPacks.MaterialDesign.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.MaterialLight.5.1.0\lib\net47\MahApps.Metro.IconPacks.MaterialLight.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.MemoryIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.MemoryIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Microns.5.1.0\lib\net47\MahApps.Metro.IconPacks.Microns.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Modern.5.1.0\lib\net47\MahApps.Metro.IconPacks.Modern.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Octicons.5.1.0\lib\net47\MahApps.Metro.IconPacks.Octicons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.PhosphorIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.PhosphorIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.PicolIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.PicolIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.PixelartIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.PixelartIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.RadixIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.RadixIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.RemixIcon.5.1.0\lib\net47\MahApps.Metro.IconPacks.RemixIcon.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.RPGAwesome.5.1.0\lib\net47\MahApps.Metro.IconPacks.RPGAwesome.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.SimpleIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.SimpleIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Typicons.5.1.0\lib\net47\MahApps.Metro.IconPacks.Typicons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Unicons.5.1.0\lib\net47\MahApps.Metro.IconPacks.Unicons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.VaadinIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.VaadinIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.WeatherIcons.5.1.0\lib\net47\MahApps.Metro.IconPacks.WeatherIcons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MahApps.Metro.IconPacks.Zondicons.5.1.0\lib\net47\MahApps.Metro.IconPacks.Zondicons.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MaterialDesignColors.5.2.1\lib\net462\MaterialDesignColors.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MaterialDesignThemes.MahApps.5.2.1\lib\net462\MaterialDesignThemes.MahApps.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MaterialDesignThemes.5.2.1\lib\net462\MaterialDesignThemes.Wpf.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\MathNet.Numerics.Signed.5.0.0\lib\net461\MathNet.Numerics.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Microsoft.Bcl.AsyncInterfaces.9.0.4\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\Microsoft.CSharp.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Expression.Interaction.3.0.40218.0\lib\net46\Microsoft.Expression.Interactions.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Microsoft.IO.RecyclableMemoryStream.3.0.0\lib\netstandard2.0\Microsoft.IO.RecyclableMemoryStream.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Microsoft.Xaml.Behaviors.Wpf.1.1.39\lib\net45\Microsoft.Xaml.Behaviors.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\mscorlib.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\nhapi.base.3.2.3\lib\net35\NHapi.Base.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\nhapi.model.v21.3.2.0\lib\net35\NHapi.Model.V21.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\nhapi.model.v22.3.2.0\lib\net35\NHapi.Model.V22.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\nhapi.model.v23.3.2.0\lib\net35\NHapi.Model.V23.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\nhapi.model.v231.3.2.4\lib\net35\NHapi.Model.V231.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\nhapi.model.v24.3.2.0\lib\net35\NHapi.Model.V24.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\nhapi.model.v25.3.2.0\lib\net35\NHapi.Model.V25.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\nhapi.model.v251.3.2.0\lib\net35\NHapi.Model.V251.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\nhapi.model.v26.3.2.0\lib\net35\NHapi.Model.V26.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\nhapi.model.v27.3.2.0\lib\net35\NHapi.Model.V27.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\nhapi.model.v271.3.2.0\lib\net35\NHapi.Model.V271.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\nhapi.model.v28.3.2.0\lib\net35\NHapi.Model.V28.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\nhapi.model.v281.3.2.0\lib\net35\NHapi.Model.V281.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NHapiTools.2.0.4\lib\net461\NHapiTools.Base.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NHapiTools.2.0.4\lib\net461\NHapiTools.Model.V21.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NHapiTools.2.0.4\lib\net461\NHapiTools.Model.V22.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NHapiTools.2.0.4\lib\net461\NHapiTools.Model.V23.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NHapiTools.2.0.4\lib\net461\NHapiTools.Model.V231.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NHapiTools.2.0.4\lib\net461\NHapiTools.Model.V24.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NHapiTools.2.0.4\lib\net461\NHapiTools.Model.V25.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NHapiTools.2.0.4\lib\net461\NHapiTools.Model.V251.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NHapiTools.2.0.4\lib\net461\NHapiTools.Model.V26.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NHapiTools.2.0.4\lib\net461\NHapiTools.Model.V27.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NHapiTools.2.0.4\lib\net461\NHapiTools.Model.V271.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NHapiTools.2.0.4\lib\net461\NHapiTools.Model.V28.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NHapiTools.2.0.4\lib\net461\NHapiTools.Model.V281.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NPOI.2.7.3\lib\net472\NPOI.Core.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NPOI.2.7.3\lib\net472\NPOI.OOXML.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NPOI.2.7.3\lib\net472\NPOI.OpenXml4Net.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\NPOI.2.7.3\lib\net472\NPOI.OpenXmlFormats.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\OpenTK.3.3.1\lib\net20\OpenTK.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\PresentationCore.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\PresentationFramework.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Prism.Core.8.1.97\lib\net47\Prism.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Prism.Unity.8.1.97\lib\net47\Prism.Unity.Wpf.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Prism.Wpf.8.1.97\lib\net47\Prism.Wpf.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\ScottPlot.5.0.55\lib\net462\ScottPlot.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\ScottPlot.WPF.5.0.55\lib\net462\ScottPlot.WPF.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Serilog.4.2.0\lib\net471\Serilog.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Serilog.Sinks.Console.6.0.0\lib\net471\Serilog.Sinks.Console.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Serilog.Sinks.File.6.0.0\lib\net471\Serilog.Sinks.File.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\SixLabors.Fonts.1.0.1\lib\netstandard2.0\SixLabors.Fonts.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\SixLabors.ImageSharp.2.1.10\lib\net472\SixLabors.ImageSharp.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\SkiaSharp.2.88.9\lib\net462\SkiaSharp.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\SkiaSharp.HarfBuzz.2.88.9\lib\net462\SkiaSharp.HarfBuzz.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\SkiaSharp.Views.Desktop.Common.2.88.9\lib\net462\SkiaSharp.Views.Desktop.Common.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\SkiaSharp.Views.WPF.2.88.9\lib\net462\SkiaSharp.Views.WPF.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\Dll\Spire.License.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\Dll\Spire.Pdf.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\Dll\Spire.XLS.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\SqlSugar.5.1.4.188\lib\SqlSugar.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Buffers.4.6.0\lib\net462\System.Buffers.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.ComponentModel.Annotations.5.0.0\lib\net461\System.ComponentModel.Annotations.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.ComponentModel.DataAnnotations.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Configuration.ConfigurationManager.6.0.0\lib\net461\System.Configuration.ConfigurationManager.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Configuration.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Core.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Data.DataSetExtensions.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Data.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Data.OracleClient.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Diagnostics.DiagnosticSource.8.0.1\lib\net462\System.Diagnostics.DiagnosticSource.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Drawing.Common.4.7.3\lib\net461\System.Drawing.Common.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Drawing.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Memory.4.6.0\lib\net462\System.Memory.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Net.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Net.Http.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Numerics.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Numerics.Vectors.4.6.0\lib\net462\System.Numerics.Vectors.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Runtime.CompilerServices.Unsafe.6.1.0\lib\net462\System.Runtime.CompilerServices.Unsafe.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Security.AccessControl.6.0.0\lib\net461\System.Security.AccessControl.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Security.Cryptography.Pkcs.8.0.1\lib\net462\System.Security.Cryptography.Pkcs.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Security.Cryptography.Xml.8.0.2\lib\net462\System.Security.Cryptography.Xml.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Security.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Security.Permissions.6.0.0\lib\net461\System.Security.Permissions.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.ServiceProcess.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Text.Encoding.CodePages.5.0.0\lib\net461\System.Text.Encoding.CodePages.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Threading.Channels.8.0.0\lib\net462\System.Threading.Channels.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Transactions.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Web.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Web.Extensions.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Expression.Interaction.3.0.40218.0\lib\net46\System.Windows.Interactivity.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Xaml.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Xml.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.Xml.Linq.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Unity.Abstractions.5.11.7\lib\net47\Unity.Abstractions.dll" />
+    <ReferencePath Include="J:\c#project\FluorescenceFullAutomatic\Main\packages\Unity.Container.5.11.11\lib\net47\Unity.Container.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\WindowsBase.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\Facades\netstandard.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\ApplyTestView.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\Ctr\FilterConditionControl.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\Ctr\GetApplyTestDialog.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\Ctr\HintDialog.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\Ctr\ProgressDialog.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\DialogWindow.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\Ctr\ProjectDetailsControl.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\NoTitleWindow.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\ProjectListView.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\Ctr\ResultDetailsControl.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\Ctr\SampleShelfControl.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\Ctr\ReactionAreaControl.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\Ctr\PagingControl.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\DataManagerView.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\DebugView.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\HomeView.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\MainWindow.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\QCView.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\RunningLogView.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\SettingsView.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\TestSettingsView.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\UploadSettingsView.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\Views\VersionView.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\App.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\全自动荧光免疫定量分析仪_Content.g.cs" />
+    <Compile Include="J:\c#project\FluorescenceFullAutomatic\Main\obj\Debug\GeneratedInternalTypeHelper.g.cs" />
+  </ItemGroup>
+</Project>

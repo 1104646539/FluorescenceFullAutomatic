@@ -1,12 +1,13 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="Title">全自动荧光</sys:String>
     <sys:String x:Key="HomeTitle">样本分析</sys:String>
     <sys:String x:Key="DataManagerTitle">数据管理</sys:String>
     <sys:String x:Key="ApplyTestTitle">申请测试</sys:String>
     <sys:String x:Key="ProjectListTitle">项目列表</sys:String>
-    <sys:String x:Key="SettingsTitle">设置</sys:String>
+    <sys:String x:Key="SettingsTitle">参数设置</sys:String>
     <sys:String x:Key="QCTitle">拟合质控</sys:String>
     <sys:String x:Key="DebugTitle">调试</sys:String>
     <sys:String x:Key="result_positive">阳性</sys:String>

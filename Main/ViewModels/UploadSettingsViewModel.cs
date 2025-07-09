@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FluorescenceFullAutomatic.Config;
+using FluorescenceFullAutomatic.Repositorys;
 using FluorescenceFullAutomatic.Services;
 using FluorescenceFullAutomatic.Utils;
 
@@ -77,9 +78,11 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private readonly IUploadService _uploadService;
 
-        public UploadSettingsViewModel(IUploadService uploadService)
+        private readonly IDialogRepository _dialogRepository;
+        public UploadSettingsViewModel(IUploadService uploadService,IDialogRepository dialogRepository  )
         {
             _uploadService = uploadService;
+            _dialogRepository = dialogRepository;
             LoadSettings();
             WeakReferenceMessenger.Default.Register<EventMsg<string>>(this, (r, m) =>
             {
@@ -138,7 +141,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 ServicePort
             );
 
-            GlobalUtil.ShowHiltDialog("提示", "设置已保存！", "确定", (m, d) => { });
+            _dialogRepository.ShowHiltDialog("提示", "设置已保存！", "确定", (m, d) => { });
         }
 
         [RelayCommand]
@@ -151,20 +154,20 @@ namespace FluorescenceFullAutomatic.ViewModels
                 {
                     IsConnected = true;
                     ConnectionStatus = "已连接";
-                    GlobalUtil.ShowHiltDialog("提示", "连接成功！", "确定", (m, d) => { });
+                    _dialogRepository.ShowHiltDialog("提示", "连接成功！", "确定", (m, d) => { });
                 }
                 else
                 {
                     IsConnected = false;
                     ConnectionStatus = "连接失败";
-                    GlobalUtil.ShowHiltDialog("错误", "连接失败", "确定", (m, d) => { });
+                    _dialogRepository.ShowHiltDialog("错误", "连接失败", "确定", (m, d) => { });
                 }
             }
             catch (Exception ex)
             {
                 IsConnected = false;
                 ConnectionStatus = "连接失败";
-                GlobalUtil.ShowHiltDialog("错误", $"连接失败：{ex.Message}", "确定", (m, d) => { });
+                _dialogRepository.ShowHiltDialog("错误", $"连接失败：{ex.Message}", "确定", (m, d) => { });
             }
         }
 
@@ -178,16 +181,16 @@ namespace FluorescenceFullAutomatic.ViewModels
                 {
                     IsConnected = false;
                     ConnectionStatus = "已断开";
-                    GlobalUtil.ShowHiltDialog("提示", "已断开连接！", "确定", (m, d) => { });
+                    _dialogRepository.ShowHiltDialog("提示", "已断开连接！", "确定", (m, d) => { });
                 }
                 else
                 {
-                    GlobalUtil.ShowHiltDialog("错误", "断开连接失败", "确定", (m, d) => { });
+                    _dialogRepository.ShowHiltDialog("错误", "断开连接失败", "确定", (m, d) => { });
                 }
             }
             catch (Exception ex)
             {
-                GlobalUtil.ShowHiltDialog("错误", $"断开连接失败：{ex.Message}", "确定", (m, d) => { });
+                    _dialogRepository.ShowHiltDialog("错误", $"断开连接失败：{ex.Message}", "确定", (m, d) => { });
             }
         }
     }

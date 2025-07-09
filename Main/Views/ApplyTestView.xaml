@@ -11,16 +11,20 @@
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="clr-namespace:FluorescenceFullAutomatic.Model"
+    xmlns:prism="http://prismlibrary.com/"
     xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
     Name="root"
     d:Background="White"
+    d:DataContext="{d:DesignInstance vm:ApplyTestViewModel}"
     d:DesignHeight="1080"
     d:DesignWidth="1800"
     mah:DialogParticipation.Register="{Binding}"
-    DataContext="{Binding ApplyTestViewModel, Source={StaticResource ServiceLocator}}"
+    prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d">
     <mah:MetroContentControl.Resources>
         <convert:EnumToStringConverter x:Key="EnumToStringConverter" />
+        <convert:EnumSelectedConverter x:Key="EnumSelectedConverter" />
         <Style x:Key="TextBlockLabelStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="16" />
             <Setter Property="Width" Value="90" />
@@ -60,7 +64,12 @@
             <!--  下方内容  -->
         </Grid.RowDefinitions>
         <!--  顶部状态选择区  -->
-        <ListBox
+        <StackPanel Orientation="Horizontal">
+            <RadioButton Content="待检测" IsChecked="{Binding SelectedFilterType, Converter={StaticResource EnumSelectedConverter}, ConverterParameter={x:Static model:ApplyTestType.WaitTest}}" />
+            <RadioButton Content="已检测" IsChecked="{Binding SelectedFilterType, Converter={StaticResource EnumSelectedConverter}, ConverterParameter={x:Static model:ApplyTestType.TestEnd}}" />
+            <RadioButton Content="全部" IsChecked="{Binding SelectedFilterType, Converter={StaticResource EnumSelectedConverter}, ConverterParameter={x:Static model:ApplyTestType.All}}" />
+        </StackPanel>
+        <!--<ListBox
             Grid.Row="0"
             Margin="20,10,0,10"
             ItemsSource="{Binding FilterTypes}"
@@ -78,10 +87,10 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         FontSize="18"
-                        Text="{Binding Converter={StaticResource EnumToStringConverter}}" />
+                        Text="{Binding Converter={StaticResource EnumToStringConverter},ConverterParameter={x:Static model:ApplyTestType.wa}}" />
                 </DataTemplate>
             </ListBox.ItemTemplate>
-        </ListBox>
+        </ListBox>-->
         <!--  下方左右分栏  -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -93,7 +102,7 @@
             <!--  左侧列表  -->
             <Grid Grid.Column="0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="716*" />
+                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="635*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>

@@ -7,11 +7,12 @@
     xmlns:local="clr-namespace:FluorescenceFullAutomatic.Views"
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:prism="http://prismlibrary.com/"
     Dialog:DialogParticipation.Register="{Binding}"
     d:Background="White"
     d:DesignHeight="1080"
     d:DesignWidth="1800"
-    DataContext="{Binding SettingsViewModel, Source={StaticResource ServiceLocator}}"
+    prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d">
     <mah:MetroContentControl.Resources>
         <!--  标签头部样式  -->
@@ -96,26 +97,12 @@
                 <TabItem.Header>
                     <TextBlock Style="{StaticResource TabHeaderStyle}" Text="调试" />
                 </TabItem.Header>
-                <Button Content="Button" Height="75" HorizontalAlignment="Left" Margin="27,12,0,0" Name="btnImgBrush" VerticalAlignment="Top" Width="160" Background="LightGray">
-                    <Button.Triggers>
-                        <EventTrigger RoutedEvent="Button.MouseLeave">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <ColorAnimation To="Green" 
-                                    Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" 
-                                    FillBehavior="Stop" 
-                                    Duration="0:0:1"/>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                    </Button.Triggers>
-                </Button>
-                <!--<Grid Margin="10">
+                <Grid Margin="10">
                     <Button
                         Height="60"
                         Command="{Binding ClickDebugCommand}"
                         Content="调试" />
-                </Grid>-->
+                </Grid>
             </TabItem>
             <!--  版本信息  -->
             <TabItem Style="{StaticResource SettingsTabItem}">

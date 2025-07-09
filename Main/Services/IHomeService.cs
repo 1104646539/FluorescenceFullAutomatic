@@ -43,11 +43,11 @@ namespace FluorescenceFullAutomatic.Services
       string title,
       string msg,
       string confirmText,
-      Action<HiltDialogViewModel, CustomDialog> actionConfirm,
+      Action<HintDialogViewModel, CustomDialog> actionConfirm,
       string cancelText = null,
-      Action<HiltDialogViewModel, CustomDialog> actionCancel = null,
+      Action<HintDialogViewModel, CustomDialog> actionCancel = null,
       string closeText = null,
-      Action<HiltDialogViewModel, CustomDialog> actionClose = null,
+      Action<HintDialogViewModel, CustomDialog> actionClose = null,
       bool autoCloseDialog = true
   );
 
@@ -175,7 +175,7 @@ namespace FluorescenceFullAutomatic.Services
             return _reactionAreaQueueRepository.IsFull();
         }
 
-        public void ShowHiltDialog(string title, string msg, string confirmText, Action<HiltDialogViewModel, CustomDialog> actionConfirm, string cancelText = null, Action<HiltDialogViewModel, CustomDialog> actionCancel = null, string closeText = null, Action<HiltDialogViewModel, CustomDialog> actionClose = null, bool autoCloseDialog = true)
+        public void ShowHiltDialog(string title, string msg, string confirmText, Action<HintDialogViewModel, CustomDialog> actionConfirm, string cancelText = null, Action<HintDialogViewModel, CustomDialog> actionCancel = null, string closeText = null, Action<HintDialogViewModel, CustomDialog> actionClose = null, bool autoCloseDialog = true)
         {
             _dialogRepository.ShowHiltDialog(title, msg, confirmText, actionConfirm, cancelText, actionCancel, closeText, actionClose, autoCloseDialog);
         }

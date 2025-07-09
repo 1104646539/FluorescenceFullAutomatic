@@ -6,12 +6,13 @@
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:local="clr-namespace:FluorescenceFullAutomatic.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:prism="http://prismlibrary.com/"
     xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
     d:Background="White"
     d:DataContext="{d:DesignInstance vm:VersionViewModel}"
     d:DesignHeight="700"
     d:DesignWidth="1250"
-    DataContext="{Binding VersionViewModel, Source={StaticResource ServiceLocator}}"
+    prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d">
 
     <i:Interaction.Triggers>
