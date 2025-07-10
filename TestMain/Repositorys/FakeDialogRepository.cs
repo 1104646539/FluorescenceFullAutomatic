@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace TestMain.Repositorys
 {
-    public class FakeDialogRepository : IDialogRepository
+    public class FakeDialogRepository : IDialogService
     {
         public Task HideMetroDialogAsync(MetroWindow window, BaseMetroDialog dialog, MetroDialogSettings settings = null)
         {

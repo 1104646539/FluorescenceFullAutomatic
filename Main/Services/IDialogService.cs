@@ -10,9 +10,9 @@ using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using NPOI.SS.Formula.Functions;
 
-namespace FluorescenceFullAutomatic.Repositorys
+namespace FluorescenceFullAutomatic.Services
 {
-    public interface IDialogRepository
+    public interface IDialogService
     {
         
         public void ShowHiltDialog(
@@ -33,7 +33,7 @@ namespace FluorescenceFullAutomatic.Repositorys
 
     }
 
-    public class DialogRepository : IDialogRepository
+    public class DialogRepository : IDialogService
     {
         public Task HideMetroDialogAsync(MetroWindow window, BaseMetroDialog dialog, MetroDialogSettings settings = null)
         {

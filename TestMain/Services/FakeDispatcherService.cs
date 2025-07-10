@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TestMain.Services
 {
-    public class FakeDispatcherService : IDispatcherService
+    public class FakeDispatcherService : IDispatcherRepository
     {
         public void Invoke(Action action)
         {

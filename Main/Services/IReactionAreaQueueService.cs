@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 
-namespace FluorescenceFullAutomatic.Repositorys
+namespace FluorescenceFullAutomatic.Services
 {
-    public interface IReactionAreaQueueRepository
+    public interface IReactionAreaQueueService
     {
         public event Func<ReactionAreaItem, bool> _dequeueCallback;
 
@@ -26,7 +26,7 @@ namespace FluorescenceFullAutomatic.Repositorys
         bool IsFull();
     }
 
-    public class ReactionAreaQueueRepository : IReactionAreaQueueRepository
+    public class ReactionAreaQueueRepository : IReactionAreaQueueService
     {
         private Queue<ReactionAreaItem> _queue = new Queue<ReactionAreaItem>();
         private Timer _timer;

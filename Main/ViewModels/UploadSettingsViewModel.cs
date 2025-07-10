@@ -8,7 +8,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FluorescenceFullAutomatic.Config;
-using FluorescenceFullAutomatic.Repositorys;
 using FluorescenceFullAutomatic.Services;
 using FluorescenceFullAutomatic.Utils;
 
@@ -78,8 +77,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private readonly IUploadService _uploadService;
 
-        private readonly IDialogRepository _dialogRepository;
-        public UploadSettingsViewModel(IUploadService uploadService,IDialogRepository dialogRepository  )
+        private readonly IDialogService _dialogRepository;
+        public UploadSettingsViewModel(IUploadService uploadService,IDialogService dialogRepository  )
         {
             _uploadService = uploadService;
             _dialogRepository = dialogRepository;

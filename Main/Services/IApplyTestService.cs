@@ -8,39 +8,32 @@ using FluorescenceFullAutomatic.Sql;
 
 namespace FluorescenceFullAutomatic.Services
 {
-    public interface IApplyTestService 
+    public interface IApplyTestService
     {
         Task<List<ApplyTest>> GetApplyTests(ApplyTestType applyTestType);
 
         int InsertApplyTest(ApplyTest applyTest);
 
-        int InsertPatient(Patient patient);
-
-        bool UpdatePatient(Patient patient);
-
         bool UpdateApplyTest(ApplyTest applyTest);
 
         bool DeleteApplyTest(ApplyTest applyTest);
 
-        bool DeletePatient(Patient patient);
-
         ApplyTest GetApplyTestForID(int id);
 
+        void UpdateApplyTestCompleted(ApplyTest applyTest);
+
+        Task<ApplyTest> GetApplyTestAsync(int testResultId, string barcode, string testNum);
+
     }
-    public class ApplyTestService : IApplyTestService
+    public class ApplyTestRepository : IApplyTestService
     {
-        public ApplyTestService()
+        public ApplyTestRepository()
         {
         }
 
         public bool DeleteApplyTest(ApplyTest applyTest)
         {
             return SqlHelper.getInstance().DeleteApplyTest(applyTest);
-        }
-
-        public bool DeletePatient(Patient patient)
-        {
-            return SqlHelper.getInstance().DeletePatient(patient);
         }
 
         public ApplyTest GetApplyTestForID(int id)
@@ -58,19 +51,49 @@ namespace FluorescenceFullAutomatic.Services
             return SqlHelper.getInstance().InsertApplyTest(applyTest);
         }
 
-        public int InsertPatient(Patient patient)
-        {
-            return SqlHelper.getInstance().InsertPatient(patient);
-        }
+
 
         public bool UpdateApplyTest(ApplyTest applyTest)
         {
             return SqlHelper.getInstance().UpdateApplyTest(applyTest);
         }
 
-        public bool UpdatePatient(Patient patient)
+        public void UpdateApplyTestCompleted(ApplyTest applyTest)
         {
-            return SqlHelper.getInstance().UpdatePatient(patient);
+            applyTest.ApplyTestType = ApplyTestType.TestEnd;
+            SqlHelper.getInstance().UpdateApplyTest(applyTest);
         }
+        /// <summary>
+        /// 根据条码或检测编号， 获取申请检测信息
+        /// 获取规则，先从Lis远端获取，如果没有，则从本地数据库获取
+        /// 1、先从条码获取
+        /// 2、如果没有条码，则从检测编号获取
+        /// </summary>
+        /// <param name="testResultId"></param>
+        /// <param name="barcode"></param>
+        /// <param name="testNum"></param>
+        /// <returns></returns>
+        public async Task<ApplyTest> GetApplyTestAsync(int testResultId, string barcode, string testNum)
+        {
+            if (string.IsNullOrEmpty(barcode) && string.IsNullOrEmpty(barcode))
+            {
+                return null;
+            }
+            ApplyTest applyTest;
+            if (!string.IsNullOrEmpty(barcode))
+            {
+                applyTest = SqlHelper.getInstance().GetApplyTestForBarcode(barcode);
+            }
+            else
+            {
+                applyTest = SqlHelper.getInstance().GetApplyTestForTestNum(testNum);
+            }
+            if (applyTest != null)
+            {
+                applyTest.TestResultId = testResultId;
+            }
+            return applyTest;
+        }
+
     }
 }

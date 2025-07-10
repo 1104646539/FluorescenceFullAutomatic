@@ -48,17 +48,17 @@ namespace FluorescenceFullAutomatic.ViewModels
         public string title;
 
         private readonly IHomeService homeService;
-        private readonly IConfigService configService;
         private readonly ISerialPortService serialPortService;
         private readonly IDispatcherService dispatcherService;
-
+        private readonly IConfigService configRepository;
+        private readonly IToolService toolRepository;
+        private readonly IProjectService projectRepository;
         [ObservableProperty]
         public ReactionAreaViewModel reactionAreaViewModel;
 
         [ObservableProperty]
         public SampleShelfViewModel sampleShelfViewModel;
 
-        //public IDialogCoordinator dialogCoordinator;
 
         /// <summary>
         /// 获取温度间隔
@@ -333,19 +333,20 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         [ObservableProperty]
         private string imgCleanout;
-        Prism.Services.Dialogs.IDialogService dialogService;
         #endregion
         public HomeViewModel(
             ISerialPortService serialPortService,
             IHomeService homeService,
-            IConfigService configService,
-            IDispatcherService dispatcherService
+            IConfigService configRepository,
+            IDispatcherService dispatcherService,
+            IToolService toolRepository,
+            IProjectService projectRepository
         )
         {
-            this.dialogService = dialogService;
+            this.configRepository = configRepository;
+            this.toolRepository = toolRepository;
             this.serialPortService = serialPortService;
             this.homeService = homeService;
-            this.configService = configService;
             this.dispatcherService = dispatcherService;
             this.homeService._dequeueCallback += OnReactionAreaDequeue;
             this.serialPortService.AddReceiveData(this);
@@ -455,7 +456,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private void ChangeTestSettings()
         {
-            this.homeService.SetDequeueDuration(configService.ReactionDuration());
+            this.homeService.SetDequeueDuration(configRepository.ReactionDuration());
         }
 
         [RelayCommand]
@@ -687,7 +688,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             IsTestGetSelfMachineState = false;
             SelfInspectionFinished = true;
             Log.Information($"接收到 自检: {JsonConvert.SerializeObject(model)}");
-            CloseSelfMachineDialog();
+            await CloseSelfMachineDialog();
 
             StartGetReactionTempTask();
             string error = JoinSelfMachineError(model.Data);
@@ -753,7 +754,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
             // 将代号转换为实际错误信息，并格式化输出
             var errorMessages = data.Select(item =>
-                    $"错误代码：{item}，错误信息：{configService.GetString($"error_{item}")}"
+                    $"错误代码：{item}，错误信息：{toolRepository.GetString($"error_{item}")}"
                 )
                 .ToList();
             return "\n" + string.Join("\n", errorMessages);
@@ -1113,7 +1114,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
             else if (model.Data.SampleType == MoveSampleModel.SampleTube)
             {
-                string testNum = configService.TestNumIncrement() + "";
+                string testNum = configRepository.TestNumIncrement() + "";
                 TestResult tr = InsertTestResult(new TestResult() { TestNum = testNum });
                 AddingSampleTestResult = TestResults[SampleCurrentPos];
                 SampleShelfViewModel.UpdateSampleItems(
@@ -1147,7 +1148,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
             else if (model.Data.SampleType == MoveSampleModel.SampleCup)
             {
-                string testNum = configService.TestNumIncrement() + "";
+                string testNum = configRepository.TestNumIncrement() + "";
                 TestResult tr = InsertTestResult(new TestResult() { TestNum = testNum });
                 AddingSampleTestResult = TestResults[SampleCurrentPos];
                 SampleShelfViewModel.UpdateSampleItems(
@@ -1192,9 +1193,9 @@ namespace FluorescenceFullAutomatic.ViewModels
         private void VerifyStateSamplingPushCard(string samplingType)
         {
             if (CleanoutSamplingProbeFinished)
-            {
+            {       
                 //取样
-                Sampling(samplingType, configService.SamplingVolumn());
+                Sampling(samplingType, configRepository.SamplingVolume());
             }
             else
             {
@@ -1450,7 +1451,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// <returns></returns>
         private bool IsNeedScanBarcode()
         {
-            return configService.IsScanBarcode();
+            return configRepository.IsScanBarcode();
         }
 
         bool restoreMoveSampleNextGetMachineState = false;
@@ -1558,7 +1559,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 && !IsRestorePushCard
             )
             {
-                AddingSample(configService.SamplingVolumn(), "1");
+                AddingSample(configRepository.SamplingVolume(), "1");
             }
         }
 
@@ -1575,7 +1576,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             {
                 //恢复取样
                 IsRestoreSampling = false;
-                Sampling(RestoreSamplingType, configService.SamplingVolumn());
+                Sampling(RestoreSamplingType, configRepository.SamplingVolume());
             }
             else if (IsFirstCleanoutSamplingProbe)
             {
@@ -1722,7 +1723,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             // 处理推卡数据
             if (IsPushCardSuccess(model.Data))
             {
-                Project project = configService.GetProject(model.Data.QrCode);
+                Project project = projectRepository.GetProjectForQrcode(model.Data.QrCode);
                 Log.Information($"检测卡项目 @{JsonConvert.SerializeObject(project)}");
                 if (project == null)
                 {
@@ -1925,8 +1926,8 @@ namespace FluorescenceFullAutomatic.ViewModels
             point.C = "" + c;
             point.T2 = "" + t2;
             point.C2 = "" + c2;
-            point.Tc = configService.CalcTC(t, c);
-            point.Tc2 = configService.CalcTC(t2, c2);
+            point.Tc = toolRepository.CalcTC(t, c);
+            point.Tc2 = toolRepository.CalcTC(t2, c2);
             int pointId = homeService.InsertPoint(point);
             point.Id = pointId;
             //更新检测结果
@@ -1941,7 +1942,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                     item.PointId = pointId;
                     item.Point = point;
                     item.ResultState = ResultState.TestFinish;
-                    item = configService.CalcTestResult(item);
+                    item = toolRepository.CalcTestResult(item);
                     return temp = item;
                 }
             );
@@ -2012,10 +2013,10 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             homeService.AutoPrintReport(
                 temp,
-                configService.IsAutoPrintA4Report(),
+                configRepository.IsAutoPrintA4Report(),
                 false,
-                configService.IsAutoPrintTicket(),
-                configService.GetPrinterName()
+                configRepository.IsAutoPrintTicket(),
+                configRepository.GetPrinterName()
             );
         }
 
@@ -2200,7 +2201,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             CleanoutSamplingProbeFinished = false;
             Log.Information("执行 清洗取样针");
-            serialPortService.CleanoutSamplingProbe(configService.CleanoutDuration());
+            serialPortService.CleanoutSamplingProbe(configRepository.CleanoutDuration());
         }
 
         public void AddingSample(int volume, string type)

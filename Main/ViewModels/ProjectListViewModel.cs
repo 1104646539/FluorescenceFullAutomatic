@@ -22,16 +22,16 @@ namespace FluorescenceFullAutomatic.ViewModels
         private ObservableCollection<Project> projects;
         [ObservableProperty]
         private bool isDefault;
-        private IProjectService projectService;
+        private IProjectService projectRepository;
         [ObservableProperty]
         private string title;
         [ObservableProperty]
         private bool isLoading = false;
         [ObservableProperty]
         private string btnContent;
-        public ProjectListViewModel(IProjectService projectService)
+        public ProjectListViewModel(IProjectService projectRepository)
         {
-            this.projectService = projectService;
+            this.projectRepository = projectRepository;
             projects = new ObservableCollection<Project>();
             SetTitle(false);
         }
@@ -48,7 +48,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         [RelayCommand]
         private void Edit(Project project) {
             var dialog = new DialogWindow();
-            var projectDetailsViewModel = new ProjectDetailsViewModel(projectService);
+            var projectDetailsViewModel = new ProjectDetailsViewModel(projectRepository);
             projectDetailsViewModel.LoadProject(project.Id);
             projectDetailsViewModel.CloseAction = (bool ret) => {
                     dialog.Close();
@@ -72,7 +72,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             LoadProject();
         }
         private async void LoadProject(){
-            var projects = await projectService.GetProjects(IsDefault);
+            var projects = await projectRepository.GetAllProjectAsync(IsDefault);
             Projects = new ObservableCollection<Project>(projects);
             IsLoading = false;
         }

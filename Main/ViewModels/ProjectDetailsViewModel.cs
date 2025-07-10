@@ -13,7 +13,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 {
     public partial class ProjectDetailsViewModel : ObservableObject
     {
-        private readonly IProjectService projectService;
+        private readonly IProjectService projectRepository;
         private Project currentProject;
 
         [ObservableProperty]
@@ -87,14 +87,14 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public Action<bool> CloseAction;
         public Action<bool> SaveAction;
-        public ProjectDetailsViewModel(IProjectService projectService)
+        public ProjectDetailsViewModel(IProjectService projectRepository)
         {
-            this.projectService = projectService;
+            this.projectRepository = projectRepository;
         }
 
         public void LoadProject(int projectId)
         {
-            currentProject = projectService.GetProject(projectId);
+            currentProject = projectRepository.GetProjectForID(projectId);
             if (currentProject != null)
             {
                 IsDoubleCard = currentProject.ProjectType == 1;
@@ -156,7 +156,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 currentProject.ConMax2 = ConMax2;
 
                 // 保存到数据库
-                bool ret = projectService.UpdateProject(currentProject);
+                bool ret = projectRepository.UpdateProject(currentProject);
                 if (ret)
                 {
                     MessageBox.Show("保存成功！", "提示");

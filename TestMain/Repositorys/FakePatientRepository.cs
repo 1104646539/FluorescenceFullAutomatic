@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TestMain.Repositorys
 {
-    public class FakePatientRepository : IPatientRepository
+    public class FakePatientRepository : IPatientService
     {
         Dictionary<int, Patient> datas = new Dictionary<int, Patient>();
         int id = 0;

@@ -20,37 +20,17 @@ namespace FluorescenceFullAutomatic.Views
         {
             InitializeComponent();
             Instance = this;
-            var settings = new MetroDialogSettings()
-            {
-                AffirmativeButtonText = "OK",
-                NegativeButtonText = "Go away!",
-                FirstAuxiliaryButtonText = "Cancel",
-                MaximumBodyHeight = 100,
-                ColorScheme = MetroDialogColorScheme.Accented,
-            };
-            this.MetroDialogOptions = settings;
-
-            this.Loaded += MainWindow_Loaded;
-        }
-
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e) {
-            
+            //var settings = new MetroDialogSettings()
+            //{
+            //    AffirmativeButtonText = "OK",
+            //    NegativeButtonText = "Go away!",
+            //    FirstAuxiliaryButtonText = "Cancel",
+            //    MaximumBodyHeight = 100,
+            //    ColorScheme = MetroDialogColorScheme.Accented,
+            //};
+            //this.MetroDialogOptions = settings;
 
         }
-    
 
- 
-        private void HamburgerMenuControl_OnItemInvoked(
-            object sender,
-            HamburgerMenuItemInvokedEventArgs e
-        )
-        {
-            //this.HamburgerMenuControl.Content = e.InvokedItem;
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("Hello World!" + DataContext);
-        }
     }
 }

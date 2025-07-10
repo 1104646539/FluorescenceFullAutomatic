@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using FluorescenceFullAutomatic.Model;
 using FluorescenceFullAutomatic.Sql;
 
-namespace FluorescenceFullAutomatic.Repositorys
+namespace FluorescenceFullAutomatic.Services
 {
-    public interface IPointRepository
+    public interface IPointService
     {
         Point GetPoint(int pointId);
 
@@ -17,7 +17,7 @@ namespace FluorescenceFullAutomatic.Repositorys
         bool UpdatePoint(Point point);
 
     }
-    public class PointRepository : IPointRepository
+    public class PointRepository : IPointService
     {
         public PointRepository()
         {

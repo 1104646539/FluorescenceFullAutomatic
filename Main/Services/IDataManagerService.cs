@@ -1,5 +1,4 @@
 ﻿using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Repositorys;
 using FluorescenceFullAutomatic.ViewModels;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
@@ -54,17 +53,17 @@ namespace FluorescenceFullAutomatic.Services
     public class DataManagerService : IDataManagerService
     {
 
-        private readonly IProjectRepository _projectRepository;
-        private readonly ITestResultRepository _testResultRepository;
-        private readonly IExportExcelRepository _exportExcelRepository;
-        private readonly IConfigRepository _configRepository;
-        private readonly IPatientRepository _patientRepository;
-        private readonly IDialogRepository _dialogRepository;
-        private readonly IPrintRepository _printRepository;
+        private readonly IProjectService _projectRepository;
+        private readonly ITestResultService _testResultRepository;
+        private readonly IExportExcelService _exportExcelRepository;
+        private readonly IConfigService _configRepository;
+        private readonly IPatientService _patientRepository;
+        private readonly IDialogService _dialogRepository;
+        private readonly IPrintService _printRepository;
 
-        public DataManagerService(IProjectRepository projectRepository, ITestResultRepository testResultRepository,
-        IExportExcelRepository exportExcelRepository, IConfigRepository configRepository, IPatientRepository patientRepository,
-        IDialogRepository dialogRepository, IPrintRepository printRepository)
+        public DataManagerService(IProjectService projectRepository, ITestResultService testResultRepository,
+        IExportExcelService exportExcelRepository, IConfigService configRepository, IPatientService patientRepository,
+        IDialogService dialogRepository, IPrintService printRepository)
         {
             this._projectRepository = projectRepository;
             this._testResultRepository = testResultRepository;

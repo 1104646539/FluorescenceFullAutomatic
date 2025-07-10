@@ -7,19 +7,23 @@ using System.Threading.Tasks;
 using FluorescenceFullAutomatic.Model;
 using FluorescenceFullAutomatic.Utils;
 
-namespace FluorescenceFullAutomatic.Repositorys
+namespace FluorescenceFullAutomatic.Services
 {
-    public interface IToolRepository
+    public interface IToolService
     {
         List<string> GetPrinters();
         string CalcTC(double t, double c);
         int CalcCon(string t, string c, string tc, Project project);
         TestResult CalcTestResult(TestResult testResult);
-
+        string GetString(string key);
     }
 
-    public class ToolRepository : IToolRepository
+    public class ToolRepository : IToolService
     {
+        public string GetString(string key)
+        {
+            return GlobalUtil.GetString(key);
+        }
         /// <summary>
         /// 根据tc值计算浓度
         /// </summary>

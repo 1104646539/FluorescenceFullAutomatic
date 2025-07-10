@@ -20,8 +20,7 @@ namespace FluorescenceFullAutomatic.Services
 
         Task<Hl7Result.UploadResult> UploadTestResultAsync(TestResult testResult);
     }
-
-    public class LisService : ILisService
+    public class LisRepository : ILisService
     {
         /// <summary>
         /// 根据条码或编号查询申请检验信息
@@ -35,8 +34,8 @@ namespace FluorescenceFullAutomatic.Services
         {
             var queryType = isMatchingBarcode ? QueryType.BC : QueryType.SN;
             var queryValue = isMatchingBarcode ? barcode : testNum;
-            
-            var applyTest = isMatchingBarcode 
+
+            var applyTest = isMatchingBarcode
                 ? SqlHelper.getInstance().GetApplyTestForBarcode(barcode)
                 : SqlHelper.getInstance().GetApplyTestForTestNum(barcode);
 
@@ -46,26 +45,26 @@ namespace FluorescenceFullAutomatic.Services
                 {
                     return await HL7Helper.Instance.QueryApplyTestAsync(queryType, queryValue);
                 }
-                
+
                 return new QueryResult(
-                    QueryResultType.NotFound, 
-                    queryType, 
-                    queryValue, 
-                    "", 
-                    "数据库获取失败", 
-                    null, 
-                    null, 
+                    QueryResultType.NotFound,
+                    queryType,
+                    queryValue,
+                    "",
+                    "数据库获取失败",
+                    null,
+                    null,
                     null);
             }
 
             return new QueryResult(
-                QueryResultType.Success, 
-                queryType, 
-                queryValue, 
-                "", 
-                "数据库获取成功", 
-                null, 
-                null, 
+                QueryResultType.Success,
+                queryType,
+                queryValue,
+                "",
+                "数据库获取成功",
+                null,
+                null,
                 new List<ApplyTest>() { applyTest });
         }
 
@@ -86,7 +85,7 @@ namespace FluorescenceFullAutomatic.Services
 
         public async Task<Hl7Result.QueryResult> QueryApplyTestFormInspectDateAsync(string condition1, string condition2)
         {
-            return await HL7Helper.Instance.QueryApplyTestAsync(QueryType.DT, condition1,condition2);
+            return await HL7Helper.Instance.QueryApplyTestAsync(QueryType.DT, condition1, condition2);
 
         }
     }

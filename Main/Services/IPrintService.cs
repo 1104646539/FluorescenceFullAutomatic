@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using FluorescenceFullAutomatic.Model;
 using FluorescenceFullAutomatic.Utils;
 
-namespace FluorescenceFullAutomatic.Repositorys
+namespace FluorescenceFullAutomatic.Services
 {
-    public interface IPrintRepository
+    public interface IPrintService
     {
         public void PrintReport(List<TestResult> trs, string printerName, Action<string> successAction = null, Action<string> failedAction = null);
 
@@ -18,7 +18,7 @@ namespace FluorescenceFullAutomatic.Repositorys
         public void PrintTicket(TestResult tr, Action<string> successAction, Action<string> failedAction);
 
     }
-    public class PrintRepository : IPrintRepository
+    public class PrintRepository : IPrintService
     {
         public void AutoPrintReport(TestResult tr, bool autoPrint, bool autoUploadFtp, bool autoPrintTicket, string printerName)
         {

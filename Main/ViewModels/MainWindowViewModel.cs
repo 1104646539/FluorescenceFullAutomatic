@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -13,17 +13,16 @@ using CommunityToolkit.Mvvm.Messaging;
 using FluorescenceFullAutomatic.Config;
 using FluorescenceFullAutomatic.Ex;
 using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Properties;
 using FluorescenceFullAutomatic.Services;
+using FluorescenceFullAutomatic.Upload;
 using FluorescenceFullAutomatic.Utils;
 using FluorescenceFullAutomatic.Views;
-using FluorescenceFullAutomatic.Upload;
 using MahApps.Metro.Controls.Dialogs;
+using Prism.Regions;
 using Serilog;
-using Point = FluorescenceFullAutomatic.Model.Point;
-using NHapi.Model.V21.Segment;
-using System.IO;
-
+using Prism.Ioc;
+using Prism.Modularity;
+using Prism.Unity;
 namespace FluorescenceFullAutomatic.ViewModels
 {
     public partial class MainWindowViewModel : ObservableObject
@@ -54,11 +53,19 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         [ObservableProperty]
         private string imgStartTest;
-        private IConfigService configService;
-        private readonly IDialogCoordinator _dialogCoordinator;
+        private IConfigService configRepository;
+        private readonly IRegionManager regionManager;
         private int _selectedIndex;
         Dictionary<int, int> notity_What = new Dictionary<int, int>() { };
-
+        private readonly List<string> regions = new List<string>()
+        {
+            "HomeView",
+            "ApplyTestView",
+            "DataManagerView",
+            "QCView",
+            "SettingsView",
+            "TestView",
+        };
         public int SelectedIndex
         {
             get => _selectedIndex;
@@ -73,8 +80,10 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
         }
         private string path = "../Image/";
+
         [ObservableProperty]
         public object selectedContent;
+
         /// <summary>
         /// 只用来更新时间的计时器
         /// </summary>
@@ -82,10 +91,10 @@ namespace FluorescenceFullAutomatic.ViewModels
         public ObservableCollection<NavItem> NavItems { get; }
 
         public ICommand NavCommand { get; }
-        
+
         private int _logoClickCount = 0;
         private DateTime _lastLogoClickTime = DateTime.MinValue;
-        
+
         [RelayCommand]
         private void ClickLogo()
         {
@@ -94,30 +103,34 @@ namespace FluorescenceFullAutomatic.ViewModels
             {
                 _logoClickCount = 0;
             }
-            
+
             _logoClickCount++;
             _lastLogoClickTime = now;
-            
+
             if (_logoClickCount >= 10)
             {
                 //更改调试模式
                 _logoClickCount = 0;
-                configService.SetDebugModeChnage();
-                Task.Run(()=>{
+                configRepository.SetDebugModeChnage();
+                Task.Run(() =>
+                {
                     Task.Delay(1000);
-                    WeakReferenceMessenger.Default.Send(new EventMsg<string>(""){What = EventWhat.WHAT_CLICK_DEBUG_MODE});
+                    WeakReferenceMessenger.Default.Send(
+                        new EventMsg<string>("") { What = EventWhat.WHAT_CLICK_DEBUG_MODE }
+                    );
                 });
             }
         }
-        
+
         public MainWindowViewModel(
             IHomeService homeService,
-            IConfigService configService,
-            IDialogCoordinator dialogCoordinator
+            IConfigService configRepository,
+            IRegionManager regionManager,
+            IContainerProvider containerProvider
         )
         {
-            this.configService = configService;
-            _dialogCoordinator = dialogCoordinator;
+            this.configRepository = configRepository;
+            this.regionManager = regionManager;
             notity_What.Add(0, EventWhat.WHAT_CLICK_HOME);
             notity_What.Add(1, EventWhat.WHAT_CLICK_APPLY_TEST);
             notity_What.Add(2, EventWhat.WHAT_CLICK_DATA_MANAGER);
@@ -128,55 +141,62 @@ namespace FluorescenceFullAutomatic.ViewModels
             InitTicketSerialPort();
             InitConfig();
             test();
-
+            
             NavItems = new ObservableCollection<NavItem>
             {
                 new NavItem
                 {
                     Header = GlobalUtil.GetString(Keys.HomeTitle),
                     Index = 0,
-                    Content = new HomeView(),
+                    //Content = containerProvider.Resolve<HomeView>(),
                 },
                 new NavItem
                 {
                     Header = GlobalUtil.GetString(Keys.ApplyTestTitle),
                     Index = 1,
-                    Content = new ApplyTestView(),
+                    //Content = containerProvider.Resolve<ApplyTestView>(),
                 },
                 new NavItem
                 {
                     Header = GlobalUtil.GetString(Keys.DataManagerTitle),
                     Index = 2,
-                    Content = new DataManagerView(),
+                    //Content = containerProvider.Resolve<DataManagerView>(),
                 },
                 new NavItem
                 {
                     Header = GlobalUtil.GetString(Keys.QCTitle),
                     Index = 3,
-                    Content = new QCView(),
+                    //Content = containerProvider.Resolve<QCView>(),
                 },
                 new NavItem
                 {
                     Header = GlobalUtil.GetString(Keys.SettingsTitle),
                     Index = 4,
-                    Content = new SettingsView(),
+                    //Content = containerProvider.Resolve<SettingsView>(),
                 },
             };
 
             NavCommand = new RelayCommand<int>(ExecuteNavCommand);
-            SelectedIndex = 0;
-            UpdateSelectedContent();
+           
+
             InitBottomStatus();
             RegisterMsg();
             InitHl7();
-          
+        }
+
+        [RelayCommand]
+        public void Loaded(){
+            SelectedIndex = 0;
+            UpdateSelectedContent();
         }
 
         private void InitTicketSerialPort()
         {
-             TicketReportUtil.Instance.SerialPortConnectReceived += (s) =>
+            TicketReportUtil.Instance.SerialPortConnectReceived += (s) =>
             {
-                Log.Information(string.IsNullOrEmpty(s) ? "小票打印机连接成功" : $"小票打印机连接失败 {s}");
+                Log.Information(
+                    string.IsNullOrEmpty(s) ? "小票打印机连接成功" : $"小票打印机连接失败 {s}"
+                );
                 if (!string.IsNullOrEmpty(s))
                 {
                     MessageBox.Show($"小票打印机连接失败 {s}");
@@ -193,8 +213,8 @@ namespace FluorescenceFullAutomatic.ViewModels
                 }
             };
             TicketReportUtil.Instance.Connect(
-                configService.TicketPortName(),
-                configService.TicketPortBaudRate()
+                configRepository.TicketPortName(),
+                configRepository.TicketPortBaudRate()
             );
         }
 
@@ -203,9 +223,11 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// </summary>
         private void InitConfig()
         {
-            if(string.IsNullOrEmpty(GlobalConfig.Instance.PrinterName)){
+            if (string.IsNullOrEmpty(GlobalConfig.Instance.PrinterName))
+            {
                 //打印
-                GlobalConfig.Instance.PrinterName = new System.Drawing.Printing.PrinterSettings().PrinterName;
+                GlobalConfig.Instance.PrinterName =
+                    new System.Drawing.Printing.PrinterSettings().PrinterName;
             }
             if (!File.Exists(GlobalConfig.Instance.ReportTemplatePath))
             {
@@ -251,7 +273,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             Log.Information($"HL7连接成功: {message}");
             // 更新UI上的连接状态图标
-            App.Current.Dispatcher.Invoke(() => {
+            App.Current.Dispatcher.Invoke(() =>
+            {
                 UpdateUploadStatusIcon();
             });
         }
@@ -265,7 +288,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             Log.Information($"HL7连接断开: {message}");
             // 更新UI上的连接状态图标
-            App.Current.Dispatcher.Invoke(() => {
+            App.Current.Dispatcher.Invoke(() =>
+            {
                 UpdateUploadStatusIcon();
             });
         }
@@ -277,10 +301,11 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// <param name="exception">异常对象</param>
         private void OnHL7ConnectionFailed(string errorMessage, Exception exception)
         {
-            Log.Information($"HL7连接失败: {errorMessage} {exception?.ToString()??""}");
-           
+            Log.Information($"HL7连接失败: {errorMessage} {exception?.ToString() ?? ""}");
+
             // 更新UI上的连接状态图标
-            App.Current.Dispatcher.Invoke(() => {
+            App.Current.Dispatcher.Invoke(() =>
+            {
                 UpdateUploadStatusIcon();
             });
         }
@@ -324,7 +349,6 @@ namespace FluorescenceFullAutomatic.ViewModels
             UpdateBottomStatus();
             StartTimeer();
         }
-     
 
         private void StartTimeer()
         {
@@ -339,8 +363,6 @@ namespace FluorescenceFullAutomatic.ViewModels
             dispatcherTimer.Start();
         }
 
-    
-
         private void UpdateBottomStatus()
         {
             CurrentStatus = SystemGlobal.MachineStatus.GetDescription();
@@ -348,10 +370,10 @@ namespace FluorescenceFullAutomatic.ViewModels
                 ? path + "barcode_open.png"
                 : path + "barcode_close.png";
             ImgPrinter = path + "printer_success.png";
-            
+
             // 更新上传状态图标
             UpdateUploadStatusIcon();
-            
+
             ImgTemp = SystemGlobal.TempStandard
                 ? path + "temp_standard.png"
                 : path + "temp_error.png";
@@ -394,8 +416,8 @@ namespace FluorescenceFullAutomatic.ViewModels
                 }
             };
             BarcodeHelper.Instance.Connect(
-                configService.BarcodePortName(),
-                configService.BarcodePortBaudRate()
+                configRepository.BarcodePortName(),
+                configRepository.BarcodePortBaudRate()
             );
         }
 
@@ -433,8 +455,8 @@ namespace FluorescenceFullAutomatic.ViewModels
                 }
             };
             SerialPortHelper.Instance.Connect(
-                configService.MainPortName(),
-                configService.MainPortBaudRate()
+                configRepository.MainPortName(),
+                configRepository.MainPortBaudRate()
             );
         }
 
@@ -449,8 +471,6 @@ namespace FluorescenceFullAutomatic.ViewModels
             //bool isValid = Crc16.Decode(encodedData);
             //// isValid 为true表示校验通过
             //Log.Information("isValid " + isValid);
-
-            
         }
 
         public void changeEN()
@@ -488,25 +508,29 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             SerialPortHelper.Instance.GetSelfInspectionState();
         }
+
         private void ExecuteNavCommand(int index)
         {
             SelectedIndex = index;
-            bool ret = notity_What.TryGetValue(index,out int what);
-            if (ret) { 
+            bool ret = notity_What.TryGetValue(index, out int what);
+            if (ret)
+            {
                 WeakReferenceMessenger.Default.Send(new EventMsg<string>("") { What = what });
             }
         }
 
         private void UpdateSelectedContent()
         {
-            if (NavItems != null && NavItems.Count > 0)
-            {
-                var selectedItem = NavItems.FirstOrDefault(item => item.Index == SelectedIndex);
-                if (selectedItem != null)
-                {
-                    SelectedContent = selectedItem.Content;
-                }
-            }
+            //if (NavItems != null && NavItems.Count > 0)
+            //{
+            //    var selectedItem = NavItems.FirstOrDefault(item => item.Index == SelectedIndex);
+            //    if (selectedItem != null)
+            //    {
+            //SelectedContent = selectedItem.Content;
+
+            regionManager.RequestNavigate(Regions.MainContent, regions[SelectedIndex]);
+            //    }
+            //}
         }
 
         [RelayCommand]
@@ -551,7 +575,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             //    Log.Information("HL7当前未连接，正在尝试连接...");
             //    HL7Helper.Instance.Start();
             //}
-            
+
             //// 更新连接状态图标
             //UpdateUploadStatusIcon();
         }

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluorescenceFullAutomatic.Ex;
@@ -9,50 +9,49 @@ using NPOI.XSSF.UserModel;
 using System.IO;
 using FluorescenceFullAutomatic.Utils;
 using Spire.Xls;
-
 namespace FluorescenceFullAutomatic.Services
 {
-    public interface IExcelExportService
+    public interface IExportExcelService
     {
-        /// <summary>
-        /// µ¼³ö²âÊÔ½á¹ûµ½Excel
+            /// <summary>
+        /// å¯¼å‡ºæµ‹è¯•ç»“æœåˆ°Excel
         /// </summary>
-        /// <param name="testResults">Òªµ¼³öµÄ²âÊÔ½á¹ûÁĞ±í</param>
-        /// <param name="filePath">±£´æÂ·¾¶</param>
-        /// <returns>ÊÇ·ñµ¼³ö³É¹¦</returns>
+        /// <param name="testResults">è¦å¯¼å‡ºçš„æµ‹è¯•ç»“æœåˆ—è¡¨</param>
+        /// <param name="filePath">ä¿å­˜è·¯å¾„</param>
+        /// <returns>æ˜¯å¦å¯¼å‡ºæˆåŠŸ</returns>
         Task<bool> ExportTestResultsToExcelAsync(List<TestResult> testResults, string filePath);
     }
 
-    public class ExcelExportService : IExcelExportService
+    public class ExportExcelRepository : IExportExcelService
     {
-        public async Task<bool> ExportTestResultsToExcelAsync(List<TestResult> testResults, string filePath)
+          public async Task<bool> ExportTestResultsToExcelAsync(List<TestResult> testResults, string filePath)
         {
             try
             {
-                // ´´½¨¹¤×÷²¾
+                // åˆ›å»ºå·¥ä½œç°¿
                 IWorkbook workbook = new XSSFWorkbook();
-                ISheet sheet = workbook.CreateSheet("¼ì²â½á¹û");
+                ISheet sheet = workbook.CreateSheet("æ£€æµ‹ç»“æœ");
 
-                // ÉèÖÃ±íÍ·
+                // è®¾ç½®è¡¨å¤´
                 string[] headers = new string[] 
                 { 
-                    "ID", "ĞÕÃû", "ÄêÁä", "ĞÔ±ğ", "ÌõÂë", "Ñù±¾±àºÅ", "ÏîÄ¿Ãû³Æ", "Åú´ÎºÅ",
-                    "½á¹û", "¼ì²âÊ±¼ä", "½á¹û×´Ì¬", "TÖµ", "CÖµ", "TCÖµ", "Å¨¶ÈÖµ",
-                    "T2Öµ", "C2Öµ", "TC2Öµ", "Å¨¶È2Öµ"
+                    "ID", "å§“å", "å¹´é¾„", "æ€§åˆ«", "æ¡ç ", "æ ·æœ¬ç¼–å·", "é¡¹ç›®åç§°", "æ‰¹æ¬¡å·",
+                    "ç»“æœ", "æ£€æµ‹æ—¶é—´", "ç»“æœçŠ¶æ€", "Tå€¼", "Cå€¼", "TCå€¼", "æµ“åº¦å€¼",
+                    "T2å€¼", "C2å€¼", "TC2å€¼", "æµ“åº¦2å€¼"
                 };
                 int[] minWidths = new int[]{
                     5, 10, 8, 8, 15, 15, 15, 15,
                     10, 20, 10, 10, 10, 10, 10,
                     10, 10, 10, 10
                 };
-                // ´´½¨±íÍ·ĞĞ
+                // åˆ›å»ºè¡¨å¤´è¡Œ
                 IRow headerRow = sheet.CreateRow(0);
                 for (int i = 0; i < headers.Length; i++)
                 {
                     ICell cell = headerRow.CreateCell(i);
                     cell.SetCellValue(headers[i]);
                     
-                    // ÉèÖÃ±íÍ·ÑùÊ½
+                    // è®¾ç½®è¡¨å¤´æ ·å¼
                     ICellStyle headerStyle = workbook.CreateCellStyle();
                     IFont headerFont = workbook.CreateFont();
                     headerFont.IsBold = true;
@@ -60,7 +59,7 @@ namespace FluorescenceFullAutomatic.Services
                     cell.CellStyle = headerStyle;
                 }
 
-                // Ìî³äÊı¾İ
+                // å¡«å……æ•°æ®
                 for (int i = 0; i < testResults.Count; i++)
                 {
                     var result = testResults[i];
@@ -87,17 +86,17 @@ namespace FluorescenceFullAutomatic.Services
                     dataRow.CreateCell(18).SetCellValue(GlobalUtil.ToStringOrNull(result.Con2));
                 }
                 
-                // ×Ô¶¯µ÷ÕûÁĞ¿í
+                // è‡ªåŠ¨è°ƒæ•´åˆ—å®½
                 for (int i = 0; i < headers.Length; i++)
                 {
                     ICellStyle cellStyle = workbook.CreateCellStyle();
                     sheet.SetDefaultColumnStyle(i, cellStyle);
                     
-                    // ÉèÖÃ×îĞ¡ÁĞ¿í£¨ÒÔ×Ö·û¿í¶ÈÎªµ¥Î»£©
+                    // è®¾ç½®æœ€å°åˆ—å®½ï¼ˆä»¥å­—ç¬¦å®½åº¦ä¸ºå•ä½ï¼‰
                     int minWidth = minWidths[i]; 
-                    sheet.SetColumnWidth(i, minWidth * 256); // NPOIÖĞ1¸ö×Ö·û¿í¶ÈµÈÓÚ256¸öµ¥Î»
+                    sheet.SetColumnWidth(i, minWidth * 256); // NPOIä¸­1ä¸ªå­—ç¬¦å®½åº¦ç­‰äº256ä¸ªå•ä½
                     
-                    // ×Ô¶¯µ÷ÕûÁĞ¿í£¬µ«È·±£²»Ğ¡ÓÚ×îĞ¡¿í¶È
+                    // è‡ªåŠ¨è°ƒæ•´åˆ—å®½ï¼Œä½†ç¡®ä¿ä¸å°äºæœ€å°å®½åº¦
                     sheet.AutoSizeColumn(i);
                     int currentWidth = (int)sheet.GetColumnWidth(i);
                     if (currentWidth < minWidth * 256)
@@ -106,7 +105,7 @@ namespace FluorescenceFullAutomatic.Services
                     }
                 }
 
-                // ±£´æÎÄ¼ş
+                // ä¿å­˜æ–‡ä»¶
                 await Task.Run(() =>
                 {
                     using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
@@ -119,9 +118,9 @@ namespace FluorescenceFullAutomatic.Services
             }
             catch (Exception ex)
             {
-                Log.Information(ex, "µ¼³öExcelÊ§°Ü");
+                Log.Information(ex, "å¯¼å‡ºExcelå¤±è´¥");
                 return false;
             }
         }
     }
-} 
+}

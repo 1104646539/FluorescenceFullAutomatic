@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TestMain.Repositorys
 {
-    public class FakeExportExcelRepository : IExportExcelRepository
+    public class FakeExportExcelRepository : IExportExcelService
     {
 
         public Task<bool> ExportTestResultsToExcelAsync(List<TestResult> testResults, string filePath)

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TestMain.Repositorys
 {
-    public class FakeProjectRepository : IProjectRepository
+    public class FakeProjectRepository : IProjectService
     {
         Dictionary<int, Project> datas = new Dictionary<int, Project>();
         int id = 0;

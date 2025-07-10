@@ -10,7 +10,7 @@ using TestResult = FluorescenceFullAutomatic.Model.TestResult;
 
 namespace TestMain.Repositorys
 {
-    public class FakeTestResultRepository : ITestResultRepository
+    public class FakeTestResultRepository : ITestResultService
     {
         public Dictionary<int, TestResult> datas = new Dictionary<int, TestResult>();
         int id = 0;

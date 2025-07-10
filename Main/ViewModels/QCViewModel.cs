@@ -20,7 +20,6 @@ using System.Collections.ObjectModel;
 using System.Web.ApplicationServices;
 using static MaterialDesignThemes.Wpf.Theme.ToolBar;
 using CommunityToolkit.Mvvm.Messaging;
-using FluorescenceFullAutomatic.Repositorys;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -29,12 +28,14 @@ namespace FluorescenceFullAutomatic.ViewModels
         #region 字段
         private readonly ISerialPortService serialPortService;
 
-        private readonly IConfigService configService;
+        private readonly IToolService toolRepository;
+        private readonly IProjectService projectRepository;
+        private readonly IConfigService configRepository;
         private readonly IDialogCoordinator dialogCoordinator;
         private readonly IHomeService homeService;
-        private readonly IReactionAreaQueueRepository reactionAreaQueueRepository;
+        private readonly IReactionAreaQueueService reactionAreaQueueRepository;
 
-        private readonly IDialogRepository dialogRepository;
+        private readonly IDialogService dialogRepository;
         // 命令执行 状态跟踪
         /// <summary>
         /// 取样命令是否完成
@@ -304,12 +305,14 @@ namespace FluorescenceFullAutomatic.ViewModels
 
 
         #endregion
-        public QCViewModel(IHomeService homeService, ISerialPortService serialService, IConfigService configService
-            , IDialogCoordinator dialogCoordinator,IReactionAreaQueueRepository reactionAreaQueueRepository,IDialogRepository dialogRepository)
+        public QCViewModel(IHomeService homeService, IToolService toolRepository, ISerialPortService serialService, IConfigService configRepository
+            , IDialogCoordinator dialogCoordinator,IProjectService projectRepository,IReactionAreaQueueService reactionAreaQueueRepository,IDialogService dialogRepository)
         {
+            this.toolRepository = toolRepository;
+            this.projectRepository = projectRepository;
             this.homeService = homeService;
             this.serialPortService = serialService;
-            this.configService = configService;
+            this.configRepository = configRepository;
             this.dialogCoordinator = dialogCoordinator;
             this.reactionAreaQueueRepository = reactionAreaQueueRepository;
             this.dialogRepository = dialogRepository;
@@ -701,7 +704,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
             if (IsPushCardSuccess(model.Data))
             {
-                Project project = configService.GetProject(model.Data.QrCode);
+                Project project = projectRepository.GetProjectForQrcode(model.Data.QrCode);
                 Log.Information($"检测卡项目 {JsonConvert.SerializeObject(project)}" );
                 if (project == null)
                 {
@@ -818,8 +821,8 @@ namespace FluorescenceFullAutomatic.ViewModels
             point.C = "" + c;
             point.T2 = "" + t2;
             point.C2 = "" + c2;
-            point.Tc = configService.CalcTC(t, c);
-            point.Tc2 = configService.CalcTC(t2, c2);
+            point.Tc = toolRepository.CalcTC(t, c);
+            point.Tc2 = toolRepository.CalcTC(t2, c2);
             int pointId = homeService.InsertPoint(point);
             point.Id = pointId;
             ResultPoints[CurrentTestCount-1] = point;
@@ -1078,7 +1081,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             CleanoutSamplingProbeFinished = false;
             Log.Information("执行 清洗取样针");
-            serialPortService.CleanoutSamplingProbe(configService.CleanoutDuration());
+            serialPortService.CleanoutSamplingProbe(configRepository.CleanoutDuration());
         }
 
         public void AddingSample(int volume, string type)

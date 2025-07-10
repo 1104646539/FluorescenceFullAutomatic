@@ -7,7 +7,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Repositorys;
 using FluorescenceFullAutomatic.Services;
 using FluorescenceFullAutomatic.Utils;
 using FluorescenceFullAutomatic.Views;
@@ -19,9 +18,10 @@ namespace FluorescenceFullAutomatic.ViewModels
 {
     public partial class ApplyTestViewModel : ObservableObject
     {
-        private readonly IApplyTestService _applyTestService;
-        private readonly ILisService _lisService;
-        private readonly IDialogRepository _dialogRepository;
+        private readonly IApplyTestService applyTestRepository;
+        private readonly IPatientService patientRepository;
+        private readonly ILisService lisRepository;
+        private readonly IDialogService dialogRepository;
 
 
         // 状态过滤选项
@@ -63,11 +63,13 @@ namespace FluorescenceFullAutomatic.ViewModels
         // 删除按钮可用性
         public bool CanDelete => !IsAddMode && EditTest != null;
 
-        public ApplyTestViewModel(IApplyTestService applyTestService, ILisService lisService, IDialogRepository dialogRepository)
+        public ApplyTestViewModel(IApplyTestService applyTestRepository, IPatientService patientRepository,
+            ILisService lisRepository, IDialogService dialogRepository)
         {
-            _applyTestService = applyTestService;
-            _lisService = lisService;
-            _dialogRepository = dialogRepository;
+            this.applyTestRepository = applyTestRepository;
+            this.patientRepository = patientRepository;
+            this.lisRepository = lisRepository;
+            this.dialogRepository = dialogRepository;
             // 默认加载待检
             LoadApplyTestList(ApplyTestType.WaitTest);
             ChangeAddMode();
@@ -98,7 +100,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// <param name="id"></param>
         private void RefreshChange(int id)
         {
-            ApplyTest applyTest = _applyTestService.GetApplyTestForID(id);
+            ApplyTest applyTest = applyTestRepository.GetApplyTestForID(id);
             if (applyTest != null)
             {
                 int index = -1;
@@ -137,7 +139,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         // 加载列表
         private async void LoadApplyTestList(ApplyTestType type)
         {
-            var list = await _applyTestService.GetApplyTests(type);
+            var list = await applyTestRepository.GetApplyTests(type);
 
             // 确保所有项的选中状态为false
             foreach (var item in list)
@@ -163,12 +165,11 @@ namespace FluorescenceFullAutomatic.ViewModels
             CustomDialog customDialog = new CustomDialog();
 
             // 创建自定义的对话框
-            var content = new FluorescenceFullAutomatic.Views.Ctr.GetApplyTestDialog();
+            var content = new GetApplyTestDialog();
 
             // 创建对话框ViewModel
-            var viewModel = new FluorescenceFullAutomatic.ViewModels.GetApplyTestDialogViewModel(
-                _lisService,
-                _applyTestService,
+            var viewModel = new GetApplyTestDialogViewModel(
+                lisRepository,
                 async (vm, applyTests) =>
                 {
                     // 确认按钮点击后，将获取到的ApplyTest添加到系统中
@@ -178,7 +179,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                         foreach (var test in applyTests)
                         {
                             // 保存Patient信息
-                            int patientId = _applyTestService.InsertPatient(test.Patient);
+                            int patientId = patientRepository.InsertPatient(test.Patient);
 
                             // 创建新的ApplyTest并设置为待检状态
                             var newApplyTest = new ApplyTest
@@ -191,7 +192,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                             };
 
                             // 插入ApplyTest记录
-                            _applyTestService.InsertApplyTest(newApplyTest);
+                            applyTestRepository.InsertApplyTest(newApplyTest);
                         }
 
                         // 重新加载列表
@@ -200,7 +201,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                         await MainWindow.Instance.HideMetroDialogAsync(customDialog);
 
                         //显示提示
-                        _dialogRepository.ShowHiltDialog(
+                        dialogRepository.ShowHiltDialog(
                             "提示",
                             $"成功添加 {applyTests.Count} 条记录",
                             "确定",
@@ -232,7 +233,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             foreach (var item in SelectedTests)
             {
-                _applyTestService.DeleteApplyTest(item);
+                applyTestRepository.DeleteApplyTest(item);
             }
             LoadApplyTestList(SelectedFilterType);
         }
@@ -256,7 +257,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                     TestDoctor = "王五",
                     CheckDoctor = "赵六",
                 };
-                int patientId = _applyTestService.InsertPatient(patient);
+                int patientId = patientRepository.InsertPatient(patient);
                 var test = new ApplyTest
                 {
                     Barcode = barcodes[i % barcodes.Length],
@@ -264,7 +265,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                     ApplyTestType = ApplyTestType.WaitTest,
                     PatientId = patientId,
                 };
-                _applyTestService.InsertApplyTest(test);
+                applyTestRepository.InsertApplyTest(test);
             }
             LoadApplyTestList(SelectedFilterType);
         }
@@ -292,9 +293,9 @@ namespace FluorescenceFullAutomatic.ViewModels
                 // 新增
                 await Task.Run(() =>
                 {
-                    int patientId = _applyTestService.InsertPatient(EditTest.Patient);
+                    int patientId = patientRepository.InsertPatient(EditTest.Patient);
                     EditTest.PatientId = patientId;
-                    int applyTestId = _applyTestService.InsertApplyTest(EditTest);
+                    int applyTestId = applyTestRepository.InsertApplyTest(EditTest);
                     LoadApplyTestList(SelectedFilterType);
                 });
             }
@@ -303,8 +304,8 @@ namespace FluorescenceFullAutomatic.ViewModels
                 // 编辑
                 await Task.Run(() =>
                 {
-                    _applyTestService.UpdatePatient(EditTest.Patient);
-                    _applyTestService.UpdateApplyTest(EditTest);
+                    patientRepository.UpdatePatient(EditTest.Patient);
+                    applyTestRepository.UpdateApplyTest(EditTest);
                     LoadApplyTestList(SelectedFilterType);
                 });
             }
@@ -321,8 +322,8 @@ namespace FluorescenceFullAutomatic.ViewModels
             if (EditTest == null || IsAddMode)
                 return;
             // 删除
-            _applyTestService.DeletePatient(EditTest.Patient);
-            _applyTestService.DeleteApplyTest(EditTest);
+            patientRepository.DeletePatient(EditTest.Patient);
+            applyTestRepository.DeleteApplyTest(EditTest);
             // 刷新
             LoadApplyTestList(SelectedFilterType);
             EditTest = null;

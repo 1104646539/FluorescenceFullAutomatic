@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TestMain.Repositorys
 {
-    public class FakeConfigRepository : IConfigRepository
+    public class FakeConfigRepository : IConfigService
     {
         private int _barcodePortBaudRate;
         private string _barcodePortName;

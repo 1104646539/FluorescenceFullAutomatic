@@ -13,7 +13,6 @@ using FluorescenceFullAutomatic.Config;
 using System.Collections.ObjectModel;
 using Microsoft.Win32;
 using System.Drawing.Printing;
-using FluorescenceFullAutomatic.Repositorys;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -51,12 +50,14 @@ namespace FluorescenceFullAutomatic.ViewModels
          [ObservableProperty]
          private bool isAutoPrintA4Report;
 
-         private readonly IConfigService _configService;
-         private readonly IDialogRepository _dialogRepository;
-         public TestSettingsViewModel(IConfigService configService,IDialogRepository dialogRepository)
+         private readonly IConfigService configRepository;
+        private readonly IDialogService dialogRepository;
+        private readonly IToolService toolRepository;
+        public TestSettingsViewModel(IToolService toolRepository,IConfigService configRepository,IDialogService dialogRepository)
          {
-             _configService = configService;
-             _dialogRepository = dialogRepository;
+            this.toolRepository = toolRepository;
+             this.configRepository = configRepository;
+             this.dialogRepository = dialogRepository;
              LoadSettings();
              WeakReferenceMessenger.Default.Register<EventMsg<string>>(this, (r, m) =>
              {
@@ -69,31 +70,31 @@ namespace FluorescenceFullAutomatic.ViewModels
 
          private void LoadSettings()
          {
-             TestNum = _configService.TestNum().ToString();
-             SamplingVolumn = _configService.SamplingVolumn();
-             CleanoutDuration = _configService.CleanoutDuration();
-             ReactionDuration = _configService.ReactionDuration();
-             IsScanBarcode = _configService.IsScanBarcode();
-             IsAutoPrintTicket = _configService.IsAutoPrintTicket();
-             IsAutoPrintA4Report = _configService.IsAutoPrintA4Report();
+             TestNum = configRepository.TestNum().ToString();
+             SamplingVolumn = configRepository.SamplingVolume();
+             CleanoutDuration = configRepository.CleanoutDuration();
+             ReactionDuration = configRepository.ReactionDuration();
+             IsScanBarcode = configRepository.IsScanBarcode();
+             IsAutoPrintTicket = configRepository.IsAutoPrintTicket();
+             IsAutoPrintA4Report = configRepository.IsAutoPrintA4Report();
 
              // 加载打印机列表
              PrinterList.Clear();
-             foreach (string printer in _configService.GetPrinterInfos())
+             foreach (string printer in toolRepository.GetPrinters())
              {
                  PrinterList.Add(printer);
              }
              
 
              // 设置当前选中的打印机
-             if (!string.IsNullOrEmpty(_configService.GetPrinterName()))
+             if (!string.IsNullOrEmpty(configRepository.GetPrinterName()))
              {
-                 SelectedPrinter = PrinterList.FirstOrDefault(p => p == _configService.GetPrinterName());
+                 SelectedPrinter = PrinterList.FirstOrDefault(p => p == configRepository.GetPrinterName());
              }
 
              // 加载模板路径
-             SingleReportTemplatePath = _configService.GetReportTemplatePath();
-             DoubleReportTemplatePath = _configService.GetReportDoubleTemplatePath();
+             SingleReportTemplatePath = configRepository.GetReportTemplatePath();
+             DoubleReportTemplatePath = configRepository.GetReportDoubleTemplatePath();
          }
 
      
@@ -135,59 +136,59 @@ namespace FluorescenceFullAutomatic.ViewModels
          private void SaveSettings()
          {
             if (SystemGlobal.MachineStatus.IsRunning()) {
-                _dialogRepository.ShowHiltDialog("提示", "当前仪器正在运行，请先等待检测完毕！", "确定", (m, d) => { });
+                dialogRepository.ShowHiltDialog("提示", "当前仪器正在运行，请先等待检测完毕！", "确定", (m, d) => { });
                 return;
             }
              // 检测编号校验
              if (!int.TryParse(TestNum, out int testNumValue) || testNumValue <= 0)
              {
-                _dialogRepository.ShowHiltDialog("提示", "检测编号必须是大于0的整数！", "确定", (m,d)=>{ });
+                dialogRepository.ShowHiltDialog("提示", "检测编号必须是大于0的整数！", "确定", (m,d)=>{ });
                  return;
              }
              
              // 取样量校验
              if (SamplingVolumn <= 1 || SamplingVolumn >= 300)
              {
-                _dialogRepository.ShowHiltDialog("提示", "取样量必须大于1且小于300！", "确定", (m, d) => { });
+                dialogRepository.ShowHiltDialog("提示", "取样量必须大于1且小于300！", "确定", (m, d) => { });
                  return;
              }
              
              // 清洗时长校验
              if (CleanoutDuration <= 10 || CleanoutDuration > 10000)
             {
-                _dialogRepository.ShowHiltDialog("提示", "清洗时长必须大于10且不超过10000！", "确定", (m, d) => { });
+                dialogRepository.ShowHiltDialog("提示", "清洗时长必须大于10且不超过10000！", "确定", (m, d) => { });
                  return;
              }
              
              // 反应时长校验
              if (ReactionDuration <= 0 || ReactionDuration > 3600)
             {
-                _dialogRepository.ShowHiltDialog("提示", "反应时长必须大于0且不超过3600！", "确定", (m, d) => { });
+                dialogRepository.ShowHiltDialog("提示", "反应时长必须大于0且不超过3600！", "确定", (m, d) => { });
                  return;
              }
 
             // SingleReportTemplatePath 和 DoubleReportTemplatePath 校验
             if (string.IsNullOrEmpty(SingleReportTemplatePath) || string.IsNullOrEmpty(DoubleReportTemplatePath))
             {
-                _dialogRepository.ShowHiltDialog("提示", "请选择单联和双联报告模板！", "确定", (m, d) => { });
+                dialogRepository.ShowHiltDialog("提示", "请选择单联和双联报告模板！", "确定", (m, d) => { });
                  return;
             }
             
              
              
              // 保存设置
-             _configService.SetTestNum(testNumValue);
-             _configService.SetSamplingVolumn((int)SamplingVolumn);
-             _configService.SetCleanoutDuration(CleanoutDuration);
-             _configService.SetReactionDuration(ReactionDuration);
-             _configService.SetIsScanBarcode(IsScanBarcode);
-             _configService.SetIsAutoPrintTicket(IsAutoPrintTicket);
-             _configService.SetIsAutoPrintA4Report(IsAutoPrintA4Report);
-            _configService.SetReportTemplatePath(SingleReportTemplatePath);
-            _configService.SetDoubleReportTemplatePath(DoubleReportTemplatePath);
-            _configService.SetPrinterName(SelectedPrinter);
+             configRepository.SetTestNum(testNumValue);
+             configRepository.SetSamplingVolume((int)SamplingVolumn);
+             configRepository.SetCleanoutDuration(CleanoutDuration);
+             configRepository.SetReactionDuration(ReactionDuration);
+             configRepository.SetIsScanBarcode(IsScanBarcode);
+             configRepository.SetIsAutoPrintTicket(IsAutoPrintTicket);
+             configRepository.SetIsAutoPrintA4Report(IsAutoPrintA4Report);
+            configRepository.SetReportTemplatePath(SingleReportTemplatePath);
+            configRepository.SetDoubleReportTemplatePath(DoubleReportTemplatePath);
+            configRepository.SetPrinterName(SelectedPrinter);
            
-            _dialogRepository.ShowHiltDialog("提示", "设置已保存！", "确定", (m, d) => { });
+            dialogRepository.ShowHiltDialog("提示", "设置已保存！", "确定", (m, d) => { });
             WeakReferenceMessenger.Default.Send(new EventMsg<string>("") { What = EventWhat.WHAT_CHANGE_TEST_SETTINGS});
             return;
         }

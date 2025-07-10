@@ -1,15 +1,12 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Windows;
 using System.Windows.Threading;
-using FluorescenceFullAutomatic.Repositorys;
 using FluorescenceFullAutomatic.Services;
 using FluorescenceFullAutomatic.Sql;
-using FluorescenceFullAutomatic.ViewModels;
 using FluorescenceFullAutomatic.Views;
-using FluorescenceFullAutomatic.Views.Ctr;
 using MahApps.Metro.Controls.Dialogs;
 using Prism.Ioc;
+using Prism.Modularity;
 using Prism.Unity;
 using Serilog;
 
@@ -23,62 +20,48 @@ namespace FluorescenceFullAutomatic
         protected override Window CreateShell()
         {
             AppDomain.CurrentDomain.UnhandledException += HandleUnhandledException;
+            Init();
             return Container.Resolve<MainWindow>();
         }
 
+        protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
+        {
+            base.ConfigureModuleCatalog(moduleCatalog);
+            //moduleCatalog.AddModule<HomeModule.HomeModule>();
+        }
+
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
+            //services
             containerRegistry.RegisterSingleton<IHomeService, HomeService>();
-            containerRegistry.RegisterSingleton<IConfigService, ConfigService>();
             containerRegistry.RegisterSingleton<ISerialPortService, SerialPortService>();
             containerRegistry.RegisterSingleton<IDialogCoordinator, DialogCoordinator>();
             containerRegistry.RegisterSingleton<IDataManagerService, DataManagerService>();
-            containerRegistry.RegisterSingleton<IProjectService, ProjectService>();
             containerRegistry.RegisterSingleton<ISettingsService, SettingsService>();
-            containerRegistry.RegisterSingleton<IApplyTestService, ApplyTestService>();
-            containerRegistry.RegisterSingleton<IQCService, QCService>();
             containerRegistry.RegisterSingleton<IUploadService, UploadService>();
-            containerRegistry.RegisterSingleton<IRunningLogService, RunningLogService>();
-            containerRegistry.RegisterSingleton<ILisService, LisService>();
-            containerRegistry.RegisterSingleton<IExcelExportService, ExcelExportService>();
-
-            //repository
-            containerRegistry.RegisterSingleton<IApplyTestRepository, ApplyTestRepository>();
-            containerRegistry.RegisterSingleton<IConfigRepository, ConfigRepository>();
-            containerRegistry.RegisterSingleton<IDialogRepository, DialogRepository>();
-            containerRegistry.RegisterSingleton<IExportExcelRepository, ExportExcelRepository>();
-            containerRegistry.RegisterSingleton<ILisRepository, LisRepository>();
-            containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
-            containerRegistry.RegisterSingleton<IPointRepository, PointRepository>();
-            containerRegistry.RegisterSingleton<IPrintRepository, PrintRepository>();
-            containerRegistry.RegisterSingleton<IProjectRepository, ProjectRepository>();
-            containerRegistry.RegisterSingleton<ITestResultRepository, TestResultRepository>();
-            containerRegistry.RegisterSingleton<IToolRepository, ToolRepository>();
-            containerRegistry.RegisterSingleton<IUploadConfigRepository, UploadConfigRepository>();
+            containerRegistry.RegisterSingleton<IApplyTestService, ApplyTestRepository>();
+            containerRegistry.RegisterSingleton<IConfigService, ConfigRepository>();
+            containerRegistry.RegisterSingleton<IDialogService, DialogRepository>();
+            containerRegistry.RegisterSingleton<IExportExcelService, ExportExcelRepository>();
+            containerRegistry.RegisterSingleton<ILisService, LisRepository>();
+            containerRegistry.RegisterSingleton<IPatientService, PatientRepository>();
+            containerRegistry.RegisterSingleton<IPointService, PointRepository>();
+            containerRegistry.RegisterSingleton<IPrintService, PrintRepository>();
+            containerRegistry.RegisterSingleton<IProjectService, ProjectRepository>();
+            containerRegistry.RegisterSingleton<ITestResultService, TestResultRepository>();
+            containerRegistry.RegisterSingleton<IToolService, ToolRepository>();
+            containerRegistry.RegisterSingleton<IUploadConfigService, UploadConfigRepository>();
             containerRegistry.RegisterSingleton<IDispatcherService, DispatcherService>();
-            containerRegistry.RegisterSingleton<IReactionAreaQueueRepository, ReactionAreaQueueRepository>();
+            containerRegistry.RegisterSingleton<IReactionAreaQueueService, ReactionAreaQueueRepository>();
 
-            
-            //serviceCollection.AddSingleton<MainViewModel>();
-            //serviceCollection.AddSingleton<HomeViewModel>();
-            //serviceCollection.AddSingleton<DebugViewModel>();
-            //serviceCollection.AddSingleton<DataManagerViewModel>();
-            //serviceCollection.AddSingleton<ProjectListViewModel>();
-            ////serviceCollection.AddSingleton<ProjectDetailsViewModel>();
-            //serviceCollection.AddSingleton<SettingsViewModel>();
-            //serviceCollection.AddSingleton<ApplyTestViewModel>();
-            //serviceCollection.AddSingleton<QCViewModel>();
-            //serviceCollection.AddSingleton<TestSettingsViewModel>();
-            //serviceCollection.AddSingleton<UploadSettingsViewModel>();
-            //serviceCollection.AddSingleton<RunningLogViewModel>();
-            //serviceCollection.AddSingleton<VersionViewModel>();
+            //navigation region
+            containerRegistry.RegisterForNavigation(typeof(HomeView), typeof(HomeView).Name);
+            containerRegistry.RegisterForNavigation(typeof(DataManagerView), typeof(DataManagerView).Name);
+            containerRegistry.RegisterForNavigation(typeof(ApplyTestView), typeof(ApplyTestView).Name);
+            containerRegistry.RegisterForNavigation(typeof(QCView), typeof(QCView).Name);
+            containerRegistry.RegisterForNavigation(typeof(SettingsView), typeof(SettingsView).Name);
+
         }
 
-        //protected override void OnStartup(StartupEventArgs e)
-        //{
-        //    // this.DispatcherUnhandledException += App_DispatcherUnhandledException;
-        //    base.OnStartup(e);
-            
-        //}
 
         private void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
@@ -98,13 +81,10 @@ namespace FluorescenceFullAutomatic
             //e.Handled = true;
         }
 
-        private void Application_Startup(object sender, StartupEventArgs e)
-        {
+   
+        private void Init() {
             InitLog();
             InitDB();
-
-            MainWindow mainWindow = new MainWindow();
-            mainWindow.Show();
         }
 
         private void InitDB()

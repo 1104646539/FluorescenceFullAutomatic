@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using FluorescenceFullAutomatic.Config;
 using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Repositorys;
 using FluorescenceFullAutomatic.Sql;
 using FluorescenceFullAutomatic.Upload;
 using FluorescenceFullAutomatic.Utils;
@@ -74,26 +73,26 @@ namespace FluorescenceFullAutomatic.Services
 
     public class HomeService : IHomeService
     {
-        private readonly IApplyTestRepository _testRepository;
-        private readonly IConfigRepository _configRepository;
-        private readonly IProjectRepository _projectRepository;
-        private readonly ILisRepository _lisRepository;
-        private readonly IReactionAreaQueueRepository _reactionAreaQueueRepository;
-        private readonly IDialogRepository _dialogRepository;
-        private readonly IUploadConfigRepository _uploadConfigRepository;
-        private readonly IApplyTestRepository _applyTestRepository;
-        private readonly IPatientRepository _patientRepository;
-        private readonly IPrintRepository _printRepository;
+        private readonly IApplyTestService _testRepository;
+        private readonly IConfigService _configRepository;
+        private readonly IProjectService _projectRepository;
+        private readonly ILisService _lisRepository;
+        private readonly IReactionAreaQueueService _reactionAreaQueueRepository;
+        private readonly IDialogService _dialogRepository;
+        private readonly IUploadConfigService _uploadConfigRepository;
+        private readonly IApplyTestService _applyTestRepository;
+        private readonly IPatientService _patientRepository;
+        private readonly IPrintService _printRepository;
         public event Func<ReactionAreaItem, bool> _dequeueCallback
         {
             add { _reactionAreaQueueRepository._dequeueCallback += value; }
             remove { _reactionAreaQueueRepository._dequeueCallback -= value; }
         }
 
-        public HomeService(IApplyTestRepository testRepository, IConfigRepository configRepository
-            , IProjectRepository projectRepository, ILisRepository lisRepository,IReactionAreaQueueRepository reactionAreaQueueRepository
-            ,IDialogRepository dialogRepository,IUploadConfigRepository uploadConfigRepository,IApplyTestRepository applyTestRepository
-            ,IPatientRepository patientRepository, IPrintRepository printRepository)
+        public HomeService(IApplyTestService testRepository, IConfigService configRepository
+            , IProjectService projectRepository, ILisService lisRepository,IReactionAreaQueueService reactionAreaQueueRepository
+            ,IDialogService dialogRepository,IUploadConfigService uploadConfigRepository,IApplyTestService applyTestRepository
+            ,IPatientService patientRepository, IPrintService printRepository)
         {
             _testRepository = testRepository;
             _configRepository = configRepository;

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using FluorescenceFullAutomatic.Model;
 using FluorescenceFullAutomatic.Sql;
 
-namespace FluorescenceFullAutomatic.Repositorys
+namespace FluorescenceFullAutomatic.Services
 {
-    public interface ITestResultRepository
+    public interface ITestResultService
     {
         int InsertTestResult(TestResult testResult);
         bool UpdateTestResult(TestResult testResult);
@@ -21,7 +21,7 @@ namespace FluorescenceFullAutomatic.Repositorys
         Task<int> GetAllTestResultCountPageAsync(ConditionModel condition, int pageSize);
         Task<int> GetAllTestResultCountAsync(ConditionModel condition);
     }
-    public class TestResultRepository : ITestResultRepository
+    public class TestResultRepository : ITestResultService
     {
         public TestResultRepository()
         {

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using FluorescenceFullAutomatic.Model;
 using FluorescenceFullAutomatic.Sql;
 
-namespace FluorescenceFullAutomatic.Repositorys
+namespace FluorescenceFullAutomatic.Services
 {
-    public interface IPatientRepository
+    public interface IPatientService
     {
         int InsertPatient(Patient patient);
         bool UpdatePatient(Patient patient);
@@ -16,7 +16,7 @@ namespace FluorescenceFullAutomatic.Repositorys
         Patient GetPatientForID(int id);
     }
 
-    public class PatientRepository : IPatientRepository
+    public class PatientRepository : IPatientService
     {
         public bool DeletePatient(Patient patient)
         {

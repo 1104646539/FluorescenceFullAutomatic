@@ -216,15 +216,15 @@ namespace FluorescenceFullAutomatic.ViewModels
         private string cleanoutDuration;
 
         private readonly IDialogCoordinator _dialogCoordinator;
-        private readonly IConfigService _configService;
+        private readonly IConfigService _configRepository;
 
         
         #endregion
-        public DebugViewModel(ISerialPortService serialPortService,IConfigService configService,IDialogCoordinator dialogCoordinator)
+        public DebugViewModel(ISerialPortService serialPortService,IConfigService configRepository,IDialogCoordinator dialogCoordinator)
         {
             this.defaultSerialPortService = serialPortService;
             this._dialogCoordinator = dialogCoordinator;
-            this._configService = configService;
+            this._configRepository = configRepository;
             MotorSelected = Motors.First();
             DirSelected = Dirs.First();
             
@@ -421,7 +421,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                     return;
                 }
                 
-                SerialPortHelper.Instance.Connect(SelectedSerialPort, _configService.MainPortBaudRate());
+                SerialPortHelper.Instance.Connect(SelectedSerialPort, _configRepository.MainPortBaudRate());
                 IsCmdRunningFinish = true;
             }
             catch (Exception ex)

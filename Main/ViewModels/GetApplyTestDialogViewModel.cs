@@ -16,8 +16,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 {
     public partial class GetApplyTestDialogViewModel : ObservableRecipient
     {
-        private readonly ILisService _lisService;
-        private readonly IApplyTestService _applyTestService;
+        private readonly ILisService lisRepository;
 
         // 标题和消息
         [ObservableProperty]
@@ -111,14 +110,12 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly Action<GetApplyTestDialogViewModel> _actionClose;
 
         public GetApplyTestDialogViewModel(
-            ILisService lisService,
-            IApplyTestService applyTestService,
+            ILisService lisRepository,
             Action<GetApplyTestDialogViewModel, List<ApplyTest>> actionConfirm,
             Action<GetApplyTestDialogViewModel> actionCancel = null,
             Action<GetApplyTestDialogViewModel> actionClose = null)
         {
-            _lisService = lisService;
-            _applyTestService = applyTestService;
+            this.lisRepository = lisRepository;
             _actionConfirm = actionConfirm;
             _actionCancel = actionCancel;
             _actionClose = actionClose;
@@ -231,17 +228,17 @@ namespace FluorescenceFullAutomatic.ViewModels
                 {
                     // 使用condition1和condition2
                     string condition2 = string.IsNullOrWhiteSpace(EndQueryText) ? QueryText : EndQueryText;
-                    result = await _lisService.QueryApplyTestFormTestNumAsync(QueryText, condition2);
+                    result = await lisRepository.QueryApplyTestFormTestNumAsync(QueryText, condition2);
                 }
                 else if (IsBarcodeQueryMode)
                 {
                     // 条码查询只使用condition1
-                    result = await _lisService.QueryApplyTestFormBarcodeAsync(QueryText);
+                    result = await lisRepository.QueryApplyTestFormBarcodeAsync(QueryText);
                 }
                 else
                 {
                     // 送检时间查询
-                    result = await _lisService.QueryApplyTestFormInspectDateAsync(StartApplyTime?.ToString(DateTimeEx.DateTimeFormat3), EndApplyTime?.ToString(DateTimeEx.DateTimeFormat3));
+                    result = await lisRepository.QueryApplyTestFormInspectDateAsync(StartApplyTime?.ToString(DateTimeEx.DateTimeFormat3), EndApplyTime?.ToString(DateTimeEx.DateTimeFormat3));
                 }
 
                 // 处理查询结果

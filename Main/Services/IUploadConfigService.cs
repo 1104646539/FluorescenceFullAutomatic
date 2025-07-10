@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using FluorescenceFullAutomatic.Config;
 using FluorescenceFullAutomatic.Upload;
 
-namespace FluorescenceFullAutomatic.Repositorys
+namespace FluorescenceFullAutomatic.Services
 {
-    public interface IUploadConfigRepository
+    public interface IUploadConfigService
     {
         // 基本配置
         bool GetOpenUpload();
@@ -93,7 +93,7 @@ namespace FluorescenceFullAutomatic.Repositorys
         );
     }
 
-    public class UploadConfigRepository : IUploadConfigRepository
+    public class UploadConfigRepository : IUploadConfigService
     {
         
         

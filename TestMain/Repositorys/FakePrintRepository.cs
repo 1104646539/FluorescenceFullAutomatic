@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TestMain.Repositorys
 {
-    public class FakePrintRepository : IPrintRepository
+    public class FakePrintRepository : IPrintService
     {
         public void AutoPrintReport(TestResult tr, bool autoPrint, bool autoUploadFtp, bool autoPrintTicket, string printerName)
         {
