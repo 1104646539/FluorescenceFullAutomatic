@@ -3,7 +3,7 @@
     x:Class="FluorescenceFullAutomatic.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="clr-namespace:FluorescenceFullAutomatic.Converters"
+    xmlns:converters="clr-namespace:FluorescenceFullAutomatic.Platform.Converters;assembly=FluorescenceFullAutomatic.Platform"
     xmlns:prism="http://prismlibrary.com/"
     xmlns:view="clr-namespace:FluorescenceFullAutomatic.Views"
     xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels">
@@ -14,10 +14,9 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml" />
 
-                <ResourceDictionary Source="pack://application:,,,/全自动荧光免疫定量分析仪;component/Style/AppStyle.xaml" />
-                <ResourceDictionary x:Name="language" Source="pack://application:,,,/全自动荧光免疫定量分析仪;component/Style/zh-CN.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/FluorescenceFullAutomatic.Platform;component/Style/AppStyle.xaml" />
+                <ResourceDictionary x:Name="language" Source="pack://application:,,,/FluorescenceFullAutomatic.Platform;component/Style/zh-CN.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
             <!--  转换器  -->
             <converters:DoubleValidationConverter x:Key="DoubleValidationConverter" />
             <converters:IntValidationConverter x:Key="IntValidationConverter" />

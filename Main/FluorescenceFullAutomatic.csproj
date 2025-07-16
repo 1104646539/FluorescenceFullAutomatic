@@ -476,135 +476,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Attached\TextBoxAttachedProperties.cs" />
-    <Compile Include="Behaviors\ScrollViewerExtensions.cs" />
-    <Compile Include="Config\ConnectConfig.cs" />
-    <Compile Include="Config\UploadConfig.cs" />
-    <Compile Include="Config\JsonConfigBase.cs" />
-    <Compile Include="Config\GlobalConfig.cs" />
-    <Compile Include="Config\MachineStatus.cs" />
-    <Compile Include="Config\QCCard.cs" />
-    <Compile Include="Config\SerialGlobal.cs" />
-    <Compile Include="Config\SystemGlobal.cs" />
-    <Compile Include="Config\TestType.cs" />
-    <Compile Include="Converters\BooleanToCheckedInverseConverter.cs" />
-    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
-    <Compile Include="Converters\DoubleValidationConverter.cs" />
-    <Compile Include="Converters\EnumDescriptionConverter.cs" />
-    <Compile Include="Converters\EnumSelectedConverter.cs" />
-    <Compile Include="Converters\EnumToStringConverter.cs" />
-    <Compile Include="Converters\IntValidationConverter.cs" />
-    <Compile Include="Converters\BooleanToVisibilityInverseConverter.cs" />
-    <Compile Include="Converters\DateTimeToStringConvert.cs" />
-    <Compile Include="Converters\IntArrayToStringConvert.cs" />
-    <Compile Include="Converters\InverseBooleanConverter.cs" />
-    <Compile Include="Converters\ItemIndexToCornerRadiusConverter.cs" />
-    <Compile Include="Converters\MaxHeightConverter.cs" />
-    <Compile Include="Converters\ReactionAreaProjectTypeToVisibilityConverter.cs" />
-    <Compile Include="Converters\ResultToImageConverter.cs" />
-    <Compile Include="Converters\SafePatientPropertyConverter.cs" />
-    <Compile Include="Converters\StringToDefaultConverter.cs" />
-    <Compile Include="Converters\TestResultStateConverter .cs" />
-    <Compile Include="Converters\SampleItemNumConverter.cs" />
-    <Compile Include="Converters\SampleItemResultConverter.cs" />
-    <Compile Include="Converters\SampleItemBarcodeConverter.cs" />
-    <Compile Include="Converters\SampleItemStateConverter.cs" />
-    <Compile Include="Ex\DateTimeEx.cs" />
-    <Compile Include="Ex\EnumEx.cs" />
-    <Compile Include="Model\AddingSampleModel.cs" />
-    <Compile Include="Model\ApplyTest.cs" />
-    <Compile Include="Model\BaseResponseModel.cs" />
-    <Compile Include="Model\CleanoutFluidModel.cs" />
-    <Compile Include="Model\CleanoutSamplingProbeModel.cs" />
-    <Compile Include="Model\ClearReactionAreaModel.cs" />
-    <Compile Include="Model\ConditionModel.cs" />
-    <Compile Include="Model\DataChangeMsg.cs" />
-    <Compile Include="Model\DrainageModel.cs" />
-    <Compile Include="Model\ExportType.cs" />
-    <Compile Include="Model\MachineStatusModel.cs" />
-    <Compile Include="Model\MainStatusChangeMsg.cs" />
-    <Compile Include="Model\MotorModel.cs" />
-    <Compile Include="Model\MoveReactionAreaModel.cs" />
-    <Compile Include="Model\MoveSampleModel.cs" />
-    <Compile Include="Model\MoveSampleShelfModel.cs" />
-    <Compile Include="Model\NavItem.cs" />
-    <Compile Include="Model\Patient.cs" />
-    <Compile Include="Model\PiercedModel.cs" />
-    <Compile Include="Model\Point.cs" />
-    <Compile Include="Model\Project.cs" />
-    <Compile Include="Model\PushCardModel.cs" />
-    <Compile Include="Model\ReactionTempModel.cs" />
-    <Compile Include="Model\ResetParamsModel.cs" />
-    <Compile Include="Model\ResultState.cs" />
-    <Compile Include="Model\RunningLogModel.cs" />
-    <Compile Include="Model\SampleItem.cs" />
-    <Compile Include="Model\ShutdownModel.cs" />
-    <Compile Include="Model\SqlVersion.cs" />
-    <Compile Include="Model\TestResult.cs" />
-    <Compile Include="Model\SamleShelfModel.cs" />
-    <Compile Include="Model\SamplingModel.cs" />
-    <Compile Include="Model\SqueezingModel.cs" />
-    <Compile Include="Model\TestModel.cs" />
-    <Compile Include="Model\UpdateModel.cs" />
-    <Compile Include="Model\ReactionAreaItem.cs" />
-    <Compile Include="Model\VersionModel.cs" />
-    <Compile Include="Services\IApplyTestService.cs" />
-    <Compile Include="Services\IConfigService.cs" />
-    <Compile Include="Services\IDialogService.cs" />
-    <Compile Include="Services\IExportExcelService.cs" />
-    <Compile Include="Services\ILisService.cs" />
-    <Compile Include="Services\IPatientService.cs" />
-    <Compile Include="Services\IPointService.cs" />
-    <Compile Include="Services\IPrintService.cs" />
-    <Compile Include="Services\IProjectService.cs" />
-    <Compile Include="Services\ITestResultService.cs" />
-    <Compile Include="Services\IToolService.cs" />
-    <Compile Include="Services\IUploadConfigService.cs" />
-    <Compile Include="Services\IReactionAreaQueueService.cs" />
-    <Compile Include="Services\IDataManagerService.cs" />
-    <Compile Include="Services\IDispatcherService.cs" />
-    <Compile Include="Services\IHomeService.cs" />
-    <Compile Include="Services\ISerialPortService.cs" />
-    <Compile Include="Services\ISettingsService.cs" />
-    <Compile Include="Services\IUploadService.cs" />
-    <Compile Include="Sql\DB.cs" />
-    <Compile Include="Sql\SqlHelper.cs" />
-    <Compile Include="Upload\BaseCommunicationService.cs" />
-    <Compile Include="Upload\HL7CommunicationFactory.cs" />
-    <Compile Include="Upload\HL7ConfigService.cs" />
-    <Compile Include="Upload\HL7Helper.cs" />
-    <Compile Include="Upload\HL7MessageBuilder.cs" />
-    <Compile Include="Upload\Hl7Result.cs" />
-    <Compile Include="Upload\IHL7CommunicationService.cs" />
-    <Compile Include="Upload\MLLPProtocol.cs" />
-    <Compile Include="Upload\SerialCommunicationService.cs" />
-    <Compile Include="Upload\TcpCommunicationService.cs" />
-    <Compile Include="Upload\UploadUtil.cs" />
-    <Compile Include="Utils\BarcodeHelper.cs" />
-    <Compile Include="Utils\CRC16.cs" />
-    <Compile Include="Utils\EventMsg.cs" />
-    <Compile Include="Utils\EventWhat.cs" />
-    <Compile Include="Utils\FakaBarcodeSerialPort.cs" />
-    <Compile Include="Utils\FakaTicketSerialPort.cs" />
-    <Compile Include="Utils\FakeSerialPortImpl.cs" />
-    <Compile Include="Utils\Regions.cs" />
-    <Compile Include="Utils\GlobalUtil.cs" />
-    <Compile Include="Utils\ISerialPort.cs" />
-    <Compile Include="Utils\IReceiveData.cs" />
-    <Compile Include="Utils\Keys.cs" />
-    <Compile Include="Utils\TicketReportUtil.cs" />
-    <Compile Include="Utils\ReactionAreaQueue.cs" />
-    <Compile Include="Utils\A4ReportUtil.cs" />
-    <Compile Include="Utils\SerialPortImpl.cs" />
-    <Compile Include="Utils\SerialPortHelper.cs" />
-    <Compile Include="Utils\SerialUtils.cs" />
     <Compile Include="ViewModels\ApplyTestViewModel.cs" />
     <Compile Include="ViewModels\DataManagerViewModel.cs" />
     <Compile Include="ViewModels\DebugViewModel.cs" />
     <Compile Include="ViewModels\DialogViewModel.cs" />
     <Compile Include="ViewModels\FilterConditionViewModel.cs" />
     <Compile Include="ViewModels\GetApplyTestDialogViewModel.cs" />
-    <Compile Include="ViewModels\HomeViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\MenuItemViewModel.cs" />
     <Compile Include="ViewModels\ProjectDetailsViewModel.cs" />
@@ -633,9 +510,6 @@
     <Compile Include="Views\Ctr\ProjectDetailsControl.xaml.cs">
       <DependentUpon>ProjectDetailsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\NoTitleWindow.xaml.cs">
-      <DependentUpon>NoTitleWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\QCView.xaml.cs">
       <DependentUpon>QCView.xaml</DependentUpon>
     </Compile>
@@ -654,28 +528,6 @@
     <Compile Include="Views\VersionView.xaml.cs">
       <DependentUpon>VersionView.xaml</DependentUpon>
     </Compile>
-    <Page Include="Style\AppStyle.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Style\en-US.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Page>
-    <Page Include="Style\SelfAccent.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Style\SelfAppTheme.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Style\zh-CN.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Page>
     <Page Include="Views\ApplyTestView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -687,10 +539,6 @@
     <Page Include="Views\Ctr\GetApplyTestDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\Ctr\HintDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Ctr\ProgressDialog.xaml">
       <SubType>Designer</SubType>
@@ -704,23 +552,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\NoTitleWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\ProjectListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Ctr\ResultDetailsControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Ctr\SampleShelfControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Ctr\ReactionAreaControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -736,10 +572,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\HomeView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -750,10 +582,6 @@
     </Compile>
     <Compile Include="ViewModels\ProjectListViewModel.cs" />
     <Compile Include="ViewModels\PagingControlViewModel.cs" />
-    <Compile Include="Views\Ctr\HintDialog.xaml.cs">
-      <DependentUpon>HintDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ViewModels\HintDialogViewModel.cs" />
     <Compile Include="Views\ProjectListView.xaml.cs">
       <DependentUpon>ProjectListView.xaml</DependentUpon>
     </Compile>
@@ -761,22 +589,12 @@
       <DependentUpon>ResultDetailsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\ResultDetailsViewModel.cs" />
-    <Compile Include="Views\Ctr\SampleShelfControl.xaml.cs">
-      <DependentUpon>SampleShelfControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="ViewModels\SampleShelfViewModel.cs" />
-    <Compile Include="Views\Ctr\ReactionAreaControl.xaml.cs">
-      <DependentUpon>ReactionAreaControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ViewModels\ReactionAreaViewModel.cs" />
     <Compile Include="Views\DataManagerView.xaml.cs">
       <DependentUpon>DataManagerView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DebugView.xaml.cs">
       <DependentUpon>DebugView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\HomeView.xaml.cs">
-      <DependentUpon>HomeView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -837,25 +655,11 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="template\A4-双联卡.xlsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="template\A4.xlsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="template\双联卡模板.xlsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="template\模板.xlsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Components\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Analyzer Include="packages\CommunityToolkit.Mvvm.8.2.2\analyzers\dotnet\roslyn4.0\cs\CommunityToolkit.Mvvm.CodeFixers.dll" />
     <Analyzer Include="packages\CommunityToolkit.Mvvm.8.2.2\analyzers\dotnet\roslyn4.0\cs\CommunityToolkit.Mvvm.SourceGenerators.dll" />
@@ -873,24 +677,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Image\barcode_close.png" />
-    <Resource Include="Image\barcode_open.png" />
-    <Resource Include="Image\printer_error.png" />
-    <Resource Include="Image\printer_success.png" />
-    <Resource Include="Image\shutdown.png" />
-    <Resource Include="Image\temp_error.png" />
-    <Resource Include="Image\temp_standard.png" />
-    <Resource Include="Image\upload_close.png" />
-    <Resource Include="Image\upload_connected.png" />
-    <Resource Include="Image\upload_error.png" />
-    <Resource Include="Image\start_error.png" />
-    <Resource Include="Image\start_success.png" />
-    <Resource Include="Image\stop_error.png" />
-    <Resource Include="Image\stop_success.png" />
-    <Resource Include="Image\cardhouse_error.png" />
-    <Resource Include="Image\cardhouse_success.png" />
-    <Resource Include="Image\cleanout_error.png" />
-    <Resource Include="Image\cleanout_success.png" />
     <Content Include="Dll\Spire.License.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -899,9 +685,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Resource Include="Dll\Spire.Pdf.xml" />
-    <Resource Include="Image\img_result_state_finish.png" />
-    <Resource Include="Image\img_result_state_none.png" />
-    <Resource Include="Image\img_result_state_error.png" />
     <Resource Include="FodyWeavers.xml" />
     <Content Include="Dll\System.Data.SQLite.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -912,6 +695,24 @@
     <Content Include="x86\SQLite.Interop.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FluorescenceFullAutomatic.Core\FluorescenceFullAutomatic.Core.csproj">
+      <Project>{bde067d9-ddfa-47c4-85e3-61aedbd5f2ac}</Project>
+      <Name>FluorescenceFullAutomatic.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\HomeModule\HomeModule.csproj">
+      <Project>{ebc604d3-21eb-4519-a923-7355c939adf0}</Project>
+      <Name>HomeModule</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Platform\FluorescenceFullAutomatic.Platform.csproj">
+      <Project>{0345c875-a243-4e1f-bb22-c0ce5ddec3c8}</Project>
+      <Name>FluorescenceFullAutomatic.Platform</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UploadModule\UploadModule.csproj">
+      <Project>{804833d1-c2ec-4819-85e6-0f1b805a8ab2}</Project>
+      <Name>UploadModule</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\CommunityToolkit.Mvvm.8.2.2\build\netstandard2.0\CommunityToolkit.Mvvm.targets" Condition="Exists('packages\CommunityToolkit.Mvvm.8.2.2\build\netstandard2.0\CommunityToolkit.Mvvm.targets')" />

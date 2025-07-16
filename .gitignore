@@ -90,6 +90,7 @@ AppPackages/
 # 资源字典生成的文件
 *.g.cs
 *.g.i.cs
-/HomeModule
-/FluorescenceFullAutomatic.Core
-/Platform
+
+#/HomeModule
+#/FluorescenceFullAutomatic.Core
+#/Platform

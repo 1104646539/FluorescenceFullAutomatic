@@ -1,8 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using FluorescenceFullAutomatic.Config;
-using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Services;
-using FluorescenceFullAutomatic.Utils;
+using FluorescenceFullAutomatic.Core.Config;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Platform.Services;
 using FluorescenceFullAutomatic.Views.Ctr;
 using FluorescenceFullAutomatic.Views;
 using MahApps.Metro.Controls.Dialogs;
@@ -14,12 +13,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using CommunityToolkit.Mvvm.Input;
-using FluorescenceFullAutomatic.Ex;
 using FluorescenceFullAutomatic.ViewModels;
 using System.Collections.ObjectModel;
 using System.Web.ApplicationServices;
 using static MaterialDesignThemes.Wpf.Theme.ToolBar;
 using CommunityToolkit.Mvvm.Messaging;
+using FluorescenceFullAutomatic.Platform.Ex;
+using FluorescenceFullAutomatic.Core.Model;
+using FluorescenceFullAutomatic.Platform.Utils;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -27,12 +28,11 @@ namespace FluorescenceFullAutomatic.ViewModels
     {
         #region 字段
         private readonly ISerialPortService serialPortService;
-
+        private readonly IPointService pointService;
         private readonly IToolService toolRepository;
         private readonly IProjectService projectRepository;
         private readonly IConfigService configRepository;
         private readonly IDialogCoordinator dialogCoordinator;
-        private readonly IHomeService homeService;
         private readonly IReactionAreaQueueService reactionAreaQueueRepository;
 
         private readonly IDialogService dialogRepository;
@@ -305,12 +305,13 @@ namespace FluorescenceFullAutomatic.ViewModels
 
 
         #endregion
-        public QCViewModel(IHomeService homeService, IToolService toolRepository, ISerialPortService serialService, IConfigService configRepository
-            , IDialogCoordinator dialogCoordinator,IProjectService projectRepository,IReactionAreaQueueService reactionAreaQueueRepository,IDialogService dialogRepository)
+        public QCViewModel(IToolService toolRepository, ISerialPortService serialService, IConfigService configRepository
+            , IDialogCoordinator dialogCoordinator,IProjectService projectRepository,IReactionAreaQueueService reactionAreaQueueRepository
+            ,IDialogService dialogRepository, IPointService pointService)
         {
+            this.pointService = pointService;
             this.toolRepository = toolRepository;
             this.projectRepository = projectRepository;
-            this.homeService = homeService;
             this.serialPortService = serialService;
             this.configRepository = configRepository;
             this.dialogCoordinator = dialogCoordinator;
@@ -438,7 +439,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             if (!string.IsNullOrEmpty(errorMsg))
             {
                 Log.Information("仪器状态异常，请检查仪器状态。");
-                dialogRepository.ShowHiltDialog(
+                dialogRepository.ShowHiltDialog(this,
                     "提示",
                     errorMsg,
                     "好的",
@@ -516,7 +517,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                     string msg =
                         $"仪器状态异常,{(CardExist == false ? "卡仓不存在," : "")}{(CardNum <= 0 ? "检测卡不足," : "")}";
                     msg = msg.TrimEnd(',');
-                    dialogRepository.ShowHiltDialog(
+                    dialogRepository.ShowHiltDialog(this,
                         "提示",
                         msg,
                         "重新获取",
@@ -718,7 +719,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 {
                     Log.Information("此项目不是质控项目");
                     //此项目不是质控项目
-                    dialogRepository.ShowHiltDialog(
+                    dialogRepository.ShowHiltDialog(this,
                         "提示",
                         "此项目不是质控项目",
                         "再次推卡",
@@ -823,7 +824,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             point.C2 = "" + c2;
             point.Tc = toolRepository.CalcTC(t, c);
             point.Tc2 = toolRepository.CalcTC(t2, c2);
-            int pointId = homeService.InsertPoint(point);
+            int pointId = pointService.InsertPoint(point);
             point.Id = pointId;
             ResultPoints[CurrentTestCount-1] = point;
             if (CurrentTestCount == QC_TEST_COUNT)
@@ -970,7 +971,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
             RunningErrorMsg = $"运行错误，请联系经销商人员维护。\n错误信息: {model.Error}";
             // 显示错误信息
-            dialogRepository.ShowHiltDialog("提示", RunningErrorMsg, "确定", (d, dialog) => { });
+            dialogRepository.ShowHiltDialog(this,"提示", RunningErrorMsg, "确定", (d, dialog) => { });
         }
         public void ReceiveVersionModel(BaseResponseModel<VersionModel> model)
         {

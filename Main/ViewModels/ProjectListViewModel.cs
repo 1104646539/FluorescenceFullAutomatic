@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Services;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Platform.Services;
 using FluorescenceFullAutomatic.Views;
 using FluorescenceFullAutomatic.Views.Ctr;
 using System;

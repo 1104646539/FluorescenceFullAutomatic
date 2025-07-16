@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using FluorescenceFullAutomatic.Config;
-using FluorescenceFullAutomatic.Services;
-using FluorescenceFullAutomatic.Utils;
+using FluorescenceFullAutomatic.Core.Config;
+using FluorescenceFullAutomatic.Platform.Services;
+using FluorescenceFullAutomatic.Platform.Utils;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -75,13 +75,13 @@ namespace FluorescenceFullAutomatic.ViewModels
         public ObservableCollection<string> BaudRates { get; } = new ObservableCollection<string> { "9600", "115200" };
         public ObservableCollection<string> Charsets { get; } = new ObservableCollection<string> { "GBK", "UTF-8" };
 
-        private readonly IUploadService _uploadService;
+        private readonly ILisService lisService;
 
-        private readonly IDialogService _dialogRepository;
-        public UploadSettingsViewModel(IUploadService uploadService,IDialogService dialogRepository  )
+        private readonly IDialogService dialogRepository;
+        public UploadSettingsViewModel(ILisService lisService, IDialogService dialogRepository  )
         {
-            _uploadService = uploadService;
-            _dialogRepository = dialogRepository;
+            this.lisService = lisService;
+            this.dialogRepository = dialogRepository;
             LoadSettings();
             WeakReferenceMessenger.Default.Register<EventMsg<string>>(this, (r, m) =>
             {
@@ -94,24 +94,24 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private void LoadSettings()
         {
-            OpenUpload = _uploadService.GetOpenUpload();
-            AutoUpload = _uploadService.GetAutoUpload();
-            AutoReconnection = _uploadService.GetAutoReconnection();
-            UploadIntervalTime = _uploadService.GetUploadIntervalTime();
-            TwoWay = _uploadService.GetTwoWay();
-            OvertimeRetryCount = _uploadService.GetOvertimeRetryCount();
-            Overtime = _uploadService.GetOvertime();
-            AutoGetApplyTest = _uploadService.GetAutoGetApplyTest();
-            MatchBarcode = _uploadService.GetMatchBarcode();
-            SerialPort = _uploadService.GetSerialPort();
-            Charset = _uploadService.GetCharset();
-            BaudRate = _uploadService.GetBaudRate();
-            DataBit = _uploadService.GetDataBit();
-            StopBit = _uploadService.GetStopBit();
-            OddEven = _uploadService.GetOddEven();
-            ServiceIP = _uploadService.GetServiceIP();
-            ServicePort = _uploadService.GetServicePort();
-            IsConnected = _uploadService.IsConnected();
+            OpenUpload = lisService.GetOpenUpload();
+            AutoUpload = lisService.GetAutoUpload();
+            AutoReconnection = lisService.GetAutoReconnection();
+            UploadIntervalTime = lisService.GetUploadIntervalTime();
+            TwoWay = lisService.GetTwoWay();
+            OvertimeRetryCount = lisService.GetOvertimeRetryCount();
+            Overtime = lisService.GetOvertime();
+            AutoGetApplyTest = lisService.GetAutoGetApplyTest();
+            MatchBarcode = lisService.GetMatchBarcode();
+            SerialPort = lisService.GetSerialPort();
+            Charset = lisService.GetCharset();
+            BaudRate = lisService.GetBaudRate();
+            DataBit = lisService.GetDataBit();
+            StopBit = lisService.GetStopBit();
+            OddEven = lisService.GetOddEven();
+            ServiceIP = lisService.GetServiceIP();
+            ServicePort = lisService.GetServicePort();
+            IsConnected = lisService.IsConnected();
             ConnectionStatus = IsConnected ? "已连接" : "未连接";
 
           
@@ -120,7 +120,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         [RelayCommand]
         private void SaveSettings()
         {
-            _uploadService.SaveAllSettings(
+            lisService.SaveAllSettings(
                 OpenUpload,
                 AutoUpload,
                 AutoReconnection,
@@ -140,7 +140,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 ServicePort
             );
 
-            _dialogRepository.ShowHiltDialog("提示", "设置已保存！", "确定", (m, d) => { });
+            dialogRepository.ShowHiltDialog(this,"提示", "设置已保存！", "确定", (m, d) => { });
         }
 
         [RelayCommand]
@@ -148,49 +148,52 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             try
             {
-                bool success = _uploadService.Connect();
+                bool success = lisService.IsConnected();
                 if (success)
                 {
                     IsConnected = true;
                     ConnectionStatus = "已连接";
-                    _dialogRepository.ShowHiltDialog("提示", "连接成功！", "确定", (m, d) => { });
+                    dialogRepository.ShowHiltDialog(this,"提示", "连接成功！", "确定", (m, d) => { });
                 }
                 else
                 {
                     IsConnected = false;
                     ConnectionStatus = "连接失败";
-                    _dialogRepository.ShowHiltDialog("错误", "连接失败", "确定", (m, d) => { });
+                    dialogRepository.ShowHiltDialog(this,"错误", "连接失败", "确定", (m, d) => { });
                 }
             }
             catch (Exception ex)
             {
                 IsConnected = false;
                 ConnectionStatus = "连接失败";
-                _dialogRepository.ShowHiltDialog("错误", $"连接失败：{ex.Message}", "确定", (m, d) => { });
+                dialogRepository.ShowHiltDialog(this,"错误", $"连接失败：{ex.Message}", "确定", (m, d) => { });
             }
         }
 
         [RelayCommand]
         private void Disconnect()
         {
-            try
-            {
-                bool success = _uploadService.Disconnect();
-                if (success)
-                {
-                    IsConnected = false;
-                    ConnectionStatus = "已断开";
-                    _dialogRepository.ShowHiltDialog("提示", "已断开连接！", "确定", (m, d) => { });
-                }
-                else
-                {
-                    _dialogRepository.ShowHiltDialog("错误", "断开连接失败", "确定", (m, d) => { });
-                }
-            }
-            catch (Exception ex)
-            {
-                    _dialogRepository.ShowHiltDialog("错误", $"断开连接失败：{ex.Message}", "确定", (m, d) => { });
-            }
+            lisService.Disconnect();
+            IsConnected = false;
+            ConnectionStatus = "已断开";
+            //try
+            //{
+            //    bool success = lisService.Disconnect();
+            //    if (success)
+            //    {
+            //        IsConnected = false;
+            //        ConnectionStatus = "已断开";
+            //        dialogRepository.ShowHiltDialog(this,"提示", "已断开连接！", "确定", (m, d) => { });
+            //    }
+            //    else
+            //    {
+            //        dialogRepository.ShowHiltDialog(this,"错误", "断开连接失败", "确定", (m, d) => { });
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //        dialogRepository.ShowHiltDialog(this,"错误", $"断开连接失败：{ex.Message}", "确定", (m, d) => { });
+            //}
         }
     }
 }

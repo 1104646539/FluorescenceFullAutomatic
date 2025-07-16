@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FluorescenceFullAutomatic.Config;
+using FluorescenceFullAutomatic.Core.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;

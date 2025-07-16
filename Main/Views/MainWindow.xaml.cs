@@ -1,7 +1,6 @@
 using System;
 using System.Windows;
-using FluorescenceFullAutomatic.Config;
-using FluorescenceFullAutomatic.Utils;
+using FluorescenceFullAutomatic.Core.Config;
 using FluorescenceFullAutomatic.Views.Ctr;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;

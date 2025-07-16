@@ -11,7 +11,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeModule", "..\HomeModule
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluorescenceFullAutomatic.Core", "..\FluorescenceFullAutomatic.Core\FluorescenceFullAutomatic.Core.csproj", "{BDE067D9-DDFA-47C4-85E3-61AEDBD5F2AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Platform", "..\Platform\Platform.csproj", "{0345C875-A243-4E1F-BB22-C0CE5DDEC3C8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluorescenceFullAutomatic.Platform", "..\Platform\FluorescenceFullAutomatic.Platform.csproj", "{0345C875-A243-4E1F-BB22-C0CE5DDEC3C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UploadModule", "..\UploadModule\UploadModule.csproj", "{804833D1-C2EC-4819-85E6-0F1B805A8AB2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{0345C875-A243-4E1F-BB22-C0CE5DDEC3C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0345C875-A243-4E1F-BB22-C0CE5DDEC3C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0345C875-A243-4E1F-BB22-C0CE5DDEC3C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{804833D1-C2EC-4819-85E6-0F1B805A8AB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{804833D1-C2EC-4819-85E6-0F1B805A8AB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{804833D1-C2EC-4819-85E6-0F1B805A8AB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{804833D1-C2EC-4819-85E6-0F1B805A8AB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

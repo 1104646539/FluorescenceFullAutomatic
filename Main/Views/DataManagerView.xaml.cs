@@ -16,7 +16,7 @@ using System.Windows.Shapes;
 using FluorescenceFullAutomatic.ViewModels;
 using Serilog;
 using FluorescenceFullAutomatic.Views.Ctr;
-using FluorescenceFullAutomatic.Model;
+using FluorescenceFullAutomatic.Platform.Model;
 using System.Windows.Controls.Primitives;
 
 namespace FluorescenceFullAutomatic.Views

@@ -4,14 +4,15 @@ using System.Security.Cryptography;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Config;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Core.Config;
 using MaterialDesignColors;
 using ScottPlot;
 using ScottPlot.Plottables;
 using ScottPlot.WPF;
 using SkiaSharp;
 using static SkiaSharp.HarfBuzz.SKShaper;
+using FluorescenceFullAutomatic.Platform.Core.Config;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {

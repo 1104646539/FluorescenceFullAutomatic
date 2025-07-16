@@ -1,9 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FluorescenceFullAutomatic.Ex;
-using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Services;
-using Main.Upload;
+using FluorescenceFullAutomatic.Platform.Ex;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Platform.Services;
+using FluorescenceFullAutomatic.UploadModule.Upload;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

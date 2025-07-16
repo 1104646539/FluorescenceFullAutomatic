@@ -2,7 +2,7 @@
     x:Class="FluorescenceFullAutomatic.Views.DataManagerView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:convert="clr-namespace:FluorescenceFullAutomatic.Converters"
+    xmlns:convert="clr-namespace:FluorescenceFullAutomatic.Platform.Converters;assembly=FluorescenceFullAutomatic.Platform"
     xmlns:ctr="clr-namespace:FluorescenceFullAutomatic.Views.Ctr"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"

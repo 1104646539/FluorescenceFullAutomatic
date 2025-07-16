@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Services;
-using FluorescenceFullAutomatic.Utils;
+using FluorescenceFullAutomatic.Core.Model;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Platform.Services;
+using FluorescenceFullAutomatic.Platform.Utils;
 using FluorescenceFullAutomatic.Views;
 using FluorescenceFullAutomatic.Views.Ctr;
 using MahApps.Metro.Controls.Dialogs;
@@ -201,7 +202,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                         await MainWindow.Instance.HideMetroDialogAsync(customDialog);
 
                         //显示提示
-                        dialogRepository.ShowHiltDialog(
+                        dialogRepository.ShowHiltDialog(this,
                             "提示",
                             $"成功添加 {applyTests.Count} 条记录",
                             "确定",

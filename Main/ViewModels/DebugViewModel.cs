@@ -1,11 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ControlzEx.Standard;
-using FluorescenceFullAutomatic.Config;
-using FluorescenceFullAutomatic.Ex;
-using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Services;
-using FluorescenceFullAutomatic.Utils;
+using FluorescenceFullAutomatic.Core.Config;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Platform.Services;
 using FluorescenceFullAutomatic.Views.Ctr;
 using FluorescenceFullAutomatic.ViewModels;
 using MahApps.Metro.Controls.Dialogs;
@@ -22,6 +20,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using FluorescenceFullAutomatic.Platform.Ex;
+using FluorescenceFullAutomatic.Platform.Utils;
+using FluorescenceFullAutomatic.Core.Model;
+using Point = FluorescenceFullAutomatic.Platform.Model.Point;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -925,7 +927,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             SystemGlobal.TestType = TestType.Test;
 
             ShowResultDetails(new TestResult() {
-                Point = new Model.Point() {
+                Point = new Point() {
                     Points = model.Data.Point.ToArray(),
                     Location = model.Data.Location.ToArray(),
                 },

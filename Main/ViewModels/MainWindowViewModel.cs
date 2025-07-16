@@ -10,19 +10,23 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using FluorescenceFullAutomatic.Config;
-using FluorescenceFullAutomatic.Ex;
-using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Services;
-using FluorescenceFullAutomatic.Upload;
-using FluorescenceFullAutomatic.Utils;
+using FluorescenceFullAutomatic.Core.Config;
+using FluorescenceFullAutomatic.Core.Model;
+using FluorescenceFullAutomatic.HomeModule.Services;
+using FluorescenceFullAutomatic.Platform.Core.Config;
+using FluorescenceFullAutomatic.Platform.Ex;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Platform.Services;
+using FluorescenceFullAutomatic.Platform.Utils;
+using FluorescenceFullAutomatic.UploadModule.Upload;
 using FluorescenceFullAutomatic.Views;
 using MahApps.Metro.Controls.Dialogs;
-using Prism.Regions;
-using Serilog;
 using Prism.Ioc;
 using Prism.Modularity;
+using Prism.Regions;
 using Prism.Unity;
+using Serilog;
+
 namespace FluorescenceFullAutomatic.ViewModels
 {
     public partial class MainWindowViewModel : ObservableObject
@@ -53,8 +57,13 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         [ObservableProperty]
         private string imgStartTest;
-        private IConfigService configRepository;
+        private readonly IConfigService configRepository;
+        private readonly ILisService lisService;
         private readonly IRegionManager regionManager;
+        private readonly ISerialPortService serialPortService;
+        private readonly IDispatcherService dispatcherService;
+        private readonly IDialogService dialogService;
+        private readonly IReactionAreaQueueService reactionAreaQueueService;
         private int _selectedIndex;
         Dictionary<int, int> notity_What = new Dictionary<int, int>() { };
         private readonly List<string> regions = new List<string>()
@@ -79,7 +88,8 @@ namespace FluorescenceFullAutomatic.ViewModels
                 }
             }
         }
-        private string path = "../Image/";
+        private string path =
+            "pack://application:,,,/FluorescenceFullAutomatic.Platform;component/Image/";
 
         [ObservableProperty]
         public object selectedContent;
@@ -126,9 +136,19 @@ namespace FluorescenceFullAutomatic.ViewModels
             IHomeService homeService,
             IConfigService configRepository,
             IRegionManager regionManager,
-            IContainerProvider containerProvider
+            IContainerProvider containerProvider,
+            ILisService lisService,
+            ISerialPortService serialPortService,
+            IDispatcherService dispatcherService,
+            IDialogService dialogService,
+            IReactionAreaQueueService reactionAreaQueueService
         )
         {
+            this.reactionAreaQueueService = reactionAreaQueueService;
+            this.dialogService = dialogService;
+            this.dispatcherService = dispatcherService;
+            this.serialPortService = serialPortService;
+            this.lisService = lisService;
             this.configRepository = configRepository;
             this.regionManager = regionManager;
             notity_What.Add(0, EventWhat.WHAT_CLICK_HOME);
@@ -141,7 +161,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             InitTicketSerialPort();
             InitConfig();
             test();
-            
+
             NavItems = new ObservableCollection<NavItem>
             {
                 new NavItem
@@ -177,7 +197,6 @@ namespace FluorescenceFullAutomatic.ViewModels
             };
 
             NavCommand = new RelayCommand<int>(ExecuteNavCommand);
-           
 
             InitBottomStatus();
             RegisterMsg();
@@ -185,34 +204,39 @@ namespace FluorescenceFullAutomatic.ViewModels
         }
 
         [RelayCommand]
-        public void Loaded(){
+        public void Loaded()
+        {
             SelectedIndex = 0;
             UpdateSelectedContent();
         }
 
         private void InitTicketSerialPort()
         {
-            TicketReportUtil.Instance.SerialPortConnectReceived += (s) =>
-            {
-                Log.Information(
-                    string.IsNullOrEmpty(s) ? "小票打印机连接成功" : $"小票打印机连接失败 {s}"
-                );
-                if (!string.IsNullOrEmpty(s))
+            serialPortService.AddTicketConnectReceived(
+                (s) =>
                 {
-                    MessageBox.Show($"小票打印机连接失败 {s}");
-                    return;
+                    Log.Information(
+                        string.IsNullOrEmpty(s) ? "小票打印机连接成功" : $"小票打印机连接失败 {s}"
+                    );
+                    if (!string.IsNullOrEmpty(s))
+                    {
+                        MessageBox.Show($"小票打印机连接失败 {s}");
+                        return;
+                    }
                 }
-            };
-            TicketReportUtil.Instance.SerialPortConnectExceptionReceived += (s) =>
-            {
-                Log.Information("小票打印机 exception " + s);
-                if (!string.IsNullOrEmpty(s))
+            );
+            serialPortService.AddTicketExceptionReceived(
+                (s) =>
                 {
-                    MessageBox.Show($"小票打印机连接失败2 {s}");
-                    return;
+                    Log.Information("小票打印机 exception " + s);
+                    if (!string.IsNullOrEmpty(s))
+                    {
+                        MessageBox.Show($"小票打印机连接失败2 {s}");
+                        return;
+                    }
                 }
-            };
-            TicketReportUtil.Instance.Connect(
+            );
+            serialPortService.ConnectTicket(
                 configRepository.TicketPortName(),
                 configRepository.TicketPortBaudRate()
             );
@@ -244,13 +268,14 @@ namespace FluorescenceFullAutomatic.ViewModels
         private void InitHl7()
         {
             //注册HL7连接状态监听事件
-            HL7Helper.Instance.AddConnectionSucceededHandler(OnHL7ConnectionSucceeded);
-            HL7Helper.Instance.AddConnectionClosedHandler(OnHL7ConnectionClosed);
-            HL7Helper.Instance.AddConnectionFailedHandler(OnHL7ConnectionFailed);
+
+            lisService.AddConnectionSucceededHandler(OnHL7ConnectionSucceeded);
+            lisService.AddConnectionClosedHandler(OnHL7ConnectionClosed);
+            lisService.AddConnectionFailedHandler(OnHL7ConnectionFailed);
             ////更新连接状态图标
             //UpdateUploadStatusIcon();
             //开始连接
-            HL7Helper.Instance.InitializeService();
+            lisService.Connect();
         }
 
         /// <summary>
@@ -259,9 +284,9 @@ namespace FluorescenceFullAutomatic.ViewModels
         ~MainWindowViewModel()
         {
             // 移除HL7连接回调
-            HL7Helper.Instance.RemoveConnectionSucceededHandler(OnHL7ConnectionSucceeded);
-            HL7Helper.Instance.RemoveConnectionClosedHandler(OnHL7ConnectionClosed);
-            HL7Helper.Instance.RemoveConnectionFailedHandler(OnHL7ConnectionFailed);
+            lisService.RemoveConnectionSucceededHandler(OnHL7ConnectionSucceeded);
+            lisService.RemoveConnectionClosedHandler(OnHL7ConnectionClosed);
+            lisService.RemoveConnectionFailedHandler(OnHL7ConnectionFailed);
         }
 
         /// <summary>
@@ -273,7 +298,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             Log.Information($"HL7连接成功: {message}");
             // 更新UI上的连接状态图标
-            App.Current.Dispatcher.Invoke(() =>
+            dispatcherService.Invoke(() =>
             {
                 UpdateUploadStatusIcon();
             });
@@ -288,7 +313,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             Log.Information($"HL7连接断开: {message}");
             // 更新UI上的连接状态图标
-            App.Current.Dispatcher.Invoke(() =>
+            dispatcherService.Invoke(() =>
             {
                 UpdateUploadStatusIcon();
             });
@@ -304,7 +329,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             Log.Information($"HL7连接失败: {errorMessage} {exception?.ToString() ?? ""}");
 
             // 更新UI上的连接状态图标
-            App.Current.Dispatcher.Invoke(() =>
+            dispatcherService.Invoke(() =>
             {
                 UpdateUploadStatusIcon();
             });
@@ -317,7 +342,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             if (UploadConfig.Instance.OpenUpload)
             {
-                ImgUpload = HL7Helper.Instance.IsConnected()
+                ImgUpload = lisService.IsConnected()
                     ? path + "upload_connected.png"
                     : path + "upload_error.png";
             }
@@ -397,25 +422,31 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private void InitBarcodeSerialPort()
         {
-            BarcodeHelper.Instance.SerialPortConnectReceived += (s) =>
-            {
-                Log.Information(string.IsNullOrEmpty(s) ? "扫码枪连接成功" : $"扫码枪连接失败 {s}");
-                if (!string.IsNullOrEmpty(s))
+            serialPortService.AddBarcodeConnectReceived(
+                (s) =>
                 {
-                    MessageBox.Show($"扫码枪连接失败 {s}");
-                    return;
+                    Log.Information(
+                        string.IsNullOrEmpty(s) ? "扫码枪连接成功" : $"扫码枪连接失败 {s}"
+                    );
+                    if (!string.IsNullOrEmpty(s))
+                    {
+                        MessageBox.Show($"扫码枪连接失败 {s}");
+                        return;
+                    }
                 }
-            };
-            BarcodeHelper.Instance.SerialPortConnectExceptionReceived += (s) =>
-            {
-                Log.Information("扫码枪 exception " + s);
-                if (!string.IsNullOrEmpty(s))
+            );
+            serialPortService.AddBarcodeExceptionReceived(
+                (s) =>
                 {
-                    MessageBox.Show($"扫码枪连接失败2 {s}");
-                    return;
+                    Log.Information("扫码枪 exception " + s);
+                    if (!string.IsNullOrEmpty(s))
+                    {
+                        MessageBox.Show($"扫码枪连接失败2 {s}");
+                        return;
+                    }
                 }
-            };
-            BarcodeHelper.Instance.Connect(
+            );
+            serialPortService.ConnectBarcode(
                 configRepository.BarcodePortName(),
                 configRepository.BarcodePortBaudRate()
             );
@@ -423,38 +454,35 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private void InitSerialPort()
         {
-            SerialPortHelper.Instance.SerialPortConnectReceived += (s) =>
-            {
-                Log.Information(
-                    string.IsNullOrEmpty(s) ? "通讯串口连接成功" : $"通讯串口连接失败 {s}"
-                );
-                if (!string.IsNullOrEmpty(s))
+            serialPortService.AddSerialPortConnectReceived(
+                (s) =>
                 {
-                    MessageBox.Show($"通讯串口连接失败 {s}");
-                    return;
+                    Log.Information(
+                        string.IsNullOrEmpty(s) ? "通讯串口连接成功" : $"通讯串口连接失败 {s}"
+                    );
+                    if (!string.IsNullOrEmpty(s))
+                    {
+                        MessageBox.Show($"通讯串口连接失败 {s}");
+                        return;
+                    }
                 }
-            };
-            SerialPortHelper.Instance.SerialPortConnectExceptionReceived += (s) =>
-            {
-                Log.Information("通讯串口 exception " + s);
-                if (!string.IsNullOrEmpty(s))
+            );
+
+            serialPortService.AddSerialPortExceptionReceived(
+                (s) =>
                 {
-                    MessageBox.Show($"通讯串口连接失败2 {s}");
-                    return;
+                    Log.Information("通讯串口 " + s);
+                    if (!string.IsNullOrEmpty(s))
+                    {
+                        MessageBox.Show($"通讯串口 {s}");
+                        SystemGlobal.MachineStatus = MachineStatus.RunningError;
+                        SystemGlobal.ErrorContinueTest = false;
+                        return;
+                    }
                 }
-            };
-            SerialPortHelper.Instance.SerialPortExceptionReceived += (s) =>
-            {
-                Log.Information("通讯串口 " + s);
-                if (!string.IsNullOrEmpty(s))
-                {
-                    MessageBox.Show($"通讯串口 {s}");
-                    SystemGlobal.MachineStatus = MachineStatus.RunningError;
-                    SystemGlobal.ErrorContinueTest = false;
-                    return;
-                }
-            };
-            SerialPortHelper.Instance.Connect(
+            );
+
+            serialPortService.Connect(
                 configRepository.MainPortName(),
                 configRepository.MainPortBaudRate()
             );
@@ -487,28 +515,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             App.Current.Resources.MergedDictionaries[0].Source = new Uri(path);
         }
 
-        private void Serial_DataReceived(byte[] obj)
-        {
-            //Log.Information(READN_CODING.GetString(obj));
-        }
-
-        private void ted()
-        {
-            //serialPortUtil.Connect("COM3", 115200);
-        }
-
-        private void close()
-        {
-            //serialPortUtil.Disconnect();
-            string title = App.Current.FindResource("Title") as string;
-            Log.Information("res " + title);
-        }
-
-        private void send()
-        {
-            SerialPortHelper.Instance.GetSelfInspectionState();
-        }
-
+    
         private void ExecuteNavCommand(int index)
         {
             SelectedIndex = index;
@@ -556,28 +563,19 @@ namespace FluorescenceFullAutomatic.ViewModels
         [RelayCommand]
         public void ClickShutdown()
         {
-            MessageBox.Show("关机");
+            if (!VerifyShutdown()) {
+                dialogService.ShowHiltDialog(this, "提示", "正在检测，请等待检测完毕。", "好的", (v,d) => { 
+
+                });
+                return;
+            }
+
+            serialPortService.Shutdown();
         }
 
-        /// <summary>
-        /// 测试HL7连接状态
-        /// </summary>
-        [RelayCommand]
-        public void ClickTestHL7()
+        private bool VerifyShutdown()
         {
-            //if (HL7Helper.Instance.IsConnected())
-            //{
-            //    Log.Information("HL7当前已连接，正在断开连接...");
-            //    HL7Helper.Instance.Disconnect();
-            //}
-            //else
-            //{
-            //    Log.Information("HL7当前未连接，正在尝试连接...");
-            //    HL7Helper.Instance.Start();
-            //}
-
-            //// 更新连接状态图标
-            //UpdateUploadStatusIcon();
+            return !SystemGlobal.MachineStatus.IsRunning() && reactionAreaQueueService.Count() == 0;
         }
     }
 }

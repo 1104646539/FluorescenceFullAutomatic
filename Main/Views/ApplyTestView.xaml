@@ -2,7 +2,7 @@
     x:Class="FluorescenceFullAutomatic.Views.ApplyTestView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:convert="clr-namespace:FluorescenceFullAutomatic.Converters"
+    xmlns:convert="clr-namespace:FluorescenceFullAutomatic.Platform.Converters;assembly=FluorescenceFullAutomatic.Platform"
     xmlns:ctr="clr-namespace:FluorescenceFullAutomatic.Views.Ctr"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
@@ -11,7 +11,7 @@
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:model="clr-namespace:FluorescenceFullAutomatic.Model"
+    xmlns:model="clr-namespace:FluorescenceFullAutomatic.Platform.Model;assembly=FluorescenceFullAutomatic.Platform"
     xmlns:prism="http://prismlibrary.com/"
     xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
     Name="root"
@@ -64,10 +64,16 @@
             <!--  下方内容  -->
         </Grid.RowDefinitions>
         <!--  顶部状态选择区  -->
-        <StackPanel Orientation="Horizontal">
+        <StackPanel Margin="10" Orientation="Horizontal">
             <RadioButton Content="待检测" IsChecked="{Binding SelectedFilterType, Converter={StaticResource EnumSelectedConverter}, ConverterParameter={x:Static model:ApplyTestType.WaitTest}}" />
-            <RadioButton Content="已检测" IsChecked="{Binding SelectedFilterType, Converter={StaticResource EnumSelectedConverter}, ConverterParameter={x:Static model:ApplyTestType.TestEnd}}" />
-            <RadioButton Content="全部" IsChecked="{Binding SelectedFilterType, Converter={StaticResource EnumSelectedConverter}, ConverterParameter={x:Static model:ApplyTestType.All}}" />
+            <RadioButton
+                Margin="10,0,0,0"
+                Content="已检测"
+                IsChecked="{Binding SelectedFilterType, Converter={StaticResource EnumSelectedConverter}, ConverterParameter={x:Static model:ApplyTestType.TestEnd}}" />
+            <RadioButton
+                Margin="10,0,0,0"
+                Content="全部"
+                IsChecked="{Binding SelectedFilterType, Converter={StaticResource EnumSelectedConverter}, ConverterParameter={x:Static model:ApplyTestType.All}}" />
         </StackPanel>
         <!--<ListBox
             Grid.Row="0"

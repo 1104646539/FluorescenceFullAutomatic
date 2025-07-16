@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Threading;
-using FluorescenceFullAutomatic.Services;
-using FluorescenceFullAutomatic.Sql;
+using FluorescenceFullAutomatic.HomeModule.Services;
+using FluorescenceFullAutomatic.HomeModule.Views;
+using FluorescenceFullAutomatic.Platform;
+using FluorescenceFullAutomatic.Platform.Services;
+using FluorescenceFullAutomatic.Platform.Sql;
 using FluorescenceFullAutomatic.Views;
 using MahApps.Metro.Controls.Dialogs;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Unity;
 using Serilog;
+using Spire.Xls;
 
 namespace FluorescenceFullAutomatic
 {
@@ -21,37 +25,40 @@ namespace FluorescenceFullAutomatic
         {
             AppDomain.CurrentDomain.UnhandledException += HandleUnhandledException;
             Init();
+            //Workbook workbook = null;
+            //workbook.PrintDocument.Print();
             return Container.Resolve<MainWindow>();
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
         {
             base.ConfigureModuleCatalog(moduleCatalog);
-            //moduleCatalog.AddModule<HomeModule.HomeModule>();
+            moduleCatalog.AddModule<PlatformModule>();
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
             //services
+            containerRegistry.RegisterSingleton<ILogService, LogService>();
+
             containerRegistry.RegisterSingleton<IHomeService, HomeService>();
             containerRegistry.RegisterSingleton<ISerialPortService, SerialPortService>();
             containerRegistry.RegisterSingleton<IDialogCoordinator, DialogCoordinator>();
             containerRegistry.RegisterSingleton<IDataManagerService, DataManagerService>();
             containerRegistry.RegisterSingleton<ISettingsService, SettingsService>();
-            containerRegistry.RegisterSingleton<IUploadService, UploadService>();
-            containerRegistry.RegisterSingleton<IApplyTestService, ApplyTestRepository>();
-            containerRegistry.RegisterSingleton<IConfigService, ConfigRepository>();
-            containerRegistry.RegisterSingleton<IDialogService, DialogRepository>();
-            containerRegistry.RegisterSingleton<IExportExcelService, ExportExcelRepository>();
-            containerRegistry.RegisterSingleton<ILisService, LisRepository>();
-            containerRegistry.RegisterSingleton<IPatientService, PatientRepository>();
-            containerRegistry.RegisterSingleton<IPointService, PointRepository>();
-            containerRegistry.RegisterSingleton<IPrintService, PrintRepository>();
-            containerRegistry.RegisterSingleton<IProjectService, ProjectRepository>();
-            containerRegistry.RegisterSingleton<ITestResultService, TestResultRepository>();
-            containerRegistry.RegisterSingleton<IToolService, ToolRepository>();
-            containerRegistry.RegisterSingleton<IUploadConfigService, UploadConfigRepository>();
+
+            containerRegistry.RegisterSingleton<IApplyTestService, ApplyTestService>();
+            containerRegistry.RegisterSingleton<IConfigService, ConfigService>();
+            containerRegistry.RegisterSingleton<IDialogService, DialogService>();
+            containerRegistry.RegisterSingleton<IExportExcelService, ExportExcelService>();
+            containerRegistry.RegisterSingleton<ILisService, LisService>();
+            containerRegistry.RegisterSingleton<IPatientService, PatientService>();
+            containerRegistry.RegisterSingleton<IPointService, PointService>();
+            containerRegistry.RegisterSingleton<IPrintService, PrintService>();
+            containerRegistry.RegisterSingleton<IProjectService, ProjectService>();
+            containerRegistry.RegisterSingleton<ITestResultService, TestResultService>();
+            containerRegistry.RegisterSingleton<IToolService, ToolService>();
             containerRegistry.RegisterSingleton<IDispatcherService, DispatcherService>();
-            containerRegistry.RegisterSingleton<IReactionAreaQueueService, ReactionAreaQueueRepository>();
+            containerRegistry.RegisterSingleton<IReactionAreaQueueService, ReactionAreaQueueService>();
 
             //navigation region
             containerRegistry.RegisterForNavigation(typeof(HomeView), typeof(HomeView).Name);
