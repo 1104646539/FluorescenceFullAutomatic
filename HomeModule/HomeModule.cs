@@ -1,4 +1,5 @@
-﻿using FluorescenceFullAutomatic.HomeModule.ViewModels;
+﻿using FluorescenceFullAutomatic.HomeModule.Services;
+using FluorescenceFullAutomatic.HomeModule.ViewModels;
 using FluorescenceFullAutomatic.HomeModule.Views;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -19,7 +20,9 @@ namespace HomeModule
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterForNavigation<HomeView, HomeViewModel>();
+            //containerRegistry.RegisterSingleton<IHomeService, HomeService>();
+
+            //containerRegistry.RegisterForNavigation<HomeView, HomeViewModel>();
         }
     }
 }

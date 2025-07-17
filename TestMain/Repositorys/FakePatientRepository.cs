@@ -1,5 +1,6 @@
-﻿using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Repositorys;
+﻿using FluorescenceFullAutomatic.Core.Model;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Platform.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,6 +37,8 @@ namespace TestMain.Repositorys
            return datas.Remove(patient.Id);
         }
 
+    
+
         public Patient GetPatientForID(int id)
         {
             if (datas.TryGetValue(id, out Patient patient)) {
@@ -51,6 +54,8 @@ namespace TestMain.Repositorys
             return 1;
         }
 
+ 
+
         public bool UpdatePatient(Patient patient)
         {
             if (datas.TryGetValue(id, out Patient p))
@@ -59,6 +64,13 @@ namespace TestMain.Repositorys
                 return true ;
             }
             return false;
+        }
+
+     
+
+        Patient IPatientService.GetPatientForID(int id)
+        {
+            return null;
         }
     }
 }

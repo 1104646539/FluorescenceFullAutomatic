@@ -14,12 +14,20 @@
     xmlns:prism="http://prismlibrary.com/"
     xmlns:util="clr-namespace:FluorescenceFullAutomatic.Platform.Utils;assembly=FluorescenceFullAutomatic.Platform"
     xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
-    Width="1370"
-    Height="857"
+    Width="1350"
+    Height="830"
     Dialog:DialogParticipation.Register="{Binding}"
+    d:DataContext="{d:DesignInstance vm:MainWindowViewModel,
+                                     IsDesignTimeCreatable=True}"
     prism:ViewModelLocator.AutoWireViewModel="True"
+    BorderThickness="0"
     Left="0"
+    ResizeMode="NoResize"
+    ShowCloseButton="{Binding ShowCloseButton}"
+    ShowMaxRestoreButton="False"
+    ShowTitleBar="False"
     Top="0"
+    WindowStyle="None"
     mc:Ignorable="d">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
@@ -63,7 +71,10 @@
                 <!--  Logo区域  -->
                 <TextBlock
                     Grid.Column="0"
-                    Margin="10,0"
+                    MinWidth="60"
+                    MinHeight="60"
+                    Margin="20,0"
+                    HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Text="Logo">
                     <TextBlock.InputBindings>
@@ -82,10 +93,10 @@
                     BorderThickness="1"
                     ItemsSource="{Binding NavItems}"
                     SelectedIndex="{Binding SelectedIndex}"
-                    Style="{StaticResource ListBox.Default}">
+                    Style="{StaticResource ListBox.Main}">
                     <ListBox.Resources>
                         <!--  ListBoxItem样式  -->
-                        <Style BasedOn="{StaticResource ListBoxItem.Default}" TargetType="ListBoxItem" />
+                        <Style BasedOn="{StaticResource ListBoxItem.Main}" TargetType="ListBoxItem" />
                     </ListBox.Resources>
                 </ListBox>
 
@@ -128,7 +139,7 @@
                     </Grid.ColumnDefinitions>
                     <Image
                         Grid.Column="0"
-                        Margin="10,0"
+                        Margin="20,0"
                         Source="pack://application:,,,/FluorescenceFullAutomatic.Platform;component/Image/shutdown.png">
                         <Image.InputBindings>
                             <MouseBinding
@@ -166,7 +177,7 @@
                         VerticalAlignment="Center"
                         Orientation="Horizontal">
                         <TextBlock
-                            Margin="20,0,20,0"
+                            Margin="20,0,30,0"
                             d:Text="2025/03/05 12:50"
                             Style="{StaticResource BottomTextStyle}"
                             Text="{Binding CurrentDate}" />

@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using FluorescenceFullAutomatic.Core.Model;
 using FluorescenceFullAutomatic.Platform.Ex;
+using FluorescenceFullAutomatic.Platform.Utils;
 
 namespace FluorescenceFullAutomatic.Platform.Converters
 {
     public class ResultToImageConverter : IValueConverter
     {
-        string path = "../Image/";
-
+        
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is ResultState v)
@@ -21,7 +21,7 @@ namespace FluorescenceFullAutomatic.Platform.Converters
                 ResultState item = v;
                 if (item == ResultState.TestFinish)
                 {
-                    return path + "img_result_state_finish.png";
+                    return GlobalUtil.Platform_Img_Path + "img_result_state_finish.png";
                 }
                 else if (
                     item == ResultState.SamplingFailed
@@ -29,12 +29,12 @@ namespace FluorescenceFullAutomatic.Platform.Converters
                     || item == ResultState.AddSampleFailed
                 )
                 {
-                    return path + "img_result_state_error.png";
+                    return GlobalUtil.Platform_Img_Path + "img_result_state_error.png";
                 }
-                return path + "img_result_state_none.png";
+                return GlobalUtil.Platform_Img_Path + "img_result_state_none.png";
             }
 
-            return path + "img_result_state_none.png";
+            return GlobalUtil.Platform_Img_Path + "img_result_state_none.png";
         }
 
         public object ConvertBack(

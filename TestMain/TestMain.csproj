@@ -118,9 +118,17 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FluorescenceFullAutomatic.Core\FluorescenceFullAutomatic.Core.csproj">
+      <Project>{bde067d9-ddfa-47c4-85e3-61aedbd5f2ac}</Project>
+      <Name>FluorescenceFullAutomatic.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Main\FluorescenceFullAutomatic.csproj">
       <Project>{bc56b4ba-c323-4946-9c45-cb22dc34337f}</Project>
       <Name>FluorescenceFullAutomatic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Platform\FluorescenceFullAutomatic.Platform.csproj">
+      <Project>{0345c875-a243-4e1f-bb22-c0ce5ddec3c8}</Project>
+      <Name>FluorescenceFullAutomatic.Platform</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

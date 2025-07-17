@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:local="clr-namespace:FluorescenceFullAutomatic.Views"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:prism="http://prismlibrary.com/"
     xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
@@ -12,6 +13,7 @@
     d:DataContext="{d:DesignInstance vm:VersionViewModel}"
     d:DesignHeight="700"
     d:DesignWidth="1250"
+    mah:DialogParticipation.Register="{Binding}"
     prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d">
 

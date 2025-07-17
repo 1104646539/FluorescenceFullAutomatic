@@ -1,12 +1,13 @@
-﻿using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Repositorys;
+﻿using FluorescenceFullAutomatic.Core.Model;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Platform.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TestResult = FluorescenceFullAutomatic.Model.TestResult;
+using TestResult = FluorescenceFullAutomatic.Platform.Model.TestResult;
 
 namespace TestMain.Repositorys
 {
@@ -281,5 +282,9 @@ namespace TestMain.Repositorys
             }
             return false;
         }
+
+       
+
+       
     }
 }

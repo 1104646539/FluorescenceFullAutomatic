@@ -1,5 +1,4 @@
-﻿using FluorescenceFullAutomatic.Repositorys;
-using FluorescenceFullAutomatic.Services;
+﻿
 using FluorescenceFullAutomatic.ViewModels;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -9,11 +8,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TestMain.Repositorys;
-using FluorescenceFullAutomatic.Model;
 using System.Collections.ObjectModel;
-using TestResult = FluorescenceFullAutomatic.Model.TestResult;
 using System.Windows.Markup;
 using TestMain.Services;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Core.Model;
+using FluorescenceFullAutomatic.Platform.Services;
 
 namespace TestMain.ViewModels
 {
@@ -44,20 +44,20 @@ namespace TestMain.ViewModels
         public void Setup()
         {
             // 创建所需的Repository实例
-            _projectRepository = new FakeProjectRepository();
-            _testResultRepository = new FakeTestResultRepository();
-            _exportExcelRepository = new FakeExportExcelRepository();
-            _configRepository = new FakeConfigRepository();
-            _patientRepository = new FakePatientRepository();
-            _dialogRepository = new FakeDialogRepository();
-            _printRepository = new FakePrintRepository();
+            //_projectRepository = new FakeProjectRepository();
+            //_testResultRepository = new FakeTestResultRepository();
+            //_exportExcelRepository = new FakeExportExcelRepository();
+            //_configRepository = new FakeConfigRepository();
+            //_patientRepository = new FakePatientRepository();
+            //_dialogRepository = new FakeDialogRepository();
+            //_printRepository = new FakePrintRepository();
 
-            // 创建DataManagerService实例
-            _dataManagerService = new DataManagerService(_projectRepository, _testResultRepository, _exportExcelRepository,
-                _configRepository, _patientRepository, _dialogRepository, _printRepository);
-            _mockDialogCoordinator = new Mock<IDialogCoordinator>();
-            // 创建ViewModel实例
-            _viewModel = new DataManagerViewModel(_dataManagerService, _mockDialogCoordinator.Object,new FakeDispatcherService());
+            //// 创建DataManagerService实例
+            //_dataManagerService = new DataManagerService(_projectRepository, _testResultRepository, _exportExcelRepository,
+            //    _configRepository, _patientRepository, _dialogRepository, _printRepository);
+            //_mockDialogCoordinator = new Mock<IDialogCoordinator>();
+            //// 创建ViewModel实例
+            //_viewModel = new DataManagerViewModel(_dataManagerService, _mockDialogCoordinator.Object,new FakeDispatcherService());
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace TestMain.ViewModels
             string originalFirstPatientName = _viewModel.TestResults[0].Patient.PatientName;
 
             #region  添加测试信息
-            TestResult tr = new TestResult();
+            FluorescenceFullAutomatic.Platform.Model.TestResult tr = new FluorescenceFullAutomatic.Platform.Model.TestResult();
                 // 病人信息
                 tr.Patient = new Patient
                 {

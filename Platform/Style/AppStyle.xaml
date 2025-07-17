@@ -14,7 +14,7 @@
 
     <!--  region SolidColorBrush  -->
     <SolidColorBrush x:Key="Primary" Color="#607d8b" />
-    <SolidColorBrush x:Key="Secondary" Color="#607d8b" />
+    <SolidColorBrush x:Key="Secondary" Color="#90888b" />
     <SolidColorBrush x:Key="White" Color="#ffffff" />
     <SolidColorBrush x:Key="LigtWhite" Color="#f5f5f5" />
     <SolidColorBrush x:Key="TextColor" Color="#333333" />
@@ -68,10 +68,15 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
     </Style>
 
-    <!--  TextBlock默认Style  -->
+    <!--  TextBlock在使用Border样式时默认Style  -->
     <Style x:Key="TextBlockInBorderDefaultStyle" TargetType="{x:Type TextBlock}">
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Padding" Value="5,3,5,3" />
+    </Style>
+    <!--  TextBlock默认Style  -->
+    <Style x:Key="TextBlockDefaultStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="16" />
     </Style>
 
     <Style
@@ -104,7 +109,7 @@
         x:Key="Button.Secondary"
         BasedOn="{StaticResource Button.Base}"
         TargetType="{x:Type Button}">
-        <Setter Property="Background" Value="{DynamicResource Primary}" />
+        <Setter Property="Background" Value="{DynamicResource Secondary}" />
         <Setter Property="Foreground" Value="{DynamicResource White}" />
     </Style>
     <Style x:Key="TopHeaderStyle" TargetType="{x:Type TextBlock}">
@@ -112,7 +117,7 @@
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
-    <Style x:Key="ListBox.Default" TargetType="{x:Type ListBox}">
+    <Style x:Key="ListBox.Main" TargetType="{x:Type ListBox}">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
@@ -143,7 +148,7 @@
         <Setter Property="ItemTemplate">
             <Setter.Value>
                 <DataTemplate>
-                    <Grid MinHeight="60" Margin="10,0">
+                    <Grid MinHeight="50" Margin="10,0">
                         <Grid.InputBindings>
                             <MouseBinding
                                 Command="{Binding DataContext.NavCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
@@ -159,7 +164,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style x:Key="ListBoxItem.Default" TargetType="{x:Type ListBoxItem}">
+    <Style x:Key="ListBoxItem.Main" TargetType="{x:Type ListBoxItem}">
         <Setter Property="Background" Value="{StaticResource ListItemNormalBackground}" />
         <Setter Property="Foreground" Value="{StaticResource ListItemNormalForeground}" />
         <Setter Property="BorderThickness" Value="1" />

@@ -1,5 +1,6 @@
-﻿using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Repositorys;
+﻿using FluorescenceFullAutomatic.Core.Model;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Platform.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +12,11 @@ namespace TestMain.Repositorys
     public class FakeExportExcelRepository : IExportExcelService
     {
 
+  
+
         public Task<bool> ExportTestResultsToExcelAsync(List<TestResult> testResults, string filePath)
         {
-            return Task.FromResult(true);
+            return null;
         }
     }
 }

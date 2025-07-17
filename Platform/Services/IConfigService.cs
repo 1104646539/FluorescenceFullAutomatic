@@ -52,9 +52,13 @@ namespace FluorescenceFullAutomatic.Platform.Services
         void SetDebugModeChnage();
         bool GetDebugMode();
 
+        // 新增：添加和移除DebugMode变化监听器
+        void AddDebugModeChangedListener(Action<bool> listener);
+        void RemoveDebugModeChangedListener(Action<bool> listener);
     }
     public class ConfigService : IConfigService
     {
+        private readonly List<Action<bool>> _debugModeChangedListeners = new List<Action<bool>>();
         public ConfigService()
         {
         }
@@ -137,6 +141,33 @@ namespace FluorescenceFullAutomatic.Platform.Services
         public void SetDebugModeChnage()
         {
             GlobalConfig.Instance.IsDebug = !GlobalConfig.Instance.IsDebug;
+            // 触发所有监听器
+            foreach (var listener in _debugModeChangedListeners.ToList())
+            {
+                try
+                {
+                    listener?.Invoke(GlobalConfig.Instance.IsDebug);
+                }
+                catch (Exception ex)
+                {
+                    // 可以记录日志
+                }
+            }
+        }
+
+        public void AddDebugModeChangedListener(Action<bool> listener)
+        {
+            if (listener != null && !_debugModeChangedListeners.Contains(listener))
+            {
+                _debugModeChangedListeners.Add(listener);
+            }
+        }
+        public void RemoveDebugModeChangedListener(Action<bool> listener)
+        {
+            if (listener != null)
+            {
+                _debugModeChangedListeners.Remove(listener);
+            }
         }
 
         public void SetDoubleReportTemplatePath(string path)

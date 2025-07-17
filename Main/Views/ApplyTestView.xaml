@@ -1,4 +1,4 @@
-﻿<mah:MetroContentControl
+﻿<UserControl
     x:Class="FluorescenceFullAutomatic.Views.ApplyTestView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -22,7 +22,7 @@
     mah:DialogParticipation.Register="{Binding}"
     prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d">
-    <mah:MetroContentControl.Resources>
+    <UserControl.Resources>
         <convert:EnumToStringConverter x:Key="EnumToStringConverter" />
         <convert:EnumSelectedConverter x:Key="EnumSelectedConverter" />
         <Style x:Key="TextBlockLabelStyle" TargetType="TextBlock">
@@ -55,7 +55,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Center" />
 
         </Style>
-    </mah:MetroContentControl.Resources>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -323,4 +323,4 @@
             </Border>
         </Grid>
     </Grid>
-</mah:MetroContentControl>
+</UserControl>

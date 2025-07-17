@@ -19,7 +19,7 @@ namespace FluorescenceFullAutomatic.Views
     /// <summary>
     /// QCView.xaml 的交互逻辑
     /// </summary>
-    public partial class QCView : MetroContentControl
+    public partial class QCView : UserControl
     {
         public QCView()
         {

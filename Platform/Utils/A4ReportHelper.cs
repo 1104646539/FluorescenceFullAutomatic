@@ -1,24 +1,25 @@
-﻿using FluorescenceFullAutomatic.Core.Config;
-using FluorescenceFullAutomatic.Core.Model;
-using FluorescenceFullAutomatic.Platform.Core.Config;
-using FluorescenceFullAutomatic.Platform.Model;
-using FluorescenceFullAutomatic.Platform.Ex;
-using FluorescenceFullAutomatic.Platform.Sql;
-using Serilog;
-using Spire.Xls;
-using Spire.Xls.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FluorescenceFullAutomatic.Core.Config;
+using FluorescenceFullAutomatic.Core.Model;
+using FluorescenceFullAutomatic.Platform.Core.Config;
+using FluorescenceFullAutomatic.Platform.Ex;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Platform.Sql;
+using Serilog;
+using Spire.Xls;
+using Spire.Xls.Core;
 
 namespace FluorescenceFullAutomatic.Platform.Utils
 {
     public class A4ReportHelper
     {
         private static A4ReportHelper instance = null;
+
         public static A4ReportHelper getInstance()
         {
             if (instance == null)
@@ -91,7 +92,6 @@ namespace FluorescenceFullAutomatic.Platform.Utils
                     patientGender = GlobalUtil.ToStringOrNull(tr.Patient.PatientGender);
                     patientAge = GlobalUtil.ToStringOrNull(tr.Patient.PatientAge);
                     doctor = GlobalUtil.ToStringOrNull(tr.Patient.TestDoctor);
-
                 }
                 if (tr.Project != null)
                 {
@@ -129,7 +129,9 @@ namespace FluorescenceFullAutomatic.Platform.Utils
                 }
                 try
                 {
-                    con2 = Convert.ToInt32(Convert.ToDouble(GlobalUtil.ToStringOrNull(tr.Con2, "0")));
+                    con2 = Convert.ToInt32(
+                        Convert.ToDouble(GlobalUtil.ToStringOrNull(tr.Con2, "0"))
+                    );
                 }
                 catch (Exception ex)
                 {
@@ -137,9 +139,17 @@ namespace FluorescenceFullAutomatic.Platform.Utils
                 }
                 if (tr.Project != null)
                 {
-                    ljz = Convert.ToInt32(Convert.ToDouble(GlobalUtil.ToStringOrNull(tr.Project.ProjectLjz + "", "100")));
+                    ljz = Convert.ToInt32(
+                        Convert.ToDouble(
+                            GlobalUtil.ToStringOrNull(tr.Project.ProjectLjz + "", "100")
+                        )
+                    );
                     unit = GlobalUtil.ToStringOrNull(tr.Project.ProjectUnit);
-                    ljz2 = Convert.ToInt32(Convert.ToDouble(GlobalUtil.ToStringOrNull(tr.Project.ProjectLjz2 + "", "40")));
+                    ljz2 = Convert.ToInt32(
+                        Convert.ToDouble(
+                            GlobalUtil.ToStringOrNull(tr.Project.ProjectLjz2 + "", "40")
+                        )
+                    );
                     unit2 = GlobalUtil.ToStringOrNull(tr.Project.ProjectUnit2);
                 }
                 result = GlobalUtil.ToStringOrNull(tr.TestVerdict);
@@ -183,6 +193,7 @@ namespace FluorescenceFullAutomatic.Platform.Utils
 
             return workbook;
         }
+
         /// <summary>
         /// 自动上传，自动打印
         /// </summary>
@@ -190,11 +201,17 @@ namespace FluorescenceFullAutomatic.Platform.Utils
         /// <param name="autoPrint"></param>
         /// <param name="autoUploadFtp"></param>
         /// <param name="printerName"></param>
-        public static void AutoExecReport(TestResult tr, bool autoPrint, bool autoUploadFtp, string printerName)
+        public static void AutoExecReport(
+            TestResult tr,
+            bool autoPrint,
+            bool autoUploadFtp,
+            string printerName
+        )
         {
             try
             {
-                if (!autoPrint && !autoUploadFtp) return;
+                if (!autoPrint && !autoUploadFtp)
+                    return;
                 Workbook wb = createWookbook(tr);
                 if (wb == null)
                 {
@@ -206,51 +223,63 @@ namespace FluorescenceFullAutomatic.Platform.Utils
                 wb.Worksheets[0].SaveToPdf(filePath);
                 if (autoPrint)
                 {
-                     PrintReport(wb, fileName,printerName);
+                    PrintReport(wb, fileName, printerName);
                 }
-                if (autoUploadFtp)
-                {
-
-                }
+                if (autoUploadFtp) { }
             }
             catch (Exception e)
             {
                 Log.Information($"生成报告失败={e.Message}");
             }
         }
+
         /// <summary>
         /// 打印报告
         /// </summary>
         /// <param name="workbook"></param>
         /// <param name="fileName"></param>
-        private static void PrintReport(TestResult tr, string printerName, Action<string> successAction = null, Action<string> failedAction = null)
+        private static void PrintReport(
+            TestResult tr,
+            string printerName,
+            Action<string> successAction = null,
+            Action<string> failedAction = null
+        )
         {
-            try
+            Task.Run(() =>
             {
-
-                Workbook wb = createWookbook(tr);
-                if (wb == null)
+                try
                 {
-                    Log.Information("生成报告失败");
-                    return;
+                    Workbook wb = createWookbook(tr);
+                    if (wb == null)
+                    {
+                        Log.Information("生成报告失败");
+                        return;
+                    }
+                    string filePath = getFilePath();
+                    string fileName = Path.GetFileName(filePath);
+                    wb.Worksheets[0].SaveToPdf(filePath);
+                    PrintReport(wb, fileName, printerName, successAction, failedAction);
                 }
-                string filePath = getFilePath();
-                string fileName = Path.GetFileName(filePath);
-                wb.Worksheets[0].SaveToPdf(filePath);
-                PrintReport(wb, fileName, printerName, successAction, failedAction);
-            }
-            catch (Exception e)
-            {
-                Log.Information($"生成报告失败={e.Message}");
-                failedAction?.Invoke($"生成报告失败={e.Message}");
-            }
+                catch (Exception e)
+                {
+                    Log.Information($"生成报告失败={e.Message}");
+                    failedAction?.Invoke($"生成报告失败={e.Message}");
+                }
+            });
+           
         }
+
         /// <summary>
         /// 打印报告
         /// </summary>
         /// <param name="workbook"></param>
         /// <param name="fileName"></param>
-        public static void PrintReport(List<TestResult> trs, string printerName, Action<string> successAction = null, Action<string> failedAction = null)
+        public static void PrintReport(
+            List<TestResult> trs,
+            string printerName,
+            Action<string> successAction = null,
+            Action<string> failedAction = null
+        )
         {
             try
             {
@@ -278,7 +307,9 @@ namespace FluorescenceFullAutomatic.Platform.Utils
                     }
                     else
                     {
-                        successAction?.Invoke($"打印成功{successCount}条,打印失败{failedCount}条。\n{failedMsg}");
+                        successAction?.Invoke(
+                            $"打印成功{successCount}条,打印失败{failedCount}条。\n{failedMsg}"
+                        );
                     }
                 };
 
@@ -294,7 +325,9 @@ namespace FluorescenceFullAutomatic.Platform.Utils
                     }
                     else
                     {
-                        successAction?.Invoke($"打印成功{successCount}条,打印失败{failedCount}条。\n{failedMsg}");
+                        successAction?.Invoke(
+                            $"打印成功{successCount}条,打印失败{failedCount}条。\n{failedMsg}"
+                        );
                     }
                 };
 
@@ -311,39 +344,46 @@ namespace FluorescenceFullAutomatic.Platform.Utils
                 failedAction?.Invoke($"生成报告失败: {e.Message}");
             }
         }
+
         /// <summary>
         /// 打印报告
         /// </summary>
         /// <param name="workbook"></param>
         /// <param name="fileName"></param>
-        private static void PrintReport(Workbook workbook, string fileName, string printerName, Action<string> successAction = null, Action<string> failedAction = null)
+        private static void PrintReport(
+            Workbook workbook,
+            string fileName,
+            string printerName,
+            Action<string> successAction = null,
+            Action<string> failedAction = null
+        )
         {
-
-            if (workbook != null)
+            Task.Run(() =>
             {
-                
-                workbook.PrintDocument.DocumentName = fileName;
-                if (!string.IsNullOrEmpty(printerName))
+                if (workbook != null)
                 {
-                    workbook.PrintDocument.PrinterSettings.PrinterName = printerName;
+                    //workbook.PrintDocument.DocumentName = fileName;
+                    if (!string.IsNullOrEmpty(printerName))
+                    {
+                        workbook.PrintDocument.PrinterSettings.PrinterName = printerName;
+                    }
+                    try
+                    {
+                        workbook.PrintDocument.Print();
+                        Log.Information($"打印报告中");
+                        successAction?.Invoke("");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Information($"打印报告失败 {ex.Message}");
+                        failedAction?.Invoke($"打印报告失败 {ex.Message}");
+                    }
                 }
-                try
+                else
                 {
-                    workbook.PrintDocument.Print();
-                    Log.Information($"打印报告中");
-                    successAction?.Invoke("");
+                    failedAction?.Invoke("生成失败");
                 }
-                catch (Exception ex)
-                {
-                    Log.Information($"打印报告失败 {ex.Message}");
-                    failedAction?.Invoke($"打印报告失败 {ex.Message}");
-                }
-
-            }
-            else
-            {
-                failedAction?.Invoke("生成失败");
-            }
+            });
         }
 
         /// <summary>
@@ -353,7 +393,10 @@ namespace FluorescenceFullAutomatic.Platform.Utils
         /// <returns></returns>
         public static string getFilePath()
         {
-            return SystemGlobal.Cache_Path + @"/report/" + DateTime.Now.GetDateTimeString3() + ".pdf";
+            return SystemGlobal.Cache_Path
+                + @"/report/"
+                + DateTime.Now.GetDateTimeString3()
+                + ".pdf";
         }
     }
 }

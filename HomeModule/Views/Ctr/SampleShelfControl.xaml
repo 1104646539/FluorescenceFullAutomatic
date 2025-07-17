@@ -77,7 +77,7 @@
                         Margin="0,5,0,0"
                         HorizontalAlignment="Center"
                         FontSize="14"
-                        Text="1" />
+                        Text="6" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="1">
@@ -92,7 +92,7 @@
                         Margin="0,5,0,0"
                         HorizontalAlignment="Center"
                         FontSize="14"
-                        Text="2" />
+                        Text="5" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="2">
@@ -107,7 +107,7 @@
                         Margin="0,5,0,0"
                         HorizontalAlignment="Center"
                         FontSize="14"
-                        Text="3" />
+                        Text="4" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="3">
@@ -122,7 +122,7 @@
                         Margin="0,5,0,0"
                         HorizontalAlignment="Center"
                         FontSize="14"
-                        Text="4" />
+                        Text="3" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="4">
@@ -137,7 +137,7 @@
                         Margin="0,5,0,0"
                         HorizontalAlignment="Center"
                         FontSize="14"
-                        Text="5" />
+                        Text="2" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="5">
@@ -152,7 +152,7 @@
                         Margin="0,5,0,0"
                         HorizontalAlignment="Center"
                         FontSize="14"
-                        Text="6" />
+                        Text="1" />
                 </StackPanel>
             </Grid>
         </Grid>
@@ -164,7 +164,7 @@
             ItemsSource="{Binding SampleItems}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" />
+                    <StackPanel FlowDirection="RightToLeft" Orientation="Horizontal" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>

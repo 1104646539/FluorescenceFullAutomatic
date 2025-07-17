@@ -191,9 +191,9 @@ namespace FluorescenceFullAutomatic.Platform.Utils
                         PushCardModel pushCard = new PushCardModel
                         {
                             Success = Success,
-                            QrCode = "FOB2,20221003,123963,0.1,76680.6,38051200,0.85", // 模拟二维码
+                            //QrCode = "FOB2,20221003,123963,0.1,76680.6,38051200,0.85", // 模拟二维码
                             //QrCode = "DFT210019VgMC0.1018.8054.1971.100.0015.3001.4830.75",
-                            //QrCode = "QC,20250111,233f,200,800,123,145",
+                            QrCode = "QC,20250111,233f,200,800,123,145",
                             //QrCode = "DQC"
                         };
                         reply.Data = pushCard;

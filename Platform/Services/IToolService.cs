@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing.Printing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using FluorescenceFullAutomatic.Platform.Model;
@@ -16,10 +17,82 @@ namespace FluorescenceFullAutomatic.Platform.Services
         int CalcCon(string t, string c, string tc, Project project);
         TestResult CalcTestResult(TestResult testResult);
         string GetString(string key);
+        
+        /// <summary>
+        /// 隐藏任务栏
+        /// </summary>
+        void HideTaskBar();
+        
+        /// <summary>
+        /// 显示任务栏
+        /// </summary>
+        void ShowTaskBar();
+        
+        /// <summary>
+        /// 添加任务栏状态变化监听器
+        /// </summary>
+        /// <param name="listener">监听器回调，0为隐藏，1为显示</param>
+        void AddTaskBarStateChangedListener(Action<int> listener);
+        
+        /// <summary>
+        /// 移除任务栏状态变化监听器
+        /// </summary>
+        /// <param name="listener">要移除的监听器回调</param>
+        void RemoveTaskBarStateChangedListener(Action<int> listener);
     }
 
     public class ToolService : IToolService
     {
+        private readonly List<Action<int>> _taskBarStateChangedListeners = new List<Action<int>>();
+        
+        // Windows API 常量和声明
+        private const int SW_HIDE = 0;
+        private const int SW_SHOW = 5;
+        
+        [DllImport("user32.dll")]
+        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+        
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        
+        // 任务栏的类名
+        private const string TaskbarClassName = "Shell_TrayWnd";
+        
+        // 应用程序栏消息常量
+        private const int ABM_SETSTATE = 0x0000000A;
+        private const int ABS_AUTOHIDE = 0x0000001;
+        private const int ABS_ALWAYSONTOP = 0x0000002;
+        
+        [DllImport("shell32.dll")]
+        private static extern IntPtr SHAppBarMessage(int dwMessage, ref APPBARDATA pData);
+        
+        [StructLayout(LayoutKind.Sequential)]
+        private struct APPBARDATA
+        {
+            public int cbSize;
+            public IntPtr hWnd;
+            public int uCallbackMessage;
+            public int uEdge;
+            public RECT rc;
+            public IntPtr lParam;
+        }
+        
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT
+        {
+            public int left;
+            public int top;
+            public int right;
+            public int bottom;
+        }
+        
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int nIndex);
+        
+        [DllImport("user32.dll")]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+        
+        
         public string GetString(string key)
         {
             return GlobalUtil.GetString(key);
@@ -168,7 +241,122 @@ namespace FluorescenceFullAutomatic.Platform.Services
         public List<string> GetPrinters()
         {
             return PrinterSettings.InstalledPrinters.Cast<string>().ToList();
-
+        }
+        
+        /// <summary>
+        /// 隐藏任务栏并释放其占用的屏幕空间
+        /// </summary>
+        public void HideTaskBar()
+        {
+            try
+            {
+                // 查找任务栏窗口
+                IntPtr taskbarHandle = FindWindow(TaskbarClassName, null);
+                
+                if (taskbarHandle != IntPtr.Zero)
+                {
+                    // 首先隐藏任务栏
+                    ShowWindow(taskbarHandle, SW_HIDE);
+                    
+                    // 设置任务栏为自动隐藏模式，这会释放它占用的空间
+                    APPBARDATA abd = new APPBARDATA();
+                    abd.cbSize = Marshal.SizeOf(typeof(APPBARDATA));
+                    abd.hWnd = taskbarHandle;
+                    abd.lParam = (IntPtr)ABS_AUTOHIDE;
+                    SHAppBarMessage(ABM_SETSTATE, ref abd);
+                    
+                    // 通知任务栏状态变化
+                    NotifyTaskBarStateChanged(0);
+                    
+                    // 记录日志
+                    Serilog.Log.Information("任务栏已隐藏并释放屏幕空间");
+                }
+            }
+            catch (Exception ex)
+            {
+                // 记录异常，但不抛出
+                Serilog.Log.Error($"隐藏任务栏时发生错误: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 显示任务栏并恢复其占用的屏幕空间
+        /// </summary>
+        public void ShowTaskBar()
+        {
+            try
+            {
+                // 查找任务栏窗口
+                IntPtr taskbarHandle = FindWindow(TaskbarClassName, null);
+                
+                if (taskbarHandle != IntPtr.Zero)
+                {
+                    // 设置任务栏为正常模式（不自动隐藏）
+                    APPBARDATA abd = new APPBARDATA();
+                    abd.cbSize = Marshal.SizeOf(typeof(APPBARDATA));
+                    abd.hWnd = taskbarHandle;
+                    abd.lParam = (IntPtr)ABS_ALWAYSONTOP;
+                    SHAppBarMessage(ABM_SETSTATE, ref abd);
+                    
+                    // 显示任务栏
+                    ShowWindow(taskbarHandle, SW_SHOW);
+                    
+                    // 通知任务栏状态变化
+                    NotifyTaskBarStateChanged(1);
+                    
+                    // 记录日志
+                    Serilog.Log.Information("任务栏已显示并恢复屏幕空间");
+                }
+            }
+            catch (Exception ex)
+            {
+                // 记录异常，但不抛出
+                Serilog.Log.Error($"显示任务栏时发生错误: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 添加任务栏状态变化监听器
+        /// </summary>
+        /// <param name="listener">监听器回调，0为隐藏，1为显示</param>
+        public void AddTaskBarStateChangedListener(Action<int> listener)
+        {
+            if (listener != null && !_taskBarStateChangedListeners.Contains(listener))
+            {
+                _taskBarStateChangedListeners.Add(listener);
+            }
+        }
+        
+        /// <summary>
+        /// 移除任务栏状态变化监听器
+        /// </summary>
+        /// <param name="listener">要移除的监听器回调</param>
+        public void RemoveTaskBarStateChangedListener(Action<int> listener)
+        {
+            if (listener != null)
+            {
+                _taskBarStateChangedListeners.Remove(listener);
+            }
+        }
+        
+        /// <summary>
+        /// 通知所有监听器任务栏状态变化
+        /// </summary>
+        /// <param name="state">任务栏状态，0为隐藏，1为显示</param>
+        private void NotifyTaskBarStateChanged(int state)
+        {
+            foreach (var listener in _taskBarStateChangedListeners.ToList())
+            {
+                try
+                {
+                    listener?.Invoke(state);
+                }
+                catch (Exception ex)
+                {
+                    // 记录异常，但不中断其他监听器的通知
+                    Serilog.Log.Error($"通知任务栏状态变化时发生错误: {ex.Message}");
+                }
+            }
         }
     }
 }

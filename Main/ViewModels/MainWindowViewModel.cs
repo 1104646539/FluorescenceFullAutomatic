@@ -63,7 +63,9 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly ISerialPortService serialPortService;
         private readonly IDispatcherService dispatcherService;
         private readonly IDialogService dialogService;
+        private readonly ILogService logService;
         private readonly IReactionAreaQueueService reactionAreaQueueService;
+        private readonly IToolService toolService;
         private int _selectedIndex;
         Dictionary<int, int> notity_What = new Dictionary<int, int>() { };
         private readonly List<string> regions = new List<string>()
@@ -104,12 +106,18 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private int _logoClickCount = 0;
         private DateTime _lastLogoClickTime = DateTime.MinValue;
-
+        [ObservableProperty]
+        private bool showCloseButton;
         [RelayCommand]
         private void ClickLogo()
         {
             var now = DateTime.Now;
-            if ((now - _lastLogoClickTime).TotalSeconds > 2)
+            if (_lastLogoClickTime == DateTime.MinValue) {
+                _lastLogoClickTime = now;
+            }
+            double interval = (now - _lastLogoClickTime).TotalSeconds;
+            logService.Info($"interval={interval} _logoClickCount={_logoClickCount}");
+            if (interval > 3)
             {
                 _logoClickCount = 0;
             }
@@ -117,23 +125,22 @@ namespace FluorescenceFullAutomatic.ViewModels
             _logoClickCount++;
             _lastLogoClickTime = now;
 
-            if (_logoClickCount >= 10)
+            if (_logoClickCount >= 5)
             {
                 //更改调试模式
                 _logoClickCount = 0;
                 configRepository.SetDebugModeChnage();
-                Task.Run(() =>
-                {
-                    Task.Delay(1000);
-                    WeakReferenceMessenger.Default.Send(
-                        new EventMsg<string>("") { What = EventWhat.WHAT_CLICK_DEBUG_MODE }
-                    );
-                });
+                //Task.Run(() =>
+                //{
+                //    Task.Delay(1000);
+                //    WeakReferenceMessenger.Default.Send(
+                //        new EventMsg<string>("") { What = EventWhat.WHAT_CLICK_DEBUG_MODE }
+                //    );
+                //});
             }
         }
 
         public MainWindowViewModel(
-            IHomeService homeService,
             IConfigService configRepository,
             IRegionManager regionManager,
             IContainerProvider containerProvider,
@@ -141,9 +148,13 @@ namespace FluorescenceFullAutomatic.ViewModels
             ISerialPortService serialPortService,
             IDispatcherService dispatcherService,
             IDialogService dialogService,
-            IReactionAreaQueueService reactionAreaQueueService
+            IReactionAreaQueueService reactionAreaQueueService,
+            ILogService logService,
+            IToolService toolService
         )
         {
+            this.toolService = toolService;
+            this.logService = logService;
             this.reactionAreaQueueService = reactionAreaQueueService;
             this.dialogService = dialogService;
             this.dispatcherService = dispatcherService;
@@ -201,6 +212,27 @@ namespace FluorescenceFullAutomatic.ViewModels
             InitBottomStatus();
             RegisterMsg();
             InitHl7();
+            configRepository.AddDebugModeChangedListener(DebugModeChange);
+            InitWindow();
+            DebugModeChange(configRepository.GetDebugMode());
+        }
+
+        private void DebugModeChange(bool debugMode)
+        {
+            if (debugMode)
+            {
+                toolService.ShowTaskBar();
+                ShowCloseButton = true;
+            }
+            else {
+                toolService.HideTaskBar();
+                ShowCloseButton = false;
+            }
+        }
+
+        private void InitWindow()
+        {
+            toolService.HideTaskBar();
         }
 
         [RelayCommand]
@@ -247,20 +279,40 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// </summary>
         private void InitConfig()
         {
-            if (string.IsNullOrEmpty(GlobalConfig.Instance.PrinterName))
+            try
             {
+                if (string.IsNullOrEmpty(GlobalConfig.Instance.PrinterName))
+                {
+                    //打印
+                    GlobalConfig.Instance.PrinterName =
+                        new System.Drawing.Printing.PrinterSettings().PrinterName;
+                }
+            }
+            catch {
                 //打印
                 GlobalConfig.Instance.PrinterName =
                     new System.Drawing.Printing.PrinterSettings().PrinterName;
             }
-            if (!File.Exists(GlobalConfig.Instance.ReportTemplatePath))
+            try
             {
-                //为空
+                if (!File.Exists(GlobalConfig.Instance.ReportTemplatePath))
+                {
+                    //为空
+                    GlobalConfig.Instance.ReportTemplatePath = SystemGlobal.Template_Path;
+                }
+            }
+            catch {
                 GlobalConfig.Instance.ReportTemplatePath = SystemGlobal.Template_Path;
             }
-            if (!File.Exists(GlobalConfig.Instance.ReportDoubleTemplatePath))
+            try
             {
-                //为空
+                if (!File.Exists(GlobalConfig.Instance.ReportDoubleTemplatePath))
+                {
+                    //为空
+                    GlobalConfig.Instance.ReportDoubleTemplatePath = SystemGlobal.DoubleTemplate_Path;
+                }
+            }
+            catch {
                 GlobalConfig.Instance.ReportDoubleTemplatePath = SystemGlobal.DoubleTemplate_Path;
             }
         }
@@ -563,6 +615,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         [RelayCommand]
         public void ClickShutdown()
         {
+            
             if (!VerifyShutdown()) {
                 dialogService.ShowHiltDialog(this, "提示", "正在检测，请等待检测完毕。", "好的", (v,d) => { 
 
@@ -570,7 +623,19 @@ namespace FluorescenceFullAutomatic.ViewModels
                 return;
             }
 
-            serialPortService.Shutdown();
+            dialogService.ShowHiltDialog(
+                this,
+                "提示",
+                "确定要关闭系统吗？",
+                "确定",
+                (v, d) =>
+                {
+                    serialPortService.Shutdown();
+                },
+                "取消",
+                (v, d) => { }
+            );
+            
         }
 
         private bool VerifyShutdown()

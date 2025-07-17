@@ -14,6 +14,7 @@ namespace FluorescenceFullAutomatic.Platform.Services
 
         public void PrintTicket(List<TestResult> trs, Action<string> successAction, Action<string> failedAction);
 
+        public void PrintTicketQC(string time, string coefficient1, string coefficient2, string scope,string result,List<TestResult> trs,bool isDouble, Action<string> successAction, Action<string> failedAction);
         public void AutoPrintReport(TestResult tr, bool autoPrint, bool autoUploadFtp, bool autoPrintTicket, string printerName);
         public void PrintTicket(TestResult tr, Action<string> successAction, Action<string> failedAction);
 
@@ -44,6 +45,11 @@ namespace FluorescenceFullAutomatic.Platform.Services
         public void PrintTicket(TestResult tr, Action<string> successAction, Action<string> failedAction)
         {
             TicketReportHelper.Instance.PrintTicket(tr, successAction, failedAction);
+        }
+
+        public void PrintTicketQC(string time, string coefficient1, string coefficient2, string scope, string result, List<TestResult> trs, bool isDouble, Action<string> successAction, Action<string> failedAction)
+        {
+            TicketReportHelper.Instance.PrintTicketQC(time,coefficient1,coefficient2,scope,result,trs,isDouble, successAction, failedAction);
         }
     }
 }

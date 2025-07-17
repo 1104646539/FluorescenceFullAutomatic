@@ -16,7 +16,7 @@
     Name="root"
     d:Background="White"
     d:DesignHeight="700"
-    d:DesignWidth="1370"
+    d:DesignWidth="1350"
     mah:DialogParticipation.Register="{Binding}"
     prism:ViewModelLocator.AutoWireViewModel="True"
     SizeChanged="MetroContentControl_SizeChanged"
@@ -153,7 +153,7 @@
                         Width="70"
                         Binding="{Binding TestVerdict, Converter={StaticResource StringToDefaultConverter}}"
                         Header="结果" />
-                    <DataGridTemplateColumn Width="130" Header="状态">
+                    <DataGridTemplateColumn Width="90" Header="状态">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel
@@ -161,8 +161,8 @@
                                     VerticalAlignment="Center"
                                     Orientation="Horizontal">
                                     <Image
-                                        Width="30"
-                                        Height="30"
+                                        Width="25"
+                                        Height="25"
                                         Margin="0,0,5,0"
                                         d:Source="../Image/img_result_state_none.png"
                                         Source="{Binding ResultState, Converter={StaticResource ResultToImageConverter}}" />
@@ -180,7 +180,7 @@
                         Header="状态" />-->
 
                     <DataGridTextColumn
-                        Width="150"
+                        Width="180"
                         Binding="{Binding TestTime, Converter={StaticResource DTConvert}}"
                         Header="检测时间" />
                     <DataGridTextColumn
@@ -188,13 +188,22 @@
                         Binding="{Binding Project.ProjectName}"
                         Header="项目" />
                     <DataGridTextColumn
-                        Width="120"
+                        Width="115"
                         Binding="{Binding Barcode, Converter={StaticResource StringToDefaultConverter}}"
                         Header="条码" />
                     <DataGridTextColumn
-                        Width="100"
+                        Width="95"
                         Binding="{Binding TestNum, Converter={StaticResource StringToDefaultConverter}}"
                         Header="检测编号" />
+
+                    <DataGridTextColumn
+                        Width="55"
+                        Binding="{Binding Patient, Converter={StaticResource SafePatientPropertyConverter}, ConverterParameter=PatientAge}"
+                        Header="年龄" />
+                    <DataGridTextColumn
+                        Width="55"
+                        Binding="{Binding Patient, Converter={StaticResource SafePatientPropertyConverter}, ConverterParameter=PatientGender}"
+                        Header="性别" />
                     <DataGridTemplateColumn Width="70" Header="操作">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -202,20 +211,10 @@
                                     Width="60"
                                     Command="{Binding DataContext.ClickResultDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                     CommandParameter="{Binding}"
-                                    ToolTip="详情">
-                                    <materialDesign:PackIcon Kind="PersonDetails" />
-                                </Button>
+                                    Content="详情" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTextColumn
-                        Width="60"
-                        Binding="{Binding Patient, Converter={StaticResource SafePatientPropertyConverter}, ConverterParameter=PatientAge}"
-                        Header="年龄" />
-                    <DataGridTextColumn
-                        Width="60"
-                        Binding="{Binding Patient, Converter={StaticResource SafePatientPropertyConverter}, ConverterParameter=PatientGender}"
-                        Header="性别" />
                 </DataGrid.Columns>
             </DataGrid>
             <StackPanel
@@ -283,6 +282,7 @@
             Grid.Row="0"
             Width="{Binding ControlWidth}"
             Height="{Binding ControlHeight}"
+            d:Visibility="Collapsed"
             Background="#80000000"
             Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid.RowDefinitions>

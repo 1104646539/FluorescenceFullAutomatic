@@ -1,5 +1,6 @@
-﻿using FluorescenceFullAutomatic.Model;
-using FluorescenceFullAutomatic.Repositorys;
+﻿using FluorescenceFullAutomatic.Core.Model;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Platform.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -86,6 +87,27 @@ namespace TestMain.Repositorys
                 return true;
             }
             return false;
+        }
+
+
+        List<Project> IProjectService.GetAllProject()
+        {
+            return null;
+        }
+
+        Task<List<Project>> IProjectService.GetAllProjectAsync(bool isDefault)
+        {
+            return null;
+        }
+
+        Project IProjectService.GetProjectForID(int id)
+        {
+            return null;
+        }
+
+        Project IProjectService.GetProjectForQrcode(string qrcode)
+        {
+            return null;
         }
     }
 }

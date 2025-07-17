@@ -322,6 +322,9 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
 
         [ObservableProperty]
         private string imgCleanout;
+
+        [ObservableProperty]
+        private Visibility showDebugView;
         #endregion
         public HomeViewModel(
             ISerialPortService serialPortService,
@@ -346,6 +349,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             ReactionAreaViewModel = ReactionAreaViewModel.Instance;
             this.serialPortService.AddScanSuccessListener(OnScanSuccess);
             this.serialPortService.AddScanFailedListener(OnScanFailed);
+            this.configRepository.AddDebugModeChangedListener(OnDebugModeChange);
             ChangeTestSettings();
             this.SampleShelfViewModel.onSelectedSampleItem += OnSampleItemSelected;
             OnSampleItemSelected(null);
@@ -354,6 +358,12 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
 
             homeService.Hl7IsRunning();
             Test();
+            OnDebugModeChange(configRepository.GetDebugMode());
+        }
+
+        private void OnDebugModeChange(bool debugMode)
+        {
+            this.ShowDebugView = debugMode ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void Test() { }
@@ -361,13 +371,13 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         [RelayCommand]
         public void ClickTest1()
         {
-    
+            toolRepository.HideTaskBar();
         }
 
         [RelayCommand]
         public async void ClickTest2()
         {
-          
+            toolRepository.ShowTaskBar();
         }
 
  
@@ -459,14 +469,16 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             {
                 FirstLoad = false;
 
-                if (SystemGlobal.IsCodeDebug)
-                {
+                //if (
+                    //SystemGlobal.IsCodeDebug || 
+               //)
+                //{
                     GoGetSelfMachineStatus();
-                }
-                else
-                {
-                    IsTestGetSelfMachineState = false;
-                }
+                //}
+                //else
+                //{
+                //    IsTestGetSelfMachineState = false;
+                //}
             }
         }
 
@@ -575,6 +587,12 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         /// <returns></returns>
         private bool VerifyMachineState()
         {
+            if (SystemGlobal.MachineStatus == MachineStatus.SelfInspectionFailed)
+            {
+                logService.Info("自检失败，请先自检。");
+                ShowSelfMachineErrorDialog();
+                return false;
+            }
             string errorMsg = "";
             if (
                 SystemGlobal.MachineStatus == MachineStatus.Sampling
@@ -584,11 +602,11 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 logService.Info("正在检测，请等待检测结束。");
                 errorMsg = "正在检测，请等待检测结束。";
             }
-            else if (SystemGlobal.MachineStatus == MachineStatus.SelfInspectionFailed)
-            {
-                logService.Info("自检失败，请先自检。");
-                errorMsg = "自检失败，请先自检。";
-            }
+            //else if (SystemGlobal.MachineStatus == MachineStatus.SelfInspectionFailed)
+            //{
+            //    logService.Info("自检失败，请先自检。");
+            //    errorMsg = "自检失败，请先自检。";
+            //}
             else if (SystemGlobal.MachineStatus == MachineStatus.None)
             {
                 logService.Info("仪器未自检，请先自检。");
@@ -667,7 +685,10 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             }
             return true;
         }
-
+        /// <summary>
+        /// 自检失败错误
+        /// </summary>
+        string SelfMachineStateError = "";
         public async void ReceiveGetSelfMachineStatusModel(BaseResponseModel<List<string>> model)
         {
             //如果是自己获取，才处理，否则不处理
@@ -683,8 +704,8 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             await CloseSelfMachineDialog();
 
             StartGetReactionTempTask();
-            string error = JoinSelfMachineError(model.Data);
-            if (string.IsNullOrEmpty(error))
+            SelfMachineStateError = JoinSelfMachineError(model.Data);
+            if (string.IsNullOrEmpty(SelfMachineStateError))
             {
                 SetMachineStatus(MachineStatus.SelfInspectionSuccess);
                 GetMachineState();
@@ -700,25 +721,31 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             }
             else
             {
-                homeService.ShowHiltDialog(this,
-                    "提示",
-                    $"自检失败{error}",
-                    "重新自检",
-                    async (d, dialog) =>
-                    {
-                        await homeService.HideMetroDialogAsync(this,dialog);
-                        logService.Info("自检失败，点击重新自检");
-                        GoGetSelfMachineStatus();
-                    },
-                    "暂不自检",
-                    (d, dialog) =>
-                    {
-                        logService.Info("自检失败，点击暂不自检");
-                    }
-                );
+                ShowSelfMachineErrorDialog();
+               
                 SetMachineStatus(MachineStatus.SelfInspectionFailed);
             }
             GetVersion();
+        }
+
+        private void ShowSelfMachineErrorDialog()
+        {
+            homeService.ShowHiltDialog(this,
+                   "提示",
+                   $"自检失败{SelfMachineStateError}",
+                   "重新自检",
+                   async (d, dialog) =>
+                   {
+                       await homeService.HideMetroDialogAsync(this, dialog);
+                       logService.Info("自检失败，点击重新自检");
+                       GoGetSelfMachineStatus();
+                   },
+                   "暂不自检",
+                   (d, dialog) =>
+                   {
+                       logService.Info("自检失败，点击暂不自检");
+                   }
+               );
         }
 
         /// <summary>

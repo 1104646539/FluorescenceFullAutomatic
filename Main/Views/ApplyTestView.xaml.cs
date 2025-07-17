@@ -19,7 +19,7 @@ namespace FluorescenceFullAutomatic.Views
     /// <summary>
     /// ApplyTestView.xaml 的交互逻辑
     /// </summary>
-    public partial class ApplyTestView : MetroContentControl
+    public partial class ApplyTestView : UserControl
     {
         public ApplyTestView()
         {

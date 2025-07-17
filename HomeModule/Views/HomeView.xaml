@@ -1,4 +1,4 @@
-﻿<mah:MetroContentControl
+﻿<UserControl
     x:Class="FluorescenceFullAutomatic.HomeModule.Views.HomeView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -27,7 +27,7 @@
             <i:InvokeCommandAction Command="{Binding LoadedCommand}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
-    <mah:MetroContentControl.Resources>
+    <UserControl.Resources>
         <converters:SampleItemBarcodeConverter x:Key="SampleItemBarcodeConverter" />
         <converters:SampleItemNumConverter x:Key="SampleItemNumConverter" />
         <converters:SampleItemResultConverter x:Key="SampleItemResultConverter" />
@@ -37,7 +37,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Center" />
         </Style>
-    </mah:MetroContentControl.Resources>
+    </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -65,19 +65,20 @@
                     Width="100"
                     Height="60"
                     Command="{Binding ClickSelfMachineStatusCommand}"
-                    Content="仪器自检" />
+                    Content="仪器自检"
+                    Visibility="{Binding ShowDebugView}" />
                 <Button
                     Width="100"
                     Height="60"
                     Command="{Binding ClickTest1Command}"
                     Content="测试1"
-                    Visibility="Visible" />
+                    Visibility="{Binding ShowDebugView}" />
                 <Button
                     Width="100"
                     Height="60"
                     Command="{Binding ClickTest2Command}"
                     Content="测试2"
-                    Visibility="Visible" />
+                    Visibility="{Binding ShowDebugView}" />
             </StackPanel>
         </StackPanel>
 
@@ -168,4 +169,4 @@
             </StackPanel>
         </Grid>
     </Grid>
-</mah:MetroContentControl>
+</UserControl>

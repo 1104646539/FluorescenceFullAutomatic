@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BouncyCastle.Cryptography, Version=2.0.0.0, Culture=neutral, PublicKeyToken=072edcf4a5328938, processorArchitecture=MSIL">
@@ -90,14 +92,14 @@
     <Reference Include="Prism.Wpf, Version=8.1.97.5141, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
       <HintPath>..\Main\packages\Prism.Wpf.8.1.97\lib\net47\Prism.Wpf.dll</HintPath>
     </Reference>
-    <Reference Include="Serilog, Version=4.3.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\Main\packages\Serilog.4.3.0\lib\net471\Serilog.dll</HintPath>
+    <Reference Include="Serilog, Version=4.2.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\Main\packages\Serilog.4.2.0\lib\net471\Serilog.dll</HintPath>
     </Reference>
     <Reference Include="Serilog.Sinks.Console, Version=6.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\Main\packages\Serilog.Sinks.Console.6.0.0\lib\net471\Serilog.Sinks.Console.dll</HintPath>
     </Reference>
-    <Reference Include="Serilog.Sinks.File, Version=7.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\Main\packages\Serilog.Sinks.File.7.0.0\lib\net471\Serilog.Sinks.File.dll</HintPath>
+    <Reference Include="Serilog.Sinks.File, Version=6.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\Main\packages\Serilog.Sinks.File.6.0.0\lib\net471\Serilog.Sinks.File.dll</HintPath>
     </Reference>
     <Reference Include="SixLabors.Fonts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
       <HintPath>..\Main\packages\SixLabors.Fonts.1.0.1\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
@@ -105,14 +107,14 @@
     <Reference Include="SixLabors.ImageSharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
       <HintPath>..\Main\packages\SixLabors.ImageSharp.2.1.10\lib\net472\SixLabors.ImageSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Spire.License">
-      <HintPath>..\Main\Dll\Spire.License.dll</HintPath>
+    <Reference Include="SkiaSharp, Version=1.68.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\Main\packages\SkiaSharp.1.68.0\lib\net45\SkiaSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Spire.Pdf">
-      <HintPath>..\Main\Dll\Spire.Pdf.dll</HintPath>
+    <Reference Include="Spire.Pdf, Version=8.7.2.0, Culture=neutral, PublicKeyToken=663f351905198cb3, processorArchitecture=MSIL">
+      <HintPath>..\Main\packages\FreeSpire.XLS.12.7.0\lib\net40\Spire.Pdf.dll</HintPath>
     </Reference>
-    <Reference Include="Spire.XLS">
-      <HintPath>..\Main\Dll\Spire.XLS.dll</HintPath>
+    <Reference Include="Spire.XLS, Version=12.7.0.0, Culture=neutral, PublicKeyToken=663f351905198cb3, processorArchitecture=MSIL">
+      <HintPath>..\Main\packages\FreeSpire.XLS.12.7.0\lib\net40\Spire.XLS.dll</HintPath>
     </Reference>
     <Reference Include="SqlSugar, Version=5.1.4.197, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\Main\packages\SqlSugar.5.1.4.197\lib\SqlSugar.dll</HintPath>
@@ -127,6 +129,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.OracleClient" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=8.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\Main\packages\System.Diagnostics.DiagnosticSource.8.0.1\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
     </Reference>
@@ -134,6 +137,7 @@
     <Reference Include="System.Memory, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\Main\packages\System.Memory.4.6.0\lib\net462\System.Memory.dll</HintPath>
     </Reference>
+    <Reference Include="System.Net" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\Main\packages\System.Numerics.Vectors.4.6.0\lib\net462\System.Numerics.Vectors.dll</HintPath>
@@ -142,9 +146,22 @@
       <HintPath>..\Main\packages\System.Runtime.CompilerServices.Unsafe.6.1.0\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Security" />
+    <Reference Include="System.Security.AccessControl, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\Main\packages\System.Security.AccessControl.4.5.0\lib\net461\System.Security.AccessControl.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Pkcs, Version=4.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\Main\packages\System.Security.Cryptography.Pkcs.4.5.0\lib\net461\System.Security.Cryptography.Pkcs.dll</HintPath>
+    </Reference>
     <Reference Include="System.Security.Cryptography.Xml, Version=8.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\Main\packages\System.Security.Cryptography.Xml.8.0.2\lib\net462\System.Security.Cryptography.Xml.dll</HintPath>
     </Reference>
+    <Reference Include="System.Security.Permissions, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\Main\packages\System.Security.Permissions.4.5.0\lib\net461\System.Security.Permissions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Principal.Windows, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\Main\packages\System.Security.Principal.Windows.4.5.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Text.Encoding.CodePages, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\Main\packages\System.Text.Encoding.CodePages.5.0.0\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
     </Reference>
@@ -154,6 +171,7 @@
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\Main\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
+    <Reference Include="System.Transactions" />
     <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\Main\packages\System.ValueTuple.4.4.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
@@ -203,6 +221,7 @@
     <Compile Include="Converters\TestResultStateConverter .cs" />
     <Compile Include="Ex\DateTimeEx.cs" />
     <Compile Include="Ex\EnumEx.cs" />
+    <Compile Include="Ex\StringEx.cs" />
     <Compile Include="Model\ApplyTest.cs" />
     <Compile Include="Model\Patient.cs" />
     <Compile Include="Model\Point.cs" />
@@ -248,6 +267,7 @@
     <Compile Include="Utils\SerialPortHelper.cs" />
     <Compile Include="Utils\SerialPortImpl.cs" />
     <Compile Include="Utils\SerialUtils.cs" />
+    <Compile Include="Utils\SpireHelper.cs" />
     <Compile Include="Utils\TicketReportHelper.cs" />
     <Compile Include="ViewModels\HintDialogViewModel.cs" />
     <Compile Include="ViewModels\ReactionAreaViewModel.cs" />
@@ -376,9 +396,9 @@
     <PropertyGroup>
       <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。使用“NuGet 程序包还原”可下载这些程序包。有关更多信息，请参见 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\Main\packages\Serilog.4.3.0\build\Serilog.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Main\packages\Serilog.4.3.0\build\Serilog.targets'))" />
     <Error Condition="!Exists('..\Main\packages\CommunityToolkit.Mvvm.8.2.2\build\netstandard2.0\CommunityToolkit.Mvvm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Main\packages\CommunityToolkit.Mvvm.8.2.2\build\netstandard2.0\CommunityToolkit.Mvvm.targets'))" />
+    <Error Condition="!Exists('..\Main\packages\SkiaSharp.1.68.0\build\net45\SkiaSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Main\packages\SkiaSharp.1.68.0\build\net45\SkiaSharp.targets'))" />
   </Target>
-  <Import Project="..\Main\packages\Serilog.4.3.0\build\Serilog.targets" Condition="Exists('..\Main\packages\Serilog.4.3.0\build\Serilog.targets')" />
   <Import Project="..\Main\packages\CommunityToolkit.Mvvm.8.2.2\build\netstandard2.0\CommunityToolkit.Mvvm.targets" Condition="Exists('..\Main\packages\CommunityToolkit.Mvvm.8.2.2\build\netstandard2.0\CommunityToolkit.Mvvm.targets')" />
+  <Import Project="..\Main\packages\SkiaSharp.1.68.0\build\net45\SkiaSharp.targets" Condition="Exists('..\Main\packages\SkiaSharp.1.68.0\build\net45\SkiaSharp.targets')" />
 </Project>

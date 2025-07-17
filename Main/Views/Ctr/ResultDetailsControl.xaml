@@ -429,7 +429,8 @@
                 HorizontalAlignment="Right"
                 Command="{Binding ConfirmSaveCommand}"
                 Content="保存信息"
-                Style="{StaticResource Button.Accent}" />
+                Style="{StaticResource Button.Accent}"
+                Visibility="{Binding ShowSaveInfoBtn}" />
             <Button
                 Grid.Row="4"
                 MinWidth="100"

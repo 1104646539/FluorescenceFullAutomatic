@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:FluorescenceFullAutomatic.Views"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:prism="http://prismlibrary.com/"
     xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
@@ -11,6 +12,7 @@
     d:DataContext="{d:DesignInstance vm:TestSettingsViewModel}"
     d:DesignHeight="700"
     d:DesignWidth="1250"
+    mah:DialogParticipation.Register="{Binding}"
     prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d">
     <Grid>
@@ -152,7 +154,7 @@
                         Width="80"
                         Margin="10,0,0,0"
                         Command="{Binding SelectSingleTemplateCommand}"
-                        Content="浏览..."
+                        Content="选择"
                         DockPanel.Dock="Right"
                         Style="{StaticResource Button.Default}" />
                     <TextBox
@@ -176,7 +178,7 @@
                         Width="80"
                         Margin="10,0,0,0"
                         Command="{Binding SelectDoubleTemplateCommand}"
-                        Content="浏览..."
+                        Content="选择"
                         DockPanel.Dock="Right"
                         Style="{StaticResource Button.Default}" />
                     <TextBox

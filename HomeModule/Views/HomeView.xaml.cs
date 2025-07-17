@@ -19,7 +19,7 @@ namespace FluorescenceFullAutomatic.HomeModule.Views
     /// <summary>
     /// HomeCtr.xaml µÄ½»»¥Âß¼­
     /// </summary>
-    public partial class HomeView : MetroContentControl
+    public partial class HomeView : UserControl
     {
         public HomeView()
         {

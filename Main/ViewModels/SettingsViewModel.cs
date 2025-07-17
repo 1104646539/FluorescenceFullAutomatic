@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Serilog;
+using System.Windows;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -17,10 +18,25 @@ namespace FluorescenceFullAutomatic.ViewModels
     {
         [ObservableProperty]
         private int selectedTabIndex = 0;
+        private readonly IConfigService configService;
 
-        
-        public SettingsViewModel()
+        [ObservableProperty]
+        private Visibility showDebugView = Visibility.Collapsed;
+
+
+
+        public SettingsViewModel(IConfigService configService)
         {
+            this.configService = configService;
+            this.configService.AddDebugModeChangedListener(OnDebugModeChanged);
+            OnDebugModeChanged(this.configService.GetDebugMode());
+        }
+        
+
+        private void OnDebugModeChanged(bool debugMode)
+        {
+            
+            ShowDebugView = debugMode ? Visibility.Visible : Visibility.Collapsed;
         }
 
         [RelayCommand]

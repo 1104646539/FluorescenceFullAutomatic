@@ -93,7 +93,7 @@
             </TabItem>
 
             <!--  调试  -->
-            <TabItem Style="{StaticResource SettingsTabItem}">
+            <TabItem Style="{StaticResource SettingsTabItem}" Visibility="{Binding ShowDebugView}">
                 <TabItem.Header>
                     <TextBlock Style="{StaticResource TabHeaderStyle}" Text="调试" />
                 </TabItem.Header>

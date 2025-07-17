@@ -1,4 +1,4 @@
-﻿using FluorescenceFullAutomatic.Repositorys;
+﻿using FluorescenceFullAutomatic.Platform.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +26,11 @@ namespace TestMain.Repositorys
         private int _testNum;
         private int _ticketPortBaudRate;
         private string _ticketPortName;
+
+        public void AddDebugModeChangedListener(Action<bool> listener)
+        {
+            
+        }
 
         public int BarcodePortBaudRate()
         {
@@ -90,6 +95,11 @@ namespace TestMain.Repositorys
         public int ReactionDuration()
         {
             return _reactionDuration;
+        }
+
+        public void RemoveDebugModeChangedListener(Action<bool> listener)
+        {
+            
         }
 
         public int SamplingVolume()

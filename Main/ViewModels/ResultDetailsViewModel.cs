@@ -13,6 +13,7 @@ using ScottPlot.WPF;
 using SkiaSharp;
 using static SkiaSharp.HarfBuzz.SKShaper;
 using FluorescenceFullAutomatic.Platform.Core.Config;
+using System.Windows;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -39,7 +40,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private WpfPlot plotView;
 
-
+        [ObservableProperty]
+        private Visibility showSaveInfoBtn;
         public ResultDetailsViewModel()
         {
             IsDebugMode = GlobalConfig.Instance.IsDebug;
@@ -88,6 +90,9 @@ namespace FluorescenceFullAutomatic.ViewModels
             {
                 IsDualCard = Result.Project?.ProjectType == Project.Project_Type_Double;
             }
+            
+            ShowSaveInfoBtn = Result?.Id <= 0 ? Visibility.Collapsed : Visibility.Visible;
+
             string scanStartStr = Result?.Project?.ScanStart;
             int.TryParse(scanStartStr, out int scanStart);
             int[] pos = Result?.Point?.Points;

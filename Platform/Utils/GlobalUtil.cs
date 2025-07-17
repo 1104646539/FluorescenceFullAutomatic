@@ -144,9 +144,10 @@ namespace FluorescenceFullAutomatic.Platform.Utils
             }
             return "";
         }
-
+        public const string Platform_Img_Path =
+      "pack://application:,,,/FluorescenceFullAutomatic.Platform;component/Image/";
         //public static void ShowHiltDialog(
-            //object context,
+        //object context,
         //    string title,
         //    string msg,
         //    string confirmText,

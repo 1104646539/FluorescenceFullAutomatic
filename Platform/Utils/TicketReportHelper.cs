@@ -14,11 +14,15 @@ namespace FluorescenceFullAutomatic.Platform.Utils
     public class TicketReportHelper : ISerialPort
     {
         private static readonly Lazy<TicketReportHelper> _instance = new Lazy<TicketReportHelper>(
-            () => SystemGlobal.IsCodeDebug ? new TicketReportHelper(
+            () =>
+            SystemGlobal.IsCodeDebug ?
+            new TicketReportHelper(
                   new FakaTicketSerialPort()
-                ) : new TicketReportHelper(
+                ) :
+            new TicketReportHelper(
                   new SerialPortImpl()
-                ));
+                )
+            );
 
         public static TicketReportHelper Instance => _instance.Value;
 
@@ -152,7 +156,8 @@ namespace FluorescenceFullAutomatic.Platform.Utils
             this.successAction = successAction;
             msg = GetPrintTestResultMsg(tr);
             Log.Information(msg);
-            GetStatus();
+            //GetStatus();
+            Print(msg);
         }
 
         private string GetPrintTestResultMsg(TestResult tr)
@@ -248,6 +253,51 @@ namespace FluorescenceFullAutomatic.Platform.Utils
             SendData(GetStatusCommand);
             // 启动超时定时器
             statusTimeoutTimer.Start();
+        }
+
+        public void PrintTicketQC(string time, string coefficient1, string coefficient2, string scope, string result, List<TestResult> trs, bool isDouble, Action<string> successAction, Action<string> failedAction)
+        {
+            this.failedAction = failedAction;
+            this.successAction = successAction;
+            msg = GetPrintQCMsg(time,coefficient1,coefficient2,scope,result,trs,isDouble);
+            Log.Information(msg);
+            //GetStatus();
+            Print(msg);
+        }
+        /// <summary>
+        /// 获取打印内容
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="coefficient1"></param>
+        /// <param name="coefficient2"></param>
+        /// <param name="scope"></param>
+        /// <param name="result"></param>
+        /// <param name="trs"></param>
+        /// <param name="isDouble"></param>
+        /// <returns></returns>
+        private string GetPrintQCMsg(string time, string coefficient1, string coefficient2, string scope, string result, List<TestResult> trs, bool isDouble)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("\n\n\n\n\n");
+            sb.Append($"质控时间：{GlobalUtil.ToStringOrNull(time)}\n");
+            sb.Append($"质控结果：{GlobalUtil.ToStringOrNull(result)}\n");
+            sb.Append($"标准方差范围：{GlobalUtil.ToStringOrNull(scope)}\n");
+            sb.Append($"项目1变异系数：{GlobalUtil.ToStringOrNull(coefficient1)}\n");
+            if (isDouble) {
+                sb.Append($"项目2变异系数：{GlobalUtil.ToStringOrNull(coefficient2)}\n");
+            }
+
+            for (int i = 0; i < trs.Count; i++)
+            {
+                sb.Append(((i + 1)+"").ComplementString(1, 2));
+                sb.Append("."+"值"+"=");
+                sb.Append(GlobalUtil.ToStringOrNull(trs[i].Tc).ComplementString(1,10));
+                if (i % 2 == 1) { 
+                    sb.Append("\n");
+                }
+            }
+            sb.Append("\n\n\n\n\n");
+            return sb.ToString();
         }
     }
 }

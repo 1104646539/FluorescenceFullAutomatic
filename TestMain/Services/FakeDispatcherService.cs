@@ -1,4 +1,5 @@
-﻿using FluorescenceFullAutomatic.Services;
+﻿using FluorescenceFullAutomatic.Core.Model;
+using FluorescenceFullAutomatic.Platform.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TestMain.Services
 {
-    public class FakeDispatcherService : IDispatcherRepository
+    public class FakeDispatcherService : IDispatcherService
     {
         public void Invoke(Action action)
         {

@@ -21,6 +21,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using FluorescenceFullAutomatic.Platform.Ex;
 using FluorescenceFullAutomatic.Core.Model;
 using FluorescenceFullAutomatic.Platform.Utils;
+using NPOI.OpenXmlFormats.Wordprocessing;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -32,9 +33,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IToolService toolRepository;
         private readonly IProjectService projectRepository;
         private readonly IConfigService configRepository;
-        private readonly IDialogCoordinator dialogCoordinator;
         private readonly IReactionAreaQueueService reactionAreaQueueRepository;
-
+        private readonly IPrintService printService;
         private readonly IDialogService dialogRepository;
         // 命令执行 状态跟踪
         /// <summary>
@@ -302,19 +302,23 @@ namespace FluorescenceFullAutomatic.ViewModels
         public ReactionAreaViewModel ReactionAreaViewModel { get; set; }
         [ObservableProperty]
         private ReactionAreaItem currentTestItem;
+        [ObservableProperty]
+        private string showQCCardQCText;
 
+        [ObservableProperty]
+        private bool isEnabled;
 
         #endregion
         public QCViewModel(IToolService toolRepository, ISerialPortService serialService, IConfigService configRepository
-            , IDialogCoordinator dialogCoordinator,IProjectService projectRepository,IReactionAreaQueueService reactionAreaQueueRepository
-            ,IDialogService dialogRepository, IPointService pointService)
+            ,IProjectService projectRepository,IReactionAreaQueueService reactionAreaQueueRepository
+            ,IDialogService dialogRepository, IPointService pointService,IPrintService printService)
         {
+            this.printService = printService;
             this.pointService = pointService;
             this.toolRepository = toolRepository;
             this.projectRepository = projectRepository;
             this.serialPortService = serialService;
             this.configRepository = configRepository;
-            this.dialogCoordinator = dialogCoordinator;
             this.reactionAreaQueueRepository = reactionAreaQueueRepository;
             this.dialogRepository = dialogRepository;
             ReactionAreaViewModel = ReactionAreaViewModel.Instance;
@@ -322,17 +326,16 @@ namespace FluorescenceFullAutomatic.ViewModels
             //serialPortService.OnAddDequeue(OnReactionAreaDequeue);
 
             ClearResultPoints();
+            ChangesView();
             RegisterMsg();
         }
-        [RelayCommand]
-        private void Print() {
-        }
+       
         private void RegisterMsg()
         {
             WeakReferenceMessenger.Default.Register<MainStatusChangeMsg>(this, (r, m) => {
                 if (m.What == MainStatusChangeMsg.What_ClickQC)
                 {
-                    ClickStartQC();
+                    //ClickStartQC();
                 }
             });
         }
@@ -397,7 +400,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             Variance = 0;
             Variance2 = 0;
             QcTime = "";
-
+            ChangesView();
             // 重置所有状态标志为 false
             ResetAllStatusFlags();
         }
@@ -607,6 +610,8 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
             SetMachineStatus(MachineStatus.TestingEnd);
             SystemGlobal.TestType = TestType.None;
+
+            ChangesView();
         }
 
 
@@ -867,7 +872,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// 标准方差范围
         /// </summary>
         [ObservableProperty]
-        string varianceScope = "0%-8%";
+        string varianceScope = "0%-5%";
+       private const int maxVarianceScope = 5;
         /// <summary>
         /// 质控时间
         /// </summary>
@@ -893,6 +899,39 @@ namespace FluorescenceFullAutomatic.ViewModels
             // 向下取整到5位小数
             return Math.Floor(variance * 100000) / 100000;
         }
+        [RelayCommand]
+        private void Print()
+        {
+            if(ResultPoints.Count == 0)
+            {
+                //dialogRepository.ShowHiltDialog(this, "提示", "没有检测结果，无法打印", "确定", (d, dialog) => { });
+                return;
+            }
+            printService.PrintTicketQC(QcTime, Variance+ "%", Variance2+ "%", VarianceScope, QcResult,
+                TranTestResults(ResultPoints)
+                , CurrentTestItem.TestResult.Project.ProjectType == Project.Project_Type_Double,
+                (f) =>
+                {
+
+                }, (e) =>
+                {
+                    dialogRepository.ShowHiltDialog(this, "打印失败", e, "确定", (d, dialog) => { });
+                });
+        }
+
+        private List<TestResult> TranTestResults(ObservableCollection<Point> resultPoints)
+        {
+            List < TestResult > trs = new List<TestResult>();
+            for (int i = 0; i < resultPoints.Count; i++)
+            {
+                trs.Add(new TestResult() {
+                    Tc = resultPoints[i].Tc,
+                    Tc2 = resultPoints[i].Tc2,
+                });
+            }
+            return trs;
+        }
+
         /// <summary>
         /// 计算质控结果
         /// </summary>
@@ -917,10 +956,10 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
 
             // 判断变异系数是否在合格范围内
-            bool isQualified = Variance >= 0 && Variance <= 8;
+            bool isQualified = Variance >= 0 && Variance <= maxVarianceScope;
             if (CurrentTestItem.TestResult.Project.ProjectType == Project.Project_Type_Double)
             {
-                isQualified = isQualified && (Variance2 >= 0 && Variance2 <= 8);
+                isQualified = isQualified && (Variance2 >= 0 && Variance2 <= maxVarianceScope);
             }
             QcResult = isQualified ? "合格" : "不合格";
             // 显示结果
@@ -941,6 +980,13 @@ namespace FluorescenceFullAutomatic.ViewModels
             //    "确定",
             //    (d, dialog) => { }
             //);
+            
+        }
+
+        private void ChangesView()
+        {
+            ShowQCCardQCText = SystemGlobal.TestType == TestType.QC ? "质控中" : "质控卡质控";
+            IsEnabled = SystemGlobal.TestType != TestType.QC;
         }
 
         private async Task DelayAndExecute()
@@ -1207,7 +1253,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             if (point != null)
             {
-                ShowResultDetails(new TestResult() { Point = point, T = point.T, C = point.C });
+                ShowResultDetails(new TestResult() { Point = point, T = point.T, C = point.C, T2 = point.T2, C2 = point.C2 });
             }
         }
         
@@ -1223,7 +1269,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 MainWindow.Instance.HideMetroDialogAsync( customDialog);
             };
             ResultDetailsControl resultDetailsControl = new ResultDetailsControl();
-            resultDetailsControl.DataContext = resultDetailsViewModel;
+            resultDetailsControl.Update(resultDetailsViewModel);
             customDialog.Content = resultDetailsControl;
 
             MainWindow.Instance.ShowMetroDialogAsync(customDialog);

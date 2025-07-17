@@ -18,20 +18,22 @@ namespace FluorescenceFullAutomatic.Platform
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterSingleton<ILogService, LogService>();
-            containerRegistry.RegisterSingleton<IDialogService, DialogService>();
-            containerRegistry.RegisterSingleton<IToolService, ToolService>();
-            containerRegistry.RegisterSingleton<IConfigService, ConfigService>();
-            containerRegistry.RegisterSingleton<IDispatcherService, DispatcherService>();
+            //Console.WriteLine("PlatformModule RegisterTypes called");
+            //containerRegistry.RegisterSingleton<ILogService, LogService>();
+            //containerRegistry.RegisterSingleton<IConfigService, ConfigService>();
+            //containerRegistry.RegisterSingleton<IDialogService, DialogService>();
+            //containerRegistry.RegisterSingleton<IToolService, ToolService>();
+            //containerRegistry.RegisterSingleton<IDispatcherService, DispatcherService>();
 
-            containerRegistry.RegisterSingleton<IPatientService, PatientService>();
-            containerRegistry.RegisterSingleton<IPointService, PointService>();
-            containerRegistry.RegisterSingleton<IPrintService, PrintService>();
-            containerRegistry.RegisterSingleton<IProjectService, ProjectService>();
-            containerRegistry.RegisterSingleton<IReactionAreaQueueService, ReactionAreaQueueService>();
-            containerRegistry.RegisterSingleton<ISerialPortService, SerialPortService>();
-            containerRegistry.RegisterSingleton<ITestResultService, TestResultService>();
-            containerRegistry.RegisterSingleton<IExportExcelService, ExportExcelService>();
+            //containerRegistry.RegisterSingleton<IPatientService, PatientService>();
+            //containerRegistry.RegisterSingleton<IPointService, PointService>();
+            //containerRegistry.RegisterSingleton<IPrintService, PrintService>();
+            //containerRegistry.RegisterSingleton<IProjectService, ProjectService>();
+            //containerRegistry.RegisterSingleton<IReactionAreaQueueService, ReactionAreaQueueService>();
+            //containerRegistry.RegisterSingleton<ISerialPortService, SerialPortService>();
+            //containerRegistry.RegisterSingleton<ITestResultService, TestResultService>();
+            //containerRegistry.RegisterSingleton<IExportExcelService, ExportExcelService>();
+
 
 
             //containerRegistry.RegisterSingleton<IApplyTestService, ApplyTestService>();
