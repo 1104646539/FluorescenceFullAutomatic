@@ -292,7 +292,7 @@ namespace FluorescenceFullAutomatic.Platform.Core.Config
         /// <summary>
         /// 是否是调试模式。调试模式下可以显示调试功能
         /// </summary>
-        public bool _isDebug = false;
+        private bool _isDebug = false;
         public bool IsDebug
         {
             get => _isDebug;
@@ -301,6 +301,22 @@ namespace FluorescenceFullAutomatic.Platform.Core.Config
                 if (_isDebug != value)
                 {
                     _isDebug = value;
+                    MarkDirty();
+                }
+            }
+        }
+        /// <summary>
+        /// 自检时清空反应区 0清空 1不清空
+        /// </summary>
+        private int _clearReactionArea = 0;
+        public int ClearReactionArea
+        {
+            get => _clearReactionArea;
+            set
+            {
+                if (_clearReactionArea != value)
+                {
+                    _clearReactionArea = value;
                     MarkDirty();
                 }
             }

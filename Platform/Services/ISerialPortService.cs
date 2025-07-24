@@ -41,7 +41,7 @@ namespace FluorescenceFullAutomatic.Platform.Services
 
 
         // 自检相关
-        void GetSelfInspectionState();
+        void GetSelfInspectionState(bool clearReactionArea);
         
         // 仪器相关
         void GetMachineState();
@@ -153,9 +153,9 @@ namespace FluorescenceFullAutomatic.Platform.Services
             _serialPortHelper.Disconnect();
         }
 
-        public void GetSelfInspectionState()
+        public void GetSelfInspectionState(bool clearReactionArea)
         {
-            _serialPortHelper.GetSelfInspectionState();
+            _serialPortHelper.GetSelfInspectionState(clearReactionArea);
         }
 
         public void GetMachineState()

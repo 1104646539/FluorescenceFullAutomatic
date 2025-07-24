@@ -108,6 +108,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         private DateTime _lastLogoClickTime = DateTime.MinValue;
         [ObservableProperty]
         private bool showCloseButton;
+        [ObservableProperty]
+        private ResizeMode showResizeMode;
         [RelayCommand]
         private void ClickLogo()
         {
@@ -223,10 +225,12 @@ namespace FluorescenceFullAutomatic.ViewModels
             {
                 toolService.ShowTaskBar();
                 ShowCloseButton = true;
+                ShowResizeMode = ResizeMode.CanMinimize;
             }
             else {
                 toolService.HideTaskBar();
                 ShowCloseButton = false;
+                ShowResizeMode = ResizeMode.NoResize;
             }
         }
 

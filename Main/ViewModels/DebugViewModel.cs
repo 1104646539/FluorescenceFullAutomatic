@@ -547,7 +547,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             ExecuteSerialPortCommand(() =>
             {
-                currentSerialPortService.GetSelfInspectionState();
+                currentSerialPortService.GetSelfInspectionState(_configRepository.ClearReactionArea());
                 Msg = "获取自检状态命令已发送";
             });
         }

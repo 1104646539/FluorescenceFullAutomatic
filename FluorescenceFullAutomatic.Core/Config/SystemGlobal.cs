@@ -10,6 +10,10 @@ namespace FluorescenceFullAutomatic.Core.Config
     public class SystemGlobal
     {
         /// <summary>
+        /// 是否是调试代码模式。不使用真实串口
+        /// </summary>
+        public const bool IsCodeDebug = false;
+        /// <summary>
         /// 仪器当前运行状态
         /// </summary>
         public static MachineStatus MachineStatus = MachineStatus.None;
@@ -32,10 +36,7 @@ namespace FluorescenceFullAutomatic.Core.Config
         /// 当错误后是否要继续检测
         /// </summary>
         public static bool ErrorContinueTest = false;
-        /// <summary>
-        /// 是否是调试代码模式。不使用真实串口
-        /// </summary>
-        public const bool IsCodeDebug = true;
+ 
      
         /// <summary>
         /// 升级文件的盘符别名

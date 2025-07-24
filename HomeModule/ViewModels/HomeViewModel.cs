@@ -42,12 +42,12 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private readonly IToolService toolRepository;
         private readonly IProjectService projectRepository;
         private readonly ILogService logService;
+
         [ObservableProperty]
         public ReactionAreaViewModel reactionAreaViewModel;
 
         [ObservableProperty]
         public SampleShelfViewModel sampleShelfViewModel;
-
 
         /// <summary>
         /// 获取温度间隔
@@ -380,8 +380,6 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             toolRepository.ShowTaskBar();
         }
 
- 
-
         [RelayCommand]
         public void ClickTest3() { }
 
@@ -470,10 +468,10 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 FirstLoad = false;
 
                 //if (
-                    //SystemGlobal.IsCodeDebug || 
-               //)
+                //SystemGlobal.IsCodeDebug ||
+                //)
                 //{
-                    GoGetSelfMachineStatus();
+                GoGetSelfMachineStatus();
                 //}
                 //else
                 //{
@@ -625,7 +623,8 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             if (!string.IsNullOrEmpty(errorMsg))
             {
                 logService.Info("仪器状态异常，请检查仪器状态。");
-                homeService.ShowHiltDialog(this,
+                homeService.ShowHiltDialog(
+                    this,
                     "提示",
                     errorMsg,
                     "好的",
@@ -685,10 +684,12 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             }
             return true;
         }
+
         /// <summary>
         /// 自检失败错误
         /// </summary>
         string SelfMachineStateError = "";
+
         public async void ReceiveGetSelfMachineStatusModel(BaseResponseModel<List<string>> model)
         {
             //如果是自己获取，才处理，否则不处理
@@ -709,7 +710,8 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             {
                 SetMachineStatus(MachineStatus.SelfInspectionSuccess);
                 GetMachineState();
-                homeService.ShowHiltDialog(this,
+                homeService.ShowHiltDialog(
+                    this,
                     "提示",
                     "自检完成",
                     "好的",
@@ -722,7 +724,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             else
             {
                 ShowSelfMachineErrorDialog();
-               
+
                 SetMachineStatus(MachineStatus.SelfInspectionFailed);
             }
             GetVersion();
@@ -730,22 +732,23 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
 
         private void ShowSelfMachineErrorDialog()
         {
-            homeService.ShowHiltDialog(this,
-                   "提示",
-                   $"自检失败{SelfMachineStateError}",
-                   "重新自检",
-                   async (d, dialog) =>
-                   {
-                       await homeService.HideMetroDialogAsync(this, dialog);
-                       logService.Info("自检失败，点击重新自检");
-                       GoGetSelfMachineStatus();
-                   },
-                   "暂不自检",
-                   (d, dialog) =>
-                   {
-                       logService.Info("自检失败，点击暂不自检");
-                   }
-               );
+            homeService.ShowHiltDialog(
+                this,
+                "提示",
+                $"自检失败{SelfMachineStateError}",
+                "重新自检",
+                async (d, dialog) =>
+                {
+                    await homeService.HideMetroDialogAsync(this, dialog);
+                    logService.Info("自检失败，点击重新自检");
+                    GoGetSelfMachineStatus();
+                },
+                "暂不自检",
+                (d, dialog) =>
+                {
+                    logService.Info("自检失败，点击暂不自检");
+                }
+            );
         }
 
         /// <summary>
@@ -836,7 +839,8 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                     string msg =
                         $"仪器状态异常,{(CardExist == false ? "卡仓不存在," : "")}{(CardNum <= 0 ? "检测卡不足," : "")}{(CleanoutFluidExist == false ? "清洗液不存在," : "")}{(SampleShelf.Any(x => x == true) ? "" : "样本架不存在")}";
                     msg = msg.TrimEnd(',');
-                    homeService.ShowHiltDialog(this,
+                    homeService.ShowHiltDialog(
+                        this,
                         "提示",
                         msg,
                         "重新获取",
@@ -875,7 +879,8 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                     string confirmText = !CardExist ? "重新检查" : "已添加";
                     msg = msg.TrimEnd(',');
                     logService.Info($"推卡失败，没卡");
-                    homeService.ShowHiltDialog(this,
+                    homeService.ShowHiltDialog(
+                        this,
                         "提示",
                         msg,
                         confirmText,
@@ -900,7 +905,8 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 //因为要移动到下一个样本而获取的仪器状态
                 IsMoveSampleGetMachineState = false;
                 ParseMachineStatusCard(model.Data);
-                if (CardExist && CardNum > 0 && CleanoutFluidExist)
+                //if (CardExist && CardNum > 0 && CleanoutFluidExist)
+                if (CleanoutFluidExist)
                 {
                     //有卡和清洗液，移动到下一个样本
                     MoveSampleNext();
@@ -908,14 +914,15 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 else
                 {
                     //没卡或没清洗液，提示
-                    string msg =
-                        (!CardExist || CardNum <= 0) ? "未检测到检测卡，请添加检测卡," : "";
+                    string msg = "";
+                    //(!CardExist || CardNum <= 0) ? "未检测到检测卡，请添加检测卡," : "";
                     msg += !CleanoutFluidExist ? "未检测到清洗液，请添加清洗液" : "";
                     string confirmText = "已添加";
                     msg = msg.TrimEnd(',');
                     logService.Info(msg);
 
-                    homeService.ShowHiltDialog(this,
+                    homeService.ShowHiltDialog(
+                        this,
                         "提示",
                         msg,
                         confirmText,
@@ -1117,13 +1124,9 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 if (IsLastSample())
                 {
                     //已经移动到最后一个样本架，则检测结束
-                    logService.Info("检测结束,没有样本");
-                    homeService.ShowHiltDialog(this,
-                        "提示",
-                        "检测结束,没有样本",
-                        "好的",
-                        (d, dialog) => { }
-                    );
+                    logService.Info("检测结束,取样结束");
+                    TestFinishedHiltMsg = "取样结束";
+                    TestFinishedAction();
                 }
                 else
                 {
@@ -1212,7 +1215,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private void VerifyStateSamplingPushCard(string samplingType)
         {
             if (CleanoutSamplingProbeFinished)
-            {       
+            {
                 //取样
                 Sampling(samplingType, configRepository.SamplingVolume());
             }
@@ -1223,7 +1226,8 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 IsRestoreSampling = true;
                 RestoreSamplingType = samplingType;
             }
-            PushCard();
+            PushCardGetMachineState();
+            //PushCard();
         }
 
         /// <summary>
@@ -1453,8 +1457,8 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             if (IsLastSample())
             {
                 //已经移动到最后一个样本架，则检测结束
-                logService.Info("检测结束,没有样本");
-                TestFinishedHiltMsg = "没有样本";
+                logService.Info("检测结束,取样结束");
+                TestFinishedHiltMsg = "取样结束";
                 TestFinishedAction();
             }
             else
@@ -1518,9 +1522,11 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 return;
             }
             SetMachineStatus(MachineStatus.SamplingFinished);
-            //清洗取样针
-            GoCleanoutSamplingProbe();
-
+            if (CleanoutSamplingProbeFinished)
+            { //如果正在清洗，就不用清洗了
+                //清洗取样针
+                GoCleanoutSamplingProbe();
+            }
             //样本架复位
             MoveSampleShelfReset();
         }
@@ -1619,7 +1625,8 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             if (CleanoutSamplingProbeFinished && MoveSampleShelfFinished)
             {
-                homeService.ShowHiltDialog(this,
+                homeService.ShowHiltDialog(
+                    this,
                     "提示",
                     "" + TestFinishedHiltMsg,
                     "好的",
@@ -1753,6 +1760,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                     //PushCardGetMachineState();
                     return;
                 }
+                PushCardFailedCount = 0;
                 //更新项目
                 UpdateTestResultForSamplePos(
                     SampleCurrentPos,
@@ -1936,7 +1944,11 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             int.TryParse(model.Data.C2, out c2);
             TestResult temp = null;
             int[] points = model.Data.Point.ToArray();
-            Platform.Model.Point point = new Platform.Model.Point() { Points = points, Location = model.Data.Location };
+            Platform.Model.Point point = new Platform.Model.Point()
+            {
+                Points = points,
+                Location = model.Data.Location,
+            };
             t = t / 1000;
             c = c / 1000;
             t2 = t2 / 1000;
@@ -2161,11 +2173,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private async void ShowSelfMachineDialog()
         {
             logService.Info("显示自检对话框");
-            showSelfController = await homeService.ShowProgressAsync(
-                this,
-                "提示",
-                "正在自检……"
-            );
+            showSelfController = await homeService.ShowProgressAsync(this, "提示", "正在自检……");
             showSelfController.SetIndeterminate();
         }
 
@@ -2183,7 +2191,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             SelfInspectionFinished = false;
             logService.Info("执行 自检");
-            serialPortService.GetSelfInspectionState();
+            serialPortService.GetSelfInspectionState(configRepository.ClearReactionArea());
         }
 
         public void GetMachineState()
@@ -2361,7 +2369,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             }
             RunningErrorMsg = $"运行错误，请联系经销商人员维护。\n错误信息: {model.Error}";
             // 显示错误信息
-            homeService.ShowHiltDialog(this,"提示", RunningErrorMsg, "确定", (d, dialog) => { });
+            homeService.ShowHiltDialog(this, "提示", RunningErrorMsg, "确定", (d, dialog) => { });
         }
 
         public void ReceiveVersionModel(BaseResponseModel<VersionModel> model)

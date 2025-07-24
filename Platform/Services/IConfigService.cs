@@ -52,6 +52,10 @@ namespace FluorescenceFullAutomatic.Platform.Services
         void SetDebugModeChnage();
         bool GetDebugMode();
 
+        bool ClearReactionArea();
+
+        void SetClearReactionArea(bool clear);
+
         // 新增：添加和移除DebugMode变化监听器
         void AddDebugModeChangedListener(Action<bool> listener);
         void RemoveDebugModeChangedListener(Action<bool> listener);
@@ -236,6 +240,16 @@ namespace FluorescenceFullAutomatic.Platform.Services
         public string TicketPortName()
         {
             return GlobalConfig.Instance.TicketPortName;
+        }
+
+        public bool ClearReactionArea()
+        {
+            return GlobalConfig.Instance.ClearReactionArea == 0;
+        }
+
+        public void SetClearReactionArea(bool clear)
+        {
+            GlobalConfig.Instance.ClearReactionArea = clear ? 0 : 1;
         }
     }
 }

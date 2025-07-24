@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Markup;
 using FluorescenceFullAutomatic.Core.Config;
 using FluorescenceFullAutomatic.Core.Model;
+using FluorescenceFullAutomatic.Platform.Model;
 using Newtonsoft.Json;
 using Serilog;
 
@@ -119,10 +120,10 @@ namespace FluorescenceFullAutomatic.Platform.Utils
                         Thread.Sleep(100);
                         string CardExist = "1"; // 1¿¨²Ö´æÔÚ
                         string CardNum = new Random().Next(5) + 5 + ""; // 30ÕÅ¿¨
-                        //if (index++ >= 3)
-                        //{
-                        //    CardNum = "0";
-                        //}
+                        if (index > 1)
+                        {
+                            CardNum = "0";
+                        }
                         string CleanoutFluid = "1";// ÇåÏ´Òº´æÔÚ
                         List<int> SamleShelf = new List<int> { 0, 1, 0, 0, 0, 0 };
                         MachineStatusModel machineStatus = new MachineStatusModel
@@ -143,12 +144,19 @@ namespace FluorescenceFullAutomatic.Platform.Utils
 
                     case SerialGlobal.CMD_MoveSample:
 
-                        
                         MoveSampleModel moveSample = new MoveSampleModel
                         {
-                            SampleType = MoveSampleModel.SampleTube, 
+                            SampleType = MoveSampleModel.SampleTube,
                         };
                         reply.Data = moveSample;
+                        if (index == 0)
+                        {
+                            reply.Data.SampleType = MoveSampleModel.SampleTube;
+                        }
+                        else {
+                            reply.Data.SampleType = MoveSampleModel.None;
+                        }
+                        index++;
                         break;
 
                     case SerialGlobal.CMD_Sampling:

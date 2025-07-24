@@ -1087,11 +1087,11 @@ namespace FluorescenceFullAutomatic.ViewModels
             return true;
         }
         // 实现 ISerialPortService 的方法
-        public void GetSelfInspectionState()
+        public void GetSelfInspectionState(bool clearReactionArea)
         {
             SelfInspectionFinished = false;
             Log.Information("执行 自检");
-            serialPortService.GetSelfInspectionState();
+            serialPortService.GetSelfInspectionState(clearReactionArea);
         }
 
         public void GetMachineState()
