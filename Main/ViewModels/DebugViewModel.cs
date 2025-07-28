@@ -1,16 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using ControlzEx.Standard;
-using FluorescenceFullAutomatic.Core.Config;
-using FluorescenceFullAutomatic.Platform.Model;
-using FluorescenceFullAutomatic.Platform.Services;
-using FluorescenceFullAutomatic.Views.Ctr;
-using FluorescenceFullAutomatic.ViewModels;
-using MahApps.Metro.Controls.Dialogs;
-using Newtonsoft.Json;
-using Serilog;
-using SqlSugar;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -20,9 +8,22 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using FluorescenceFullAutomatic.Platform.Ex;
-using FluorescenceFullAutomatic.Platform.Utils;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using ControlzEx.Standard;
+using FluorescenceFullAutomatic.Core.Config;
 using FluorescenceFullAutomatic.Core.Model;
+using FluorescenceFullAutomatic.Platform.Ex;
+using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Platform.Services;
+using FluorescenceFullAutomatic.Platform.Utils;
+using FluorescenceFullAutomatic.ViewModels;
+using FluorescenceFullAutomatic.Views.Ctr;
+using MahApps.Metro.Controls.Dialogs;
+using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1.X509;
+using Serilog;
+using SqlSugar;
 using Point = FluorescenceFullAutomatic.Platform.Model.Point;
 
 namespace FluorescenceFullAutomatic.ViewModels
@@ -31,7 +32,8 @@ namespace FluorescenceFullAutomatic.ViewModels
     {
         #region 字段
         [ObservableProperty]
-        ObservableCollection<string> motors = new ObservableCollection<string>(){
+        ObservableCollection<string> motors = new ObservableCollection<string>()
+        {
             "插卡Z",
             "柱塞泵",
             "管架Y",
@@ -43,12 +45,15 @@ namespace FluorescenceFullAutomatic.ViewModels
             "检测Y",
             "插卡X",
         };
+
         [ObservableProperty]
-        ObservableCollection<string> dirs = new ObservableCollection<string>(){
+        ObservableCollection<string> dirs = new ObservableCollection<string>()
+        {
             "复位",
             "正向",
             "反向",
         };
+
         [ObservableProperty]
         string value;
 
@@ -120,7 +125,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         [ObservableProperty]
         private bool isCupSqueezing;
-        // 系统控制 
+
+        // 系统控制
         /// <summary>
         /// 样本架位置
         /// </summary>
@@ -129,7 +135,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         /// <summary>
         /// 样本步数
-        /// </summary>          
+        /// </summary>
         [ObservableProperty]
         private string samplePos;
 
@@ -146,7 +152,11 @@ namespace FluorescenceFullAutomatic.ViewModels
         private string sampleVolume;
 
         [ObservableProperty]
-        private ObservableCollection<string> sampleTypes = new ObservableCollection<string> { "样本管", "样本杯" };
+        private ObservableCollection<string> sampleTypes = new ObservableCollection<string>
+        {
+            "样本管",
+            "样本杯",
+        };
 
         [ObservableProperty]
         private string selectedSampleType;
@@ -155,7 +165,11 @@ namespace FluorescenceFullAutomatic.ViewModels
         private string addingVolume;
 
         [ObservableProperty]
-        private ObservableCollection<string> addingTypes = new ObservableCollection<string> { "样本管", "样本杯" };
+        private ObservableCollection<string> addingTypes = new ObservableCollection<string>
+        {
+            "样本管",
+            "样本杯",
+        };
 
         [ObservableProperty]
         private string selectedAddingType;
@@ -173,13 +187,21 @@ namespace FluorescenceFullAutomatic.ViewModels
         private string testY;
 
         [ObservableProperty]
-        private ObservableCollection<string> cardTypes = new ObservableCollection<string> { "单联卡", "双联卡" };
+        private ObservableCollection<string> cardTypes = new ObservableCollection<string>
+        {
+            "单联卡",
+            "双联卡",
+        };
 
         [ObservableProperty]
         private string selectedCardType;
 
         [ObservableProperty]
-        private ObservableCollection<string> testTypes = new ObservableCollection<string> { "普通卡", "质控卡" };
+        private ObservableCollection<string> testTypes = new ObservableCollection<string>
+        {
+            "普通卡",
+            "质控卡",
+        };
 
         [ObservableProperty]
         private string selectedTestType;
@@ -203,13 +225,21 @@ namespace FluorescenceFullAutomatic.ViewModels
         private string updateFilePath;
 
         [ObservableProperty]
-        private ObservableCollection<string> squeezingTypes = new ObservableCollection<string> { "样本管", "样本杯" };
+        private ObservableCollection<string> squeezingTypes = new ObservableCollection<string>
+        {
+            "样本管",
+            "样本杯",
+        };
 
         [ObservableProperty]
         private string selectedSqueezingType;
 
         [ObservableProperty]
-        private ObservableCollection<string> piercedTypes = new ObservableCollection<string> { "样本管", "样本杯" };
+        private ObservableCollection<string> piercedTypes = new ObservableCollection<string>
+        {
+            "样本管",
+            "样本杯",
+        };
 
         [ObservableProperty]
         private string selectedPiercedType;
@@ -220,49 +250,51 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IDialogCoordinator _dialogCoordinator;
         private readonly IConfigService _configRepository;
 
-        
         #endregion
-        public DebugViewModel(ISerialPortService serialPortService,IConfigService configRepository,IDialogCoordinator dialogCoordinator)
+        public DebugViewModel(
+            ISerialPortService serialPortService,
+            IConfigService configRepository,
+            IDialogCoordinator dialogCoordinator
+        )
         {
             this.defaultSerialPortService = serialPortService;
             this._dialogCoordinator = dialogCoordinator;
             this._configRepository = configRepository;
             MotorSelected = Motors.First();
             DirSelected = Dirs.First();
-            
 
             Value = "0";
             OnLoaded();
             //可选则的
             IsDefaultSerialPort = true;
 
-            selectSerialPortService = new SerialPortService();
-            selectSerialPortService.AddConnectStateListener((str) =>
-            {
-                if (IsDefaultSerialPort) { return; }
-                if (string.IsNullOrEmpty(str))
-                {
-                    Msg = "连接成功";
-                }
-                else
-                {
-                    Msg = "连接失败";
-                }
-            });
-            
-            //默认的
-            defaultSerialPortService.AddConnectStateListener((str) =>
-            {
-                if (!IsDefaultSerialPort) { return; }
-                if (string.IsNullOrEmpty(str))
-                {
-                    Msg = "连接成功";
-                }
-                else
-                {
-                    Msg = "连接失败";
-                }
-            });
+            //selectSerialPortService = new SerialPortService();
+            //selectSerialPortService.AddConnectStateListener((str) =>
+            //{
+            //    if (IsDefaultSerialPort) { return; }
+            //    if (string.IsNullOrEmpty(str))
+            //    {
+            //        Msg = "连接成功";
+            //    }
+            //    else
+            //    {
+            //        Msg = "连接失败";
+            //    }
+            //});
+
+            ////默认的
+            //defaultSerialPortService.AddConnectStateListener((str) =>
+            //{
+            //    if (!IsDefaultSerialPort) { return; }
+            //    if (string.IsNullOrEmpty(str))
+            //    {
+            //        Msg = "连接成功";
+            //    }
+            //    else
+            //    {
+            //        Msg = "连接失败";
+            //    }
+            //});
             currentSerialPortService = defaultSerialPortService;
             IsCmdRunningFinish = true;
             ChangeSerialPort(true);
@@ -288,15 +320,20 @@ namespace FluorescenceFullAutomatic.ViewModels
             IsTubePierced = true;
             IsTubeSqueezing = true;
         }
+
         [RelayCommand]
-        public void Closed() {
+        public void Closed()
+        {
             //selectSerialPortService?.RemoveReceiveData(this);
             //selectSerialPortService?.Disconnect();
-            //currentSerialPortService?.RemoveReceiveData(this);
-            //currentSerialPortService?.RemoveOriginReceiveDataListener(OnOriginReceiveDataListener);
-            //currentSerialPortService.RemoveOriginSendDataListener(OnOriginSendDataListener);
+            currentSerialPortService?.RemoveReceiveData(this);
+            currentSerialPortService?.RemoveOriginReceiveDataListener(OnOriginReceiveDataListener);
+            currentSerialPortService.RemoveOriginSendDataListener(OnOriginSendDataListener);
+            currentSerialPortService.RemoveScanSuccessListener(OnScanSuccess);
+            currentSerialPortService.RemoveScanFailedListener(OnScanSuccess);
             SystemGlobal.TestType = TestType.None;
         }
+
         public void OnLoaded()
         {
             string[] ports = SerialPort.GetPortNames();
@@ -307,11 +344,15 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
             SelectedSerialPort = SerialPorts.First();
         }
+
         [RelayCommand]
-        public void ClickChangeSerialPort() {
+        public void ClickChangeSerialPort()
+        {
             ChangeSerialPort(!IsDefaultSerialPort);
         }
-        public void ChangeSerialPort(bool isDefault) {
+
+        public void ChangeSerialPort(bool isDefault)
+        {
             IsDefaultSerialPort = isDefault;
             BtnChangeSerialPortMsg = IsDefaultSerialPort ? "切换到可选串口" : "切换到默认串口";
             //currentSerialPortService?.RemoveReceiveData(this);
@@ -319,8 +360,11 @@ namespace FluorescenceFullAutomatic.ViewModels
             //currentSerialPortService?.RemoveOriginReceiveDataListener(OnOriginReceiveDataListener);
             //currentSerialPortService.RemoveOriginSendDataListener(OnOriginSendDataListener);
 
-            currentSerialPortService = IsDefaultSerialPort ? defaultSerialPortService : selectSerialPortService;
-            if (currentSerialPortService == defaultSerialPortService) {
+            currentSerialPortService = IsDefaultSerialPort
+                ? defaultSerialPortService
+                : selectSerialPortService;
+            if (currentSerialPortService == defaultSerialPortService)
+            {
                 ReconnecntDefault();
             }
             currentSerialPortService.AddReceiveData(this);
@@ -332,7 +376,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private void OnScanFailed(string msg)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到扫码失败 {msg}";
             SystemGlobal.TestType = TestType.Test;
@@ -340,7 +385,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private void OnScanSuccess(string msg)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到扫码成功 {msg}";
             SystemGlobal.TestType = TestType.Test;
@@ -351,13 +397,14 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// </summary>
         [ObservableProperty]
         public bool showResponse;
+
         /// <summary>
         /// 发送和接收的原始数据
         /// </summary>
         // [ObservableProperty]
         // public string originMsg;
 
-         private string originMsg;
+        private string originMsg;
         public string OriginMsg
         {
             get => originMsg;
@@ -370,18 +417,23 @@ namespace FluorescenceFullAutomatic.ViewModels
                 }
             }
         }
+
         public void OnOriginSendDataListener(string str)
         {
             //收到原始数据
             Log.Information($"发送 原始数据:{str}");
-            if (!ShowResponse) {
-                if (str.ToArray()[0] == '0') {
+            if (!ShowResponse)
+            {
+                if (str.ToArray()[0] == '0')
+                {
                     return;
                 }
             }
-            OriginMsg+=$"{DateTime.Now.GetDateTimeString2()} 发出:{str}";
+            OriginMsg += $"{DateTime.Now.GetDateTimeString2()} 发出:{str}";
         }
-        public void OnOriginReceiveDataListener(string str) {
+
+        public void OnOriginReceiveDataListener(string str)
+        {
             //收到原始数据
             //Log.Information($"接收 原始数据:{str}");
             if (string.IsNullOrEmpty(str))
@@ -394,22 +446,28 @@ namespace FluorescenceFullAutomatic.ViewModels
                 {
                     return;
                 }
-                OriginMsg +=$"{str}";
+                OriginMsg += $"{str}";
             }
         }
+
         [RelayCommand]
-        public void ClickClearInfo() {
+        public void ClickClearInfo()
+        {
             OriginMsg = "";
         }
-        public void ReconnecntDefault() {
+
+        public void ReconnecntDefault()
+        {
             //if (IsDefaultSerialPort) {
             //    currentSerialPortService.Connect(_configService.MainPortName(), _configService.MainPortBaudRate());
             //}
         }
+
         [RelayCommand]
         public void OpenSerila()
         {
-            if (IsDefaultSerialPort) return;
+            if (IsDefaultSerialPort)
+                return;
             if (currentSerialPortService.IsOpen())
             {
                 MessageBox.Show("串口已打开");
@@ -422,8 +480,11 @@ namespace FluorescenceFullAutomatic.ViewModels
                     MessageBox.Show("请选择串口");
                     return;
                 }
-                
-                SerialPortHelper.Instance.Connect(SelectedSerialPort, _configRepository.MainPortBaudRate());
+
+                SerialPortHelper.Instance.Connect(
+                    SelectedSerialPort,
+                    _configRepository.MainPortBaudRate()
+                );
                 IsCmdRunningFinish = true;
             }
             catch (Exception ex)
@@ -432,6 +493,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 return;
             }
         }
+
         /// <summary>
         /// 检查是否为调试检测类型
         /// </summary>
@@ -449,13 +511,13 @@ namespace FluorescenceFullAutomatic.ViewModels
         [RelayCommand]
         public void CloseSerila()
         {
-
-            if (IsDefaultSerialPort) return;
+            if (IsDefaultSerialPort)
+                return;
             SerialPortHelper.Instance.Disconnect();
             Msg = "串口已关闭";
             IsCmdRunningFinish = false;
         }
-        
+
         // 检查串口是否打开的通用方法
         private bool CheckSerialPortOpen()
         {
@@ -486,6 +548,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 IsCmdRunningFinish = true;
             }
         }
+
         [RelayCommand]
         public void Exec()
         {
@@ -506,13 +569,14 @@ namespace FluorescenceFullAutomatic.ViewModels
                 currentSerialPortService.Motor(indexMotor + "", indexDir + "", intValue + "");
                 Msg = "电机执行命令已发送";
             });
-            
         }
-        
+
         [RelayCommand]
-        public void OpenScan() {
+        public void OpenScan()
+        {
             Msg = "扫码已发送";
-            ExecuteSerialPortCommand(() => {
+            ExecuteSerialPortCommand(() =>
+            {
                 currentSerialPortService?.ScanBarcode();
             });
         }
@@ -521,21 +585,24 @@ namespace FluorescenceFullAutomatic.ViewModels
         public void StopScan()
         {
             Msg = "停止扫码已发送";
-            ExecuteSerialPortCommand(() => {
+            ExecuteSerialPortCommand(() =>
+            {
                 currentSerialPortService?.StopScanBarcode();
             });
         }
+
         /// <summary>
         /// 执行串口命令的通用方法
         /// </summary>
         /// <param name="action">要执行的命令</param>
         private void ExecuteSerialPortCommand(Action action)
         {
-            if (!CheckSerialPortOpen()) return;
-            
+            if (!CheckSerialPortOpen())
+                return;
+
             // 设置为调试模式
             SystemGlobal.TestType = TestType.Debug;
-            
+
             ExecuteCommand(() =>
             {
                 action();
@@ -547,10 +614,13 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             ExecuteSerialPortCommand(() =>
             {
-                currentSerialPortService.GetSelfInspectionState(_configRepository.ClearReactionArea());
+                currentSerialPortService.GetSelfInspectionState(
+                    _configRepository.RetainReactionArea()
+                );
                 Msg = "获取自检状态命令已发送";
             });
         }
+
         [RelayCommand]
         public void GetVersion()
         {
@@ -614,7 +684,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         }
 
         [RelayCommand]
-        public void ResetSampleShelf() {
+        public void ResetSampleShelf()
+        {
             ExecuteSerialPortCommand(() =>
             {
                 int position = 0;
@@ -634,7 +705,6 @@ namespace FluorescenceFullAutomatic.ViewModels
                 Msg = "移动样本命令已发送";
             });
         }
-        
 
         [RelayCommand]
         public void Sampling()
@@ -699,7 +769,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             ExecuteSerialPortCommand(() =>
             {
-                int x = 0, y = 0;
+                int x = 0,
+                    y = 0;
                 int.TryParse(ReactionAreaX, out x);
                 int.TryParse(ReactionAreaY, out y);
                 currentSerialPortService.MoveReactionArea(x, y);
@@ -712,7 +783,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             ExecuteSerialPortCommand(() =>
             {
-                int x = 0, y = 0;
+                int x = 0,
+                    y = 0;
                 int.TryParse(TestX, out x);
                 int.TryParse(TestY, out y);
                 string cardType = IsSingleCard ? "0" : "1";
@@ -721,7 +793,16 @@ namespace FluorescenceFullAutomatic.ViewModels
                 string scanEnd = ScanEnd;
                 string peakWidth = PeakWidth;
                 string peakDistance = PeakDistance;
-                currentSerialPortService.Test(x, y, cardType, testType, scanStart, scanEnd, peakWidth, peakDistance);
+                currentSerialPortService.Test(
+                    x,
+                    y,
+                    cardType,
+                    testType,
+                    scanStart,
+                    scanEnd,
+                    peakWidth,
+                    peakDistance
+                );
                 Msg = "测试命令已发送";
             });
         }
@@ -778,44 +859,31 @@ namespace FluorescenceFullAutomatic.ViewModels
                 UpdateFilePath = dialog.FileName;
             }
         }
+
         [RelayCommand]
         public void Update()
         {
             if (UpdateFilePath != null)
             {
-                string flash = GlobalUtil.GetUpdateFlash();
-                if (string.IsNullOrEmpty(flash) || !Directory.Exists(flash)) {
-                    MessageBox.Show("升级失败，没有找到升级盘符");
+                string target = GlobalUtil.GetUpdateFlash();
+                if (string.IsNullOrEmpty(target))
+                {
+                    MessageBox.Show($"升级失败，未找到升级盘");
                     return;
                 }
-                try
+                string ret = GlobalUtil.CopyFileToTarget(UpdateFilePath, target);
+
+                if (string.IsNullOrEmpty(ret))
                 {
-                    string targetPath = Path.Combine(flash, SystemGlobal.UpdateFileName);
-                    File.Copy(UpdateFilePath, targetPath, true);
-                    // 如果目标文件存在且为只读，则修改为可写
-                    if (File.Exists(targetPath))
-                    {
-                        FileAttributes attributes = File.GetAttributes(targetPath);
-                        if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-                        {
-                            File.SetAttributes(targetPath, attributes & ~FileAttributes.ReadOnly);
-                        }
-                        MessageBox.Show("升级文件已烧录,请重启仪器");
-
-                    }
-                    else {
-                        MessageBox.Show($"升级失败：文件传输失败");
-
-                    }
+                    MessageBox.Show("升级文件已烧录,请重启仪器");
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show($"升级失败：{ex.Message}");
+                    MessageBox.Show($"升级失败，{ret}");
                 }
             }
         }
 
-       
         [RelayCommand]
         public void Squeezing()
         {
@@ -841,7 +909,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         // 接收数据的方法
         public void ReceiveGetSelfMachineStatusModel(BaseResponseModel<List<string>> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到自检状态响应: {string.Join(", ", model.Data)}";
             SystemGlobal.TestType = TestType.Test;
@@ -849,15 +918,18 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceiveMachineStatusModel(BaseResponseModel<MachineStatusModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
-            Msg = $"收到机器状态响应: 卡仓存在={model.Data.CardExist}, 卡仓数量={model.Data.CardNum}, 清洗液存在={model.Data.CleanoutFluid}, 样本架状态={string.Join(",", model.Data.SamleShelf)}";
+            Msg =
+                $"收到机器状态响应: 卡仓存在={model.Data.CardExist}, 卡仓数量={model.Data.CardNum}, 清洗液存在={model.Data.CleanoutFluid}, 样本架状态={string.Join(",", model.Data.SamleShelf)}";
             SystemGlobal.TestType = TestType.Test;
         }
 
         public void ReceiveMoveSampleShelfModel(BaseResponseModel<MoveSampleShelfModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到移动样本架响应";
             SystemGlobal.TestType = TestType.Test;
@@ -865,7 +937,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceiveMoveSampleModel(BaseResponseModel<MoveSampleModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到移动样本响应: 样本类型={model.Data.SampleType}";
             SystemGlobal.TestType = TestType.Test;
@@ -873,15 +946,19 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceiveSamplingModel(BaseResponseModel<SamplingModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到采样响应: 结果={model.Data.Result}";
             SystemGlobal.TestType = TestType.Test;
         }
 
-        public void ReceiveCleanoutSamplingProbeModel(BaseResponseModel<CleanoutSamplingProbeModel> model)
+        public void ReceiveCleanoutSamplingProbeModel(
+            BaseResponseModel<CleanoutSamplingProbeModel> model
+        )
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到清洗采样针响应";
             SystemGlobal.TestType = TestType.Test;
@@ -889,7 +966,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceiveAddingSampleModel(BaseResponseModel<AddingSampleModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到加样响应";
             SystemGlobal.TestType = TestType.Test;
@@ -897,7 +975,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceiveDrainageModel(BaseResponseModel<DrainageModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到排液响应";
             SystemGlobal.TestType = TestType.Test;
@@ -905,7 +984,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceivePushCardModel(BaseResponseModel<PushCardModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到推卡响应: 成功={model.Data.Success} {model.Data.QrCode}";
             SystemGlobal.TestType = TestType.Test;
@@ -913,7 +993,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceiveMoveReactionAreaModel(BaseResponseModel<MoveReactionAreaModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到移动反应区响应";
             SystemGlobal.TestType = TestType.Test;
@@ -921,22 +1002,29 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceiveTestModel(BaseResponseModel<TestModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
-            Msg = $"收到测试响应: T={model.Data.T}, C={model.Data.C}, T2={model.Data.T2}, C2={model.Data.C2}, 卡片类型={model.Data.CardType}, 测试类型={model.Data.TestType}, 点数={model.Data.Point?.Count ?? 0}";
+            Msg =
+                $"收到测试响应: T={model.Data.T}, C={model.Data.C}, T2={model.Data.T2}, C2={model.Data.C2}, 卡片类型={model.Data.CardType}, 测试类型={model.Data.TestType}, 点数={model.Data.Point?.Count ?? 0}";
             SystemGlobal.TestType = TestType.Test;
 
-            ShowResultDetails(new TestResult() {
-                Point = new Point() {
-                    Points = model.Data.Point.ToArray(),
-                    Location = model.Data.Location.ToArray(),
-                },
-                T = model.Data.T,
-                C = model.Data.C
-            });
+            ShowResultDetails(
+                new TestResult()
+                {
+                    Point = new Point()
+                    {
+                        Points = model.Data.Point.ToArray(),
+                        Location = model.Data.Location.ToArray(),
+                    },
+                    T = model.Data.T,
+                    C = model.Data.C,
+                }
+            );
         }
+
         CustomDialog customDialog = new CustomDialog();
-        
+
         public void ShowResultDetails(TestResult testResult)
         {
             Log.Information($"收到检测结果: {JsonConvert.SerializeObject(testResult)}");
@@ -953,9 +1041,11 @@ namespace FluorescenceFullAutomatic.ViewModels
 
             _dialogCoordinator.ShowMetroDialogAsync(this, customDialog);
         }
+
         public void ReceiveReactionTempModel(BaseResponseModel<ReactionTempModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到反应区温度响应: 温度={model.Data.Temp}";
             SystemGlobal.TestType = TestType.Test;
@@ -963,7 +1053,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceiveClearReactionAreaModel(BaseResponseModel<ClearReactionAreaModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到清空反应区响应";
             SystemGlobal.TestType = TestType.Test;
@@ -971,7 +1062,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceiveMotorModel(BaseResponseModel<MotorModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"电机执行结束: 复位状态={model.Data.RestState}";
             SystemGlobal.TestType = TestType.Test;
@@ -979,7 +1071,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceiveResetParamsModel(BaseResponseModel<ResetParamsModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到重置参数响应";
             SystemGlobal.TestType = TestType.Test;
@@ -987,7 +1080,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceiveUpdateModel(BaseResponseModel<UpdateModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到更新响应";
             SystemGlobal.TestType = TestType.Test;
@@ -995,7 +1089,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceiveSqueezingModel(BaseResponseModel<SqueezingModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到挤压响应";
             SystemGlobal.TestType = TestType.Test;
@@ -1003,7 +1098,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceivePiercedModel(BaseResponseModel<PiercedModel> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到穿刺响应";
             SystemGlobal.TestType = TestType.Test;
@@ -1011,11 +1107,13 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         public void ReceiveStateError(BaseResponseModel<dynamic> model)
         {
-            if (!IsDebugTestType()) return;
+            if (!IsDebugTestType())
+                return;
             IsCmdRunningFinish = true;
             Msg = $"收到错误响应 code={model.Code} state={model.State} error={model.Error}";
             SystemGlobal.TestType = TestType.Test;
         }
+
         public void ReceiveVersionModel(BaseResponseModel<VersionModel> model)
         {
             if (!IsDebugTestType())

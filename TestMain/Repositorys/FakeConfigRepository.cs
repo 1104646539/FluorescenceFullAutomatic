@@ -16,6 +16,7 @@ namespace TestMain.Repositorys
         private string _printerName;
         private string _reportDoubleTemplatePath;
         private string _reportTemplatePath;
+        private string _retain;
         private bool _isAutoPrintA4Report;
         private bool _isAutoPrintTicket;
         private bool _isScanBarcode;
@@ -102,6 +103,11 @@ namespace TestMain.Repositorys
             
         }
 
+        public bool RetainReactionArea()
+        {
+            return _retain == "1";
+        }
+
         public int SamplingVolume()
         {
             return _samplingVolume;
@@ -150,6 +156,11 @@ namespace TestMain.Repositorys
         public void SetReportTemplatePath(string path)
         {
             _reportTemplatePath = path;
+        }
+
+        public void SetRetainReactionArea(bool retain)
+        {
+            _retain = retain ? "1":"0";
         }
 
         public void SetSamplingVolume(int volumn)

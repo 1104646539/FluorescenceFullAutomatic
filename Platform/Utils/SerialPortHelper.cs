@@ -559,9 +559,9 @@ namespace FluorescenceFullAutomatic.Platform.Utils
         /// <summary>
         /// вт╪Л
         /// </summary>
-        public void GetSelfInspectionState(bool clearReactionArea)
+        public void GetSelfInspectionState(bool retainReactionArea)
         {
-            SendCmd(SerialGlobal.CMD_GetSelfInspectionState,""+(clearReactionArea ? 0 : 1));
+            SendCmd(SerialGlobal.CMD_GetSelfInspectionState,""+(retainReactionArea ? 1 : 0));
         }
 
         /// <summary>

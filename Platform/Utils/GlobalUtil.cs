@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using FluorescenceFullAutomatic.Core.Config;
+using FluorescenceFullAutomatic.Platform.Services;
 using FluorescenceFullAutomatic.Platform.Sql;
 using FluorescenceFullAutomatic.Platform.ViewModels;
 using FluorescenceFullAutomatic.Platform.Views.Ctr;
@@ -144,58 +147,68 @@ namespace FluorescenceFullAutomatic.Platform.Utils
             }
             return "";
         }
+        /// <summary>
+        /// 获取升级盘符
+        /// </summary>
+        /// <returns></returns>
+        public static string CopyFileToTarget(string filePath,string targetDir)
+        {
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+                {
+                    return $"没有找到{filePath}文件";
+                }
+                if (string.IsNullOrEmpty(targetDir) || !Directory.Exists(targetDir))
+                {
+                    return $"没有找到{targetDir}文件";
+                }
+                try
+                {
+                    string targetPath = Path.Combine(targetDir, SystemGlobal.UpdateFileName);
+                    File.Copy(filePath, targetPath, true);
+                    // 如果目标文件存在且为只读，则修改为可写
+                    if (File.Exists(targetPath))
+                    {
+                        FileAttributes attributes = File.GetAttributes(targetPath);
+                        if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                        {
+                            File.SetAttributes(targetPath, attributes & ~FileAttributes.ReadOnly);
+                        }
+                        return "";
+                    }
+                    else
+                    {
+                        return "文件传输失败";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return "复制文件失败";
+                }
+            }
+            return "未找到文件";
+
+        }
+        /// <summary>
+        /// 获取所有可移动驱动器
+        /// </summary>
+        /// <returns></returns>
+        public static Collection<DriveInfo> GetRemovebleDrives()
+        {
+            var drives = new Collection<DriveInfo>();
+            DriveInfo[] allDrives = DriveInfo.GetDrives();
+            foreach (DriveInfo d in allDrives)
+            {
+                if (d.DriveType == DriveType.Removable) // 检测是否为可移动驱动器，如U盘
+                {
+                    drives.Add(d);
+                }
+            }
+            return drives;
+        }
         public const string Platform_Img_Path =
       "pack://application:,,,/FluorescenceFullAutomatic.Platform;component/Image/";
-        //public static void ShowHiltDialog(
-        //object context,
-        //    string title,
-        //    string msg,
-        //    string confirmText,
-        //    Action<HintDialogViewModel, CustomDialog> actionConfirm,
-        //    string cancelText = null,
-        //    Action<HintDialogViewModel, CustomDialog> actionCancel = null,
-        //    string closeText = null,
-        //    Action<HintDialogViewModel, CustomDialog> actionClose = null,
-        //    bool autoCloseDialog = true
-        //)
-        //{
-        //    CustomDialog customDialog = new CustomDialog();
-        //    HintDialogViewModel hiltDialogVM = new HintDialogViewModel(
-        //        (d) =>
-        //        {
-        //            if (autoCloseDialog)
-        //            {
-        //                metroWindow.HideMetroDialogAsync(customDialog);
-        //            }
-        //            actionConfirm?.Invoke(d, customDialog);
-        //        },
-        //        (d) =>
-        //        {
-        //            if (autoCloseDialog)
-        //            {
-        //                metroWindow.HideMetroDialogAsync(customDialog);
-        //            }
-        //            actionCancel?.Invoke(d, customDialog);
-        //        },
-        //        (d) =>
-        //        {
-        //            if (autoCloseDialog)
-        //            {
-        //                metroWindow.HideMetroDialogAsync(customDialog);
-        //            }
-        //            actionClose?.Invoke(d, customDialog);
-        //        }
-        //    )
-        //    {
-        //        Title = title,
-        //        Msg = msg,
-        //        ConfirmText = confirmText,
-        //        CancelText = cancelText,
-        //        CloseText = closeText,
-        //    };
-        //    customDialog.Content = new HintDialog() { DataContext = hiltDialogVM };
-
-        //    metroWindow.ShowMetroDialogAsync(customDialog);
-        //}
+     
     }
 }

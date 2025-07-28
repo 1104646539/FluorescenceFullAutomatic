@@ -250,7 +250,7 @@ namespace FluorescenceFullAutomatic.Platform.Core.Config
         /// <summary>
         /// 串口名
         /// </summary>
-        private string serialPortName = "COM3";
+        private string serialPortName = "COM4";
         public string SerialPortName
         {
             get => serialPortName;

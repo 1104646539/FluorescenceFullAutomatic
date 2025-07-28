@@ -2179,6 +2179,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
 
         private async Task CloseSelfMachineDialog()
         {
+            
             logService.Info("关闭自检对话框");
             if (showSelfController != null)
             {
@@ -2191,7 +2192,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             SelfInspectionFinished = false;
             logService.Info("执行 自检");
-            serialPortService.GetSelfInspectionState(configRepository.ClearReactionArea());
+            serialPortService.GetSelfInspectionState(configRepository.RetainReactionArea());
         }
 
         public void GetMachineState()

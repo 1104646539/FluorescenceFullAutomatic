@@ -26,7 +26,7 @@ namespace FluorescenceFullAutomatic.Platform.Core.Config
         /// <summary>
         /// 串口名 下位机
         /// </summary>
-        private string _mainPortName = "COM29";
+        private string _mainPortName = "COM1";
         public string MainPortName
         {
             get => _mainPortName;
@@ -59,7 +59,7 @@ namespace FluorescenceFullAutomatic.Platform.Core.Config
         /// <summary>
         /// 串口名称 条码
         /// </summary>
-        private string _barcodePortName = "COM16";
+        private string _barcodePortName = "COM3";
         public string BarcodePortName
         {
             get => _barcodePortName;
@@ -90,7 +90,7 @@ namespace FluorescenceFullAutomatic.Platform.Core.Config
           /// <summary>
         /// 串口名称 小票
         /// </summary>
-        private string _ticketPortName = "COM18";
+        private string _ticketPortName = "COM2";
         public string TicketPortName
         {
             get => _ticketPortName;
@@ -256,7 +256,7 @@ namespace FluorescenceFullAutomatic.Platform.Core.Config
                     MarkDirty();
                 }
             }
-        }
+        } 
         /// <summary>
         /// 清洗时长 取样针
         /// </summary>
@@ -306,17 +306,17 @@ namespace FluorescenceFullAutomatic.Platform.Core.Config
             }
         }
         /// <summary>
-        /// 自检时清空反应区 0清空 1不清空
+        /// 自检时保留反应区 0保留 1不保留/清空
         /// </summary>
-        private int _clearReactionArea = 0;
-        public int ClearReactionArea
+        private int _retainReactionArea = 0;
+        public int RetainReactionArea
         {
-            get => _clearReactionArea;
+            get => _retainReactionArea;
             set
             {
-                if (_clearReactionArea != value)
+                if (_retainReactionArea != value)
                 {
-                    _clearReactionArea = value;
+                    _retainReactionArea = value;
                     MarkDirty();
                 }
             }

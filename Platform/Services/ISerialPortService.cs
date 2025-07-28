@@ -41,7 +41,7 @@ namespace FluorescenceFullAutomatic.Platform.Services
 
 
         // 自检相关
-        void GetSelfInspectionState(bool clearReactionArea);
+        void GetSelfInspectionState(bool retainReactionArea);
         
         // 仪器相关
         void GetMachineState();
@@ -104,6 +104,9 @@ namespace FluorescenceFullAutomatic.Platform.Services
         void AddScanSuccessListener(Action<string> onScanSuccess);
         void AddScanFailedListener(Action<string> onScanFailed);
 
+        void RemoveScanSuccessListener(Action<string> onScanSuccess);
+        void RemoveScanFailedListener(Action<string> onScanFailed);
+
         string GetMainPortName();
 
     }
@@ -153,9 +156,9 @@ namespace FluorescenceFullAutomatic.Platform.Services
             _serialPortHelper.Disconnect();
         }
 
-        public void GetSelfInspectionState(bool clearReactionArea)
+        public void GetSelfInspectionState(bool retainReactionArea)
         {
-            _serialPortHelper.GetSelfInspectionState(clearReactionArea);
+            _serialPortHelper.GetSelfInspectionState(retainReactionArea);
         }
 
         public void GetMachineState()
@@ -412,6 +415,16 @@ namespace FluorescenceFullAutomatic.Platform.Services
         public void DisconnectTicket()
         {
             _ticketReportHelper.Disconnect();
+        }
+
+        public void RemoveScanSuccessListener(Action<string> onScanSuccess)
+        {
+            _barcodeHelper.ScanSuccess -= onScanSuccess;
+        }
+
+        public void RemoveScanFailedListener(Action<string> onScanFailed)
+        {
+            _barcodeHelper.ScanFailed -= onScanFailed;
         }
     }
 }

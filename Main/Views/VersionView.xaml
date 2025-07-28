@@ -16,7 +16,14 @@
     mah:DialogParticipation.Register="{Binding}"
     prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d">
-
+    <UserControl.Resources>
+        <Style x:Key="ButtonItemStyle" TargetType="Button">
+            <Setter Property="Padding" Value="5" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+    </UserControl.Resources>
     <i:Interaction.Triggers>
         <!--  当控件加载完成时  -->
         <i:EventTrigger EventName="Loaded">
@@ -36,10 +43,12 @@
                     Text="{Binding Version}" />
             </StackPanel>
             <StackPanel Margin="0,10" Orientation="Horizontal">
-                <TextBlock
-                    d:Text="MCU版本"
-                    FontSize="16"
-                    Text="{Binding McuVersion}" />
+                <Button Command="{Binding MCUUpdateCommand}" Style="{StaticResource ButtonItemStyle}">
+                    <TextBlock
+                        d:Text="MCU版本"
+                        FontSize="16"
+                        Text="{Binding McuVersion}" />
+                </Button>
             </StackPanel>
         </StackPanel>
     </Grid>

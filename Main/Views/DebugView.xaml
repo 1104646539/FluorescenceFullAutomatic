@@ -14,13 +14,18 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:prism="http://prismlibrary.com/"
     xmlns:vm="clr-namespace:FluorescenceFullAutomatic.ViewModels"
-    Width="1370"
-    Height="857"
+    Width="1280"
+    Height="800"
     d:Background="White"
-    d:DesignHeight="857"
-    d:DesignWidth="1370"
+    d:DesignHeight="800"
+    d:DesignWidth="1280"
     mah:DialogParticipation.Register="{Binding}"
     prism:ViewModelLocator.AutoWireViewModel="True"
+    Left="0"
+    ShowMaxRestoreButton="False"
+    ShowMinButton="False"
+    Top="0"
+    WindowStartupLocation="Manual"
     mc:Ignorable="d">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Closed">
