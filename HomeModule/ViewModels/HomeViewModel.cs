@@ -111,6 +111,10 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private bool PushCardFinished { get; set; }
 
         /// <summary>
+        /// 推卡是否成功，是否扫码成功
+        /// </summary>
+        private bool PushCardSuccess { get; set; }
+        /// <summary>
         /// 移动到反应区命令是否完成
         /// </summary>
         private bool MoveReactionAreaFinished { get; set; }
@@ -630,7 +634,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                     "好的",
                     (d, dialog) =>
                     {
-                        logService.Info("仪器状态异常，请检查仪器状态。");
+                        logService.Info("仪器状态异常 点击 好的");
                     }
                 );
             }
@@ -710,16 +714,16 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             {
                 SetMachineStatus(MachineStatus.SelfInspectionSuccess);
                 GetMachineState();
-                homeService.ShowHiltDialog(
-                    this,
-                    "提示",
-                    "自检完成",
-                    "好的",
-                    (d, dialog) =>
-                    {
-                        logService.Info("自检完成，点击好的");
-                    }
-                );
+                //homeService.ShowHiltDialog(
+                //    this,
+                //    "提示",
+                //    "自检完成",
+                //    "好的",
+                //    (d, dialog) =>
+                //    {
+                //        logService.Info("自检完成 点击 好的");
+                //    }
+                //);
             }
             else
             {
@@ -740,13 +744,13 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 async (d, dialog) =>
                 {
                     await homeService.HideMetroDialogAsync(this, dialog);
-                    logService.Info("自检失败，点击重新自检");
+                    logService.Info("自检失败，点击 重新自检");
                     GoGetSelfMachineStatus();
                 },
                 "暂不自检",
                 (d, dialog) =>
                 {
-                    logService.Info("自检失败，点击暂不自检");
+                    logService.Info("自检失败，点击 暂不自检");
                 }
             );
         }
@@ -847,13 +851,14 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                         (d, dialog) =>
                         {
                             //重新获取状态
+                            logService.Info("状态异常 点击 重新获取状态");
                             GoMachineStatus();
                         },
                         "结束检测",
                         (d, dialog) =>
                         {
                             //结束检测
-                            logService.Info("结束检测1");
+                            logService.Info("状态异常 点击 结束检测");
                             TestFinishedHiltMsg = "检测结束," + msg;
                             TestFinishedAction();
                         }
@@ -865,6 +870,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 // 推卡而获取的仪器状态
                 IsPushCardGetMachineState = false;
                 ParseMachineStatusCard(model.Data);
+                PushCardFinished = false;//推卡未完成
                 if (CardExist && CardNum > 0)
                 {
                     //有卡，推卡
@@ -886,6 +892,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                         confirmText,
                         (d, dialog) =>
                         {
+                            logService.Info("没卡或卡仓 点击 重新获取卡的状态");
                             //重新获取状态
                             PushCardGetMachineState();
                         },
@@ -893,7 +900,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                         (d, dialog) =>
                         {
                             //结束检测
-                            logService.Info("结束检测2");
+                            logService.Info("没卡或卡仓 点击 结束检测2");
                             TestFinishedHiltMsg = "取样结束";
                             TestFinishedAction();
                         }
@@ -928,13 +935,14 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                         confirmText,
                         async (d, dialog) =>
                         {
+                            logService.Info("没清洗液 点击 重新获取状态");
                             MoveSampleNextGetMachineState();
                         },
                         "结束检测",
                         (d, dialog) =>
                         {
                             //结束检测
-                            logService.Info("结束检测3");
+                            logService.Info("没清洗液 点击 结束检测");
                             TestFinishedHiltMsg = "取样结束";
                             TestFinishedAction();
                         }
@@ -1580,6 +1588,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             if (
                 PushCardFinished
                 && SamplingFinished
+                && PushCardSuccess
                 && CleanoutSamplingProbeFinished
                 && !IsRestorePushCard
             )
@@ -1760,6 +1769,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                     //PushCardGetMachineState();
                     return;
                 }
+                PushCardSuccess = true;
                 PushCardFailedCount = 0;
                 //更新项目
                 UpdateTestResultForSamplePos(
@@ -1779,6 +1789,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             }
             else
             {
+                PushCardSuccess = false;
                 // 推卡失败
                 logService.Info("推卡失败");
                 // 重新推卡
@@ -1820,6 +1831,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         /// </summary>
         private void PushCardGetMachineState()
         {
+            PushCardSuccess = false;
             IsPushCardGetMachineState = true;
             //PushCardFinished = false;
             GetMachineState();
@@ -2370,7 +2382,9 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             }
             RunningErrorMsg = $"运行错误，请联系经销商人员维护。\n错误信息: {model.Error}";
             // 显示错误信息
-            homeService.ShowHiltDialog(this, "提示", RunningErrorMsg, "确定", (d, dialog) => { });
+            homeService.ShowHiltDialog(this, "提示", RunningErrorMsg, "确定", (d, dialog) => {
+                logService.Info("运行错误 点击 好的");
+            });
         }
 
         public void ReceiveVersionModel(BaseResponseModel<VersionModel> model)

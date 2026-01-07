@@ -10,8 +10,8 @@ namespace FluorescenceFullAutomatic.Platform.Converters
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            // values[0]: ListBoxItem
-            // values[1]: ListBox
+            // values[0]: ListBoxItem/TabItem
+            // values[1]: ListBox/TabControl
             
             var item = values[0] as DependencyObject;
             var itemsControl = values[1] as ItemsControl;

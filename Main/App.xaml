@@ -1,4 +1,4 @@
-﻿<!--  Startup="Application_Startup"  -->
+<!--  Startup="Application_Startup"  -->
 <prism:PrismApplication
     x:Class="FluorescenceFullAutomatic.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

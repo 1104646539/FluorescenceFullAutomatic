@@ -36,42 +36,74 @@ namespace FluorescenceFullAutomatic.Platform.Services
 
     public class DialogService : IDialogService
     {
+
         IDialogCoordinator dialogCoordinator;
+        
         public DialogService(IDialogCoordinator dialogCoordinator) { 
             this.dialogCoordinator = dialogCoordinator;
         }
         public Task HideMetroDialogAsync(object context, BaseMetroDialog dialog, MetroDialogSettings settings = null)
         {
-            return dialogCoordinator.HideMetroDialogAsync(context,dialog,settings);
+            var w = Application.Current.MainWindow as MetroWindow;
+            return w.HideMetroDialogAsync(dialog,settings);
             //return window.HideMetroDialogAsync(dialog, settings);
         }
-
+        public bool ClickTimeConfirm(long time) {
+            return time == 0 || (time > 0 && (DateTimeOffset.Now.ToUnixTimeMilliseconds() - time > 1500));
+        }
         public void ShowHiltDialog(object context, string title, string msg, string confirmText, Action<HintDialogViewModel, CustomDialog> actionConfirm,
             string cancelText = null, Action<HintDialogViewModel, CustomDialog> actionCancel = null, string closeText = null, Action<HintDialogViewModel, CustomDialog> actionClose = null, bool autoCloseDialog = true)
         {
+            var prevTime = 0L;
             CustomDialog customDialog = new CustomDialog();
             HintDialogViewModel hiltDialogVM = new HintDialogViewModel(
-                (d) =>
+                async (d) =>
                 {
+                    var w = Application.Current.MainWindow as MetroWindow;
+                    if (ClickTimeConfirm(prevTime))
+                    {
+                        prevTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    }
+                    else {
+                        return;
+                    }
                     if (autoCloseDialog)
                     {
-                        dialogCoordinator.HideMetroDialogAsync(context,customDialog);
+                       await w.HideMetroDialogAsync(customDialog);
                     }
                     actionConfirm?.Invoke(d, customDialog);
                 },
                 (d) =>
                 {
+                    var w = Application.Current.MainWindow as MetroWindow;
+                    if (ClickTimeConfirm(prevTime))
+                    {
+                        prevTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    }
+                    else
+                    {
+                        return;
+                    }
                     if (autoCloseDialog)
                     {
-                        dialogCoordinator.HideMetroDialogAsync(context, customDialog);
+                        w.HideMetroDialogAsync( customDialog);
                     }
                     actionCancel?.Invoke(d, customDialog);
                 },
                 (d) =>
                 {
+                    var w = Application.Current.MainWindow as MetroWindow;
+                    if (ClickTimeConfirm(prevTime))
+                    {
+                        prevTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    }
+                    else
+                    {
+                        return;
+                    }
                     if (autoCloseDialog)
                     {
-                        dialogCoordinator.HideMetroDialogAsync(context, customDialog);
+                        w.HideMetroDialogAsync( customDialog);
                     }
                     actionClose?.Invoke(d, customDialog);
                 }
@@ -84,8 +116,11 @@ namespace FluorescenceFullAutomatic.Platform.Services
                 CloseText = closeText,
             };
             customDialog.Content = new HintDialog() { DataContext = hiltDialogVM };
-
-            dialogCoordinator.ShowMetroDialogAsync(context,customDialog);
+            var w = Application.Current.MainWindow as MetroWindow;
+            if (w != null) { 
+                w.ShowMetroDialogAsync(customDialog);
+            }
+            //dialogCoordinator.ShowMetroDialogAsync(context,customDialog);
             //GlobalUtil.ShowHiltDialog(context, title, msg,confirmText,actionConfirm,cancelText,actionCancel,closeText,actionClose,autoCloseDialog);
         }
 

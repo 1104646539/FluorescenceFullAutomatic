@@ -17,7 +17,7 @@ using System.Windows.Shapes;
 namespace FluorescenceFullAutomatic.HomeModule.Views
 {
     /// <summary>
-    /// HomeCtr.xaml µÄ½»»¥Âß¼­
+    /// HomeCtr.xaml ï¿½Ä½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½
     /// </summary>
     public partial class HomeView : UserControl
     {

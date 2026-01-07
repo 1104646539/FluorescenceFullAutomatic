@@ -188,14 +188,15 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// 升级失败
         /// </summary>
         /// <param name="v"></param>
-        private void UpdateFailed(string err)
+        private async void UpdateFailed(string err)
         {
+            if (progressController != null)
+            {
+                await progressController.CloseAsync();
+            }
             dispatcherService.Invoke(() =>
             {
-                if (progressController != null)
-                {
-                    progressController.CloseAsync();
-                }
+                
                 dialogService.ShowHiltDialog(
                     this,
                     "提示",

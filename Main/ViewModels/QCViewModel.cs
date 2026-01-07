@@ -21,7 +21,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using FluorescenceFullAutomatic.Platform.Ex;
 using FluorescenceFullAutomatic.Core.Model;
 using FluorescenceFullAutomatic.Platform.Utils;
-using NPOI.OpenXmlFormats.Wordprocessing;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {

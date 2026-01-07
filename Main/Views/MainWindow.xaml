@@ -19,6 +19,7 @@
     Dialog:DialogParticipation.Register="{Binding}"
     d:DataContext="{d:DesignInstance vm:MainWindowViewModel,
                                      IsDesignTimeCreatable=True}"
+    mah:IsWindowDraggable="False"
     prism:ViewModelLocator.AutoWireViewModel="True"
     BorderThickness="0"
     Left="0"
@@ -57,6 +58,7 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+
             <!--  region 顶部导航栏  -->
             <Grid
                 Grid.Row="0"
@@ -68,7 +70,9 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
+
                 <!--  Logo区域  -->
+
                 <TextBlock
                     Grid.Column="0"
                     MinWidth="60"
@@ -82,7 +86,9 @@
                     </TextBlock.InputBindings>
                 </TextBlock>
 
+
                 <!--  标题区域  -->
+
                 <ListBox
                     Grid.Column="1"
                     Margin="20,0,0,0"
@@ -95,7 +101,9 @@
                     SelectedIndex="{Binding SelectedIndex}"
                     Style="{StaticResource ListBox.Main}">
                     <ListBox.Resources>
+
                         <!--  ListBoxItem样式  -->
+
                         <Style BasedOn="{StaticResource ListBoxItem.Main}" TargetType="ListBoxItem" />
                     </ListBox.Resources>
                 </ListBox>
@@ -106,9 +114,9 @@
                     HorizontalAlignment="Right"
                     Orientation="Horizontal">
                     <!--  右侧区域  -->
-                    <Border MinWidth="200">
+                    <Border MinWidth="300">
                         <Image
-                            Margin="10"
+                            Margin="0,8,100,8"
                             d:Source="pack://application:,,,/FluorescenceFullAutomatic.Platform;component/Image/start_success.png"
                             Source="{Binding ImgStartTest}">
                             <Image.InputBindings>
@@ -123,7 +131,6 @@
             </Grid>
             <!--  endregion  -->
             <!--  内容区域  -->
-            <!--<ContentPresenter Grid.Row="1" Content="{Binding SelectedContent, UpdateSourceTrigger=PropertyChanged}" />-->
             <ContentControl Grid.Row="1" prism:RegionManager.RegionName="{x:Static util:Regions.MainContent}" />
             <!--  region 底部状态栏  -->
             <Border

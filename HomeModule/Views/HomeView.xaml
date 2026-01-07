@@ -15,10 +15,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:prism="http://prismlibrary.com/"
     xmlns:vm="clr-namespace:FluorescenceFullAutomatic.HomeModule.ViewModels"
-    Dialog:DialogParticipation.Register="{Binding}"
     d:Background="White"
     d:DesignHeight="700"
     d:DesignWidth="1370"
+    mah:DialogParticipation.Register="{Binding}"
     prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d">
 
@@ -60,7 +60,7 @@
                 Width="420"
                 Margin="100,100,0,0"
                 DataContext="{Binding SampleShelfViewModel}" />
-            <StackPanel Margin="50,0,0,0" Orientation="Horizontal">
+            <StackPanel Margin="50,20,0,0" Orientation="Horizontal">
                 <Button
                     Width="100"
                     Height="60"

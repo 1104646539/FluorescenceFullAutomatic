@@ -12,7 +12,7 @@ namespace FluorescenceFullAutomatic.Core.Config
         /// <summary>
         /// 是否是调试代码模式。不使用真实串口
         /// </summary>
-        public const bool IsCodeDebug = false;
+        public const bool IsCodeDebug = true;
         /// <summary>
         /// 仪器当前运行状态
         /// </summary>
