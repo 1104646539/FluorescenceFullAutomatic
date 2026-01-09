@@ -1,14 +1,176 @@
+using FluorescenceFullAutomatic.Core.Config;
+using FluorescenceFullAutomatic.Core.Model;
 using FluorescenceFullAutomatic.Platform.Core.Config;
 using FluorescenceFullAutomatic.Platform.Model;
 using FluorescenceFullAutomatic.Platform.Utils;
 using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Navigation;
 
 namespace FluorescenceFullAutomatic.Platform.Services
 {
+    public interface ISerialPortCommandFacade
+    {
+        Task<BaseResponseModel<List<string>>> GetSelfInspectionStateAsync(
+            bool retainReactionArea,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 300000
+        );
+
+        Task<BaseResponseModel<MachineStatusModel>> GetMachineStateAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<MoveSampleShelfModel>> MoveSampleShelfAsync(
+            int pos,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<MoveSampleModel>> MoveSampleAsync(
+            int pos,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<SamplingModel>> SamplingAsync(
+            string type,
+            int volume,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<CleanoutSamplingProbeModel>> CleanoutSamplingProbeAsync(
+            int duration,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<AddingSampleModel>> AddingSampleAsync(
+            int volume,
+            string type,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<DrainageModel>> DrainageAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<PushCardModel>> PushCardAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<MoveReactionAreaModel>> MoveReactionAreaAsync(
+            int x,
+            int y,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<TestModel>> TestAsync(
+            int x,
+            int y,
+            string cardType,
+            string testType,
+            string scanStart,
+            string scanEnd,
+            string peakWidth,
+            string peakDistance,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<ReactionTempModel>> GetReactionTempAsync(
+            string temp,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<ClearReactionAreaModel>> ClearReactionAreaAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<MotorModel>> MotorAsync(
+            string motor,
+            string direction,
+            string value,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<ResetParamsModel>> ResetParamsAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<UpdateModel>> UpdateAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<SqueezingModel>> SqueezingAsync(
+            string type,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<PiercedModel>> PiercedAsync(
+            string type,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<VersionModel>> GetVersionAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        Task<BaseResponseModel<ShutdownModel>> ShutdownAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        );
+
+        void GetSelfInspectionState(bool retainReactionArea);
+        void GetMachineState();
+        void MoveSampleShelf(int pos);
+        void MoveSample(int pos);
+        void Sampling(string type, int volume);
+        void CleanoutSamplingProbe(int duration);
+        void AddingSample(int volume, string type);
+        void Drainage();
+        void PushCard();
+        void MoveReactionArea(int x, int y);
+        void Test(
+            int x,
+            int y,
+            string cardType,
+            string testType,
+            string scanStart,
+            string scanEnd,
+            string peakWidth,
+            string peakDistance
+        );
+        void GetReactionTemp(string temp);
+        void ClearReactionArea();
+        void Motor(string motor, string direction, string value);
+        void ResetParams();
+        void Update();
+        void Squeezing(string type);
+        void Pierced(string type);
+        void GetVersion();
+        void Shutdown();
+    }
+
     public interface ISerialPortService
     {
-        //Õ®—∂¥Æø⁄
+        //Õ®—∂ÔøΩÔøΩÔøΩÔøΩ
         void AddSerialPortConnectReceived(Action<string> action);
         void RemoveSerialPortConnectReceived(Action<string> action);
 
@@ -17,7 +179,7 @@ namespace FluorescenceFullAutomatic.Platform.Services
         void Connect(string portName, int baudRate);
         void Disconnect();
 
-        //Ãı¬Î¥Æø⁄
+        //ÔøΩÔøΩÔøΩÎ¥ÆÔøΩÔøΩ
         void AddBarcodeConnectReceived(Action<string> action);
         void RemoveBarcodeConnectReceived(Action<string> action);
 
@@ -27,7 +189,7 @@ namespace FluorescenceFullAutomatic.Platform.Services
         void ConnectBarcode(string portName, int baudRate);
         void DisconnectBarcode();
 
-        //»»√Ù¥Ú”°ª˙¥Æø⁄
+        //ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ”°ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
         void AddTicketConnectReceived(Action<string> action);
         void RemoveTicketConnectReceived(Action<string> action);
 
@@ -40,53 +202,53 @@ namespace FluorescenceFullAutomatic.Platform.Services
 
 
 
-        // ◊‘ºÏœ‡πÿ
+        // ÔøΩ‘ºÔøΩÔøΩÔøΩÔøΩ
         void GetSelfInspectionState(bool retainReactionArea);
         
-        // “«∆˜œ‡πÿ
+        // ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
         void GetMachineState();
         
-        // «Âœ¥“∫œ‡πÿ
+        // ÔøΩÔøΩœ¥“∫ÔøΩÔøΩÔøΩ
         void GetCleanoutFluid();
         
-        // —˘±æº‹œ‡πÿ
+        // ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
         void GetSampleShelf();
         void MoveSampleShelf(int pos);
         
-        // —˘±æ≤Ÿ◊˜œ‡πÿ
+        // ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
         void MoveSample( int pos);
         void Sampling(string type, int volume);
         void CleanoutSamplingProbe(int duration);
         void AddingSample(int volume, string type);
         void Drainage();
         
-        // ø®∆¨≤Ÿ◊˜œ‡πÿ
+        // ÔøΩÔøΩ∆¨ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
         void PushCard();
         void MoveReactionArea(int x, int y);
         void Test(int x, int y, string cardType, string testType, string scanStart, 
                  string scanEnd, string peakWidth, string peakDistance);
         
-        // Œ¬∂»œ‡πÿ
+        // ÔøΩ¬∂ÔøΩÔøΩÔøΩÔøΩ
         void GetReactionTemp(string temp);
         
-        // ∑¥”¶«¯≤Ÿ◊˜
+        // ÔøΩÔøΩ”¶ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
         void ClearReactionArea();
         
-        // µÁª˙øÿ÷∆
+        // ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
         void Motor(string motor, string direction, string value);
         
-        // œµÕ≥œ‡πÿ
+        // œµÕ≥ÔøΩÔøΩÔøΩ
         void ResetParams();
         void Update();
         
-        // —˘±æ¥¶¿Ìœ‡πÿ
+        // ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
         void Squeezing(string type);
         void Pierced(string type);
 
         void GetVersion();
         void Shutdown();
         public bool IsOpen();
-        //  ¬º˛◊¢≤·
+        // ÔøΩ¬ºÔøΩ◊¢ÔøΩÔøΩ
         void AddReceiveData(IReceiveData receiveData);
         void RemoveReceiveData(IReceiveData receiveData);
 
@@ -425,6 +587,683 @@ namespace FluorescenceFullAutomatic.Platform.Services
         public void RemoveScanFailedListener(Action<string> onScanFailed)
         {
             _barcodeHelper.ScanFailed -= onScanFailed;
+        }
+    }
+
+    public sealed class SerialCommandException : Exception
+    {
+        public string Code { get; }
+        public string DeviceError { get; }
+
+        public SerialCommandException(string code, string deviceError)
+            : base($"‰∏≤Âè£ÂëΩ‰ª§ÊâßË°åÂ§±Ë¥•„ÄÇÂëΩ‰ª§Á†Å={code} ÈîôËØØ={deviceError}")
+        {
+            Code = code;
+            DeviceError = deviceError;
+        }
+    }
+
+    public sealed class SerialPortCommandFacade : ISerialPortCommandFacade, IReceiveData
+    {
+        private interface IPendingRequest
+        {
+            bool IsCompleted { get; }
+            void TrySetResult(object result);
+            void TrySetException(Exception exception);
+        }
+
+        private sealed class PendingRequest<T> : IPendingRequest
+        {
+            public TaskCompletionSource<T> Tcs { get; }
+
+            public PendingRequest()
+            {
+                Tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+            }
+
+            public bool IsCompleted => Tcs.Task.IsCompleted;
+
+            public void TrySetResult(object result)
+            {
+                if (result is T typed)
+                {
+                    Tcs.TrySetResult(typed);
+                }
+            }
+
+            public void TrySetException(Exception exception)
+            {
+                Tcs.TrySetException(exception);
+            }
+        }
+
+        private readonly object _gate = new object();
+        private readonly Dictionary<string, IPendingRequest> _pendingByCmd =
+            new Dictionary<string, IPendingRequest>();
+
+        private readonly ISerialPortService _serialPortService;
+
+        public SerialPortCommandFacade(ISerialPortService serialPortService)
+        {
+            _serialPortService = serialPortService;
+            _serialPortService.AddReceiveData(this);
+        }
+
+        public Task<BaseResponseModel<List<string>>> GetSelfInspectionStateAsync(
+            bool retainReactionArea,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<List<string>>>(
+                SerialGlobal.CMD_GetSelfInspectionState,
+                () => _serialPortService.GetSelfInspectionState(retainReactionArea),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<MachineStatusModel>> GetMachineStateAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 5000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<MachineStatusModel>>(
+                SerialGlobal.CMD_GetMachineState,
+                () => _serialPortService.GetMachineState(),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<MoveSampleShelfModel>> MoveSampleShelfAsync(
+            int pos,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 15000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<MoveSampleShelfModel>>(
+                SerialGlobal.CMD_MoveSampleShelf,
+                () => _serialPortService.MoveSampleShelf(pos),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<MoveSampleModel>> MoveSampleAsync(
+            int pos,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 15000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<MoveSampleModel>>(
+                SerialGlobal.CMD_MoveSample,
+                () => _serialPortService.MoveSample(pos),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<SamplingModel>> SamplingAsync(
+            string type,
+            int volume,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 15000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<SamplingModel>>(
+                SerialGlobal.CMD_Sampling,
+                () => _serialPortService.Sampling(type, volume),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<CleanoutSamplingProbeModel>> CleanoutSamplingProbeAsync(
+            int duration,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 15000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<CleanoutSamplingProbeModel>>(
+                SerialGlobal.CMD_CleanoutSamplingProbe,
+                () => _serialPortService.CleanoutSamplingProbe(duration),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<AddingSampleModel>> AddingSampleAsync(
+            int volume,
+            string type,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 15000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<AddingSampleModel>>(
+                SerialGlobal.CMD_AddingSample,
+                () => _serialPortService.AddingSample(volume, type),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<DrainageModel>> DrainageAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 15000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<DrainageModel>>(
+                SerialGlobal.CMD_Drainage,
+                () => _serialPortService.Drainage(),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<PushCardModel>> PushCardAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 15000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<PushCardModel>>(
+                SerialGlobal.CMD_PushCard,
+                () => _serialPortService.PushCard(),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<MoveReactionAreaModel>> MoveReactionAreaAsync(
+            int x,
+            int y,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 20000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<MoveReactionAreaModel>>(
+                SerialGlobal.CMD_MoveReactionArea,
+                () => _serialPortService.MoveReactionArea(x, y),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<TestModel>> TestAsync(
+            int x,
+            int y,
+            string cardType,
+            string testType,
+            string scanStart,
+            string scanEnd,
+            string peakWidth,
+            string peakDistance,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<TestModel>>(
+                SerialGlobal.CMD_Test,
+                () =>
+                    _serialPortService.Test(
+                        x,
+                        y,
+                        cardType,
+                        testType,
+                        scanStart,
+                        scanEnd,
+                        peakWidth,
+                        peakDistance
+                    ),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<ReactionTempModel>> GetReactionTempAsync(
+            string temp,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 5000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<ReactionTempModel>>(
+                SerialGlobal.CMD_GetReactionTemp,
+                () => _serialPortService.GetReactionTemp(temp),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<ClearReactionAreaModel>> ClearReactionAreaAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 15000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<ClearReactionAreaModel>>(
+                SerialGlobal.CMD_ClearReactionArea,
+                () => _serialPortService.ClearReactionArea(),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<MotorModel>> MotorAsync(
+            string motor,
+            string direction,
+            string value,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 15000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<MotorModel>>(
+                SerialGlobal.CMD_Motor,
+                () => _serialPortService.Motor(motor, direction, value),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<ResetParamsModel>> ResetParamsAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 15000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<ResetParamsModel>>(
+                SerialGlobal.CMD_ResetParams,
+                () => _serialPortService.ResetParams(),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<UpdateModel>> UpdateAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 30000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<UpdateModel>>(
+                SerialGlobal.CMD_Update,
+                () => _serialPortService.Update(),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<SqueezingModel>> SqueezingAsync(
+            string type,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 15000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<SqueezingModel>>(
+                SerialGlobal.CMD_Squeezing,
+                () => _serialPortService.Squeezing(type),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<PiercedModel>> PiercedAsync(
+            string type,
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 15000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<PiercedModel>>(
+                SerialGlobal.CMD_Pierced,
+                () => _serialPortService.Pierced(type),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<VersionModel>> GetVersionAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 5000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<VersionModel>>(
+                SerialGlobal.CMD_Version,
+                () => _serialPortService.GetVersion(),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public Task<BaseResponseModel<ShutdownModel>> ShutdownAsync(
+            CancellationToken cancellationToken = default,
+            int timeoutMs = 5000
+        )
+        {
+            return EnqueueAsync<BaseResponseModel<ShutdownModel>>(
+                SerialGlobal.CMD_Shutdown,
+                () => _serialPortService.Shutdown(),
+                cancellationToken,
+                timeoutMs
+            );
+        }
+
+        public void GetSelfInspectionState(bool retainReactionArea)
+        {
+            _serialPortService.GetSelfInspectionState(retainReactionArea);
+        }
+
+        public void GetMachineState()
+        {
+            _serialPortService.GetMachineState();
+        }
+
+        public void MoveSampleShelf(int pos)
+        {
+            _serialPortService.MoveSampleShelf(pos);
+        }
+
+        public void MoveSample(int pos)
+        {
+            _serialPortService.MoveSample(pos);
+        }
+
+        public void Sampling(string type, int volume)
+        {
+            _serialPortService.Sampling(type, volume);
+        }
+
+        public void CleanoutSamplingProbe(int duration)
+        {
+            _serialPortService.CleanoutSamplingProbe(duration);
+        }
+
+        public void AddingSample(int volume, string type)
+        {
+            _serialPortService.AddingSample(volume, type);
+        }
+
+        public void Drainage()
+        {
+            _serialPortService.Drainage();
+        }
+
+        public void PushCard()
+        {
+            _serialPortService.PushCard();
+        }
+
+        public void MoveReactionArea(int x, int y)
+        {
+            _serialPortService.MoveReactionArea(x, y);
+        }
+
+        public void Test(
+            int x,
+            int y,
+            string cardType,
+            string testType,
+            string scanStart,
+            string scanEnd,
+            string peakWidth,
+            string peakDistance
+        )
+        {
+            _serialPortService.Test(
+                x,
+                y,
+                cardType,
+                testType,
+                scanStart,
+                scanEnd,
+                peakWidth,
+                peakDistance
+            );
+        }
+
+        public void GetReactionTemp(string temp)
+        {
+            _serialPortService.GetReactionTemp(temp);
+        }
+
+        public void ClearReactionArea()
+        {
+            _serialPortService.ClearReactionArea();
+        }
+
+        public void Motor(string motor, string direction, string value)
+        {
+            _serialPortService.Motor(motor, direction, value);
+        }
+
+        public void ResetParams()
+        {
+            _serialPortService.ResetParams();
+        }
+
+        public void Update()
+        {
+            _serialPortService.Update();
+        }
+
+        public void Squeezing(string type)
+        {
+            _serialPortService.Squeezing(type);
+        }
+
+        public void Pierced(string type)
+        {
+            _serialPortService.Pierced(type);
+        }
+
+        public void GetVersion()
+        {
+            _serialPortService.GetVersion();
+        }
+
+        public void Shutdown()
+        {
+            _serialPortService.Shutdown();
+        }
+
+        private Task<T> EnqueueAsync<T>(
+            string cmd,
+            Action send,
+            CancellationToken cancellationToken,
+            int timeoutMs
+        )
+        {
+            var pending = new PendingRequest<T>();
+            lock (_gate)
+            {
+                if (_pendingByCmd.TryGetValue(cmd, out var existing) && !existing.IsCompleted)
+                {
+                    throw new InvalidOperationException($"ÂëΩ‰ª§Ê≠£Âú®ÊâßË°å‰∏≠Ôºå‰∏çÂÖÅËÆ∏Âπ∂Âèë„ÄÇÂëΩ‰ª§Á†Å={cmd}");
+                }
+                _pendingByCmd[cmd] = pending;
+            }
+
+            send();
+            return WaitAsync(pending, cmd, cancellationToken, timeoutMs);
+        }
+
+        private async Task<T> WaitAsync<T>(
+            PendingRequest<T> pending,
+            string cmd,
+            CancellationToken cancellationToken,
+            int timeoutMs
+        )
+        {
+            var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            try
+            {
+                var delayTask = Task.Delay(timeoutMs, timeoutCts.Token);
+
+                var completed = await Task.WhenAny(pending.Tcs.Task, delayTask);
+                if (completed == pending.Tcs.Task)
+                {
+                    timeoutCts.Cancel();
+                    RemovePending(cmd, pending);
+                    return await pending.Tcs.Task;
+                }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    pending.Tcs.TrySetCanceled(cancellationToken);
+                    RemovePending(cmd, pending);
+                    throw new OperationCanceledException(cancellationToken);
+                }
+
+                var ex = new TimeoutException($"‰∏≤Âè£ÂëΩ‰ª§Ë∂ÖÊó∂„ÄÇÂëΩ‰ª§Á†Å={cmd} Ë∂ÖÊó∂={timeoutMs}ms");
+                pending.Tcs.TrySetException(ex);
+                RemovePending(cmd, pending);
+                throw ex;
+            }
+            finally
+            {
+                timeoutCts.Dispose();
+            }
+        }
+
+        private void RemovePending(string cmd, IPendingRequest pending)
+        {
+            lock (_gate)
+            {
+                if (_pendingByCmd.TryGetValue(cmd, out var existing) && ReferenceEquals(existing, pending))
+                {
+                    _pendingByCmd.Remove(cmd);
+                }
+            }
+        }
+
+        private void CompleteNext(string cmd, object result)
+        {
+            IPendingRequest pending = null;
+            lock (_gate)
+            {
+                if (_pendingByCmd.TryGetValue(cmd, out pending))
+                {
+                    _pendingByCmd.Remove(cmd);
+                }
+            }
+            pending?.TrySetResult(result);
+        }
+
+        private void FailNext(string cmd, Exception exception)
+        {
+            IPendingRequest pending = null;
+            lock (_gate)
+            {
+                if (_pendingByCmd.TryGetValue(cmd, out pending))
+                {
+                    _pendingByCmd.Remove(cmd);
+                }
+            }
+            pending?.TrySetException(exception);
+        }
+
+        public void ReceiveGetSelfMachineStatusModel(BaseResponseModel<List<string>> model)
+        {
+            CompleteNext(SerialGlobal.CMD_GetSelfInspectionState, model);
+        }
+
+        public void ReceiveMachineStatusModel(BaseResponseModel<MachineStatusModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_GetMachineState, model);
+        }
+
+        public void ReceiveMoveSampleShelfModel(BaseResponseModel<MoveSampleShelfModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_MoveSampleShelf, model);
+        }
+
+        public void ReceiveMoveSampleModel(BaseResponseModel<MoveSampleModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_MoveSample, model);
+        }
+
+        public void ReceiveSamplingModel(BaseResponseModel<SamplingModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_Sampling, model);
+        }
+
+        public void ReceiveCleanoutSamplingProbeModel(BaseResponseModel<CleanoutSamplingProbeModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_CleanoutSamplingProbe, model);
+        }
+
+        public void ReceiveAddingSampleModel(BaseResponseModel<AddingSampleModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_AddingSample, model);
+        }
+
+        public void ReceiveDrainageModel(BaseResponseModel<DrainageModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_Drainage, model);
+        }
+
+        public void ReceivePushCardModel(BaseResponseModel<PushCardModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_PushCard, model);
+        }
+
+        public void ReceiveMoveReactionAreaModel(BaseResponseModel<MoveReactionAreaModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_MoveReactionArea, model);
+        }
+
+        public void ReceiveTestModel(BaseResponseModel<TestModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_Test, model);
+        }
+
+        public void ReceiveReactionTempModel(BaseResponseModel<ReactionTempModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_GetReactionTemp, model);
+        }
+
+        public void ReceiveClearReactionAreaModel(BaseResponseModel<ClearReactionAreaModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_ClearReactionArea, model);
+        }
+
+        public void ReceiveMotorModel(BaseResponseModel<MotorModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_Motor, model);
+        }
+
+        public void ReceiveResetParamsModel(BaseResponseModel<ResetParamsModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_ResetParams, model);
+        }
+
+        public void ReceiveUpdateModel(BaseResponseModel<UpdateModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_Update, model);
+        }
+
+        public void ReceiveSqueezingModel(BaseResponseModel<SqueezingModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_Squeezing, model);
+        }
+
+        public void ReceivePiercedModel(BaseResponseModel<PiercedModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_Pierced, model);
+        }
+
+        public void ReceiveVersionModel(BaseResponseModel<VersionModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_Version, model);
+        }
+
+        public void ReceiveShutdownModel(BaseResponseModel<ShutdownModel> model)
+        {
+            CompleteNext(SerialGlobal.CMD_Shutdown, model);
+        }
+
+        public void ReceiveStateError(BaseResponseModel<dynamic> model)
+        {
+            if (model == null || string.IsNullOrEmpty(model.Code))
+            {
+                return;
+            }
+            FailNext(model.Code, new SerialCommandException(model.Code, model.Error ?? ""));
         }
     }
 }

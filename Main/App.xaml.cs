@@ -1,4 +1,4 @@
-ï»¿using System;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -21,15 +21,15 @@ using UploadModule_Module = UploadModule.UploadModule;
 namespace FluorescenceFullAutomatic
 {
     /// <summary>
-    /// App.xaml çš„äº¤äº’é€»è¾‘
+    /// App.xaml µÄ½»»¥Âß¼­
     /// </summary>
     public partial class App : PrismApplication
     {
-        // å®šä¹‰äº’æ–¥é”ï¼Œç”¨äºç¡®ä¿åº”ç”¨ç¨‹åºåªæœ‰ä¸€ä¸ªå®ä¾‹
+        // ¶¨Òå»¥³âËø£¬ÓÃÓÚÈ·±£Ó¦ÓÃ³ÌĞòÖ»ÓĞÒ»¸öÊµÀı
         private static Mutex _mutex = null;
         private const string MutexName = "FluorescenceFullAutomaticSingleInstance";
         
-        // Windows API å£°æ˜ï¼Œç”¨äºæŸ¥æ‰¾å’Œæ¿€æ´»çª—å£
+        // Windows API ÉùÃ÷£¬ÓÃÓÚ²éÕÒºÍ¼¤»î´°¿Ú
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
         
@@ -43,10 +43,10 @@ namespace FluorescenceFullAutomatic
         
         protected override Window CreateShell()
         {
-            // æ£€æŸ¥åº”ç”¨ç¨‹åºæ˜¯å¦å·²ç»åœ¨è¿è¡Œ
+            // ¼ì²éÓ¦ÓÃ³ÌĞòÊÇ·ñÒÑ¾­ÔÚÔËĞĞ
             if (!EnsureSingleInstance())
             {
-                // å¦‚æœå·²ç»æœ‰ä¸€ä¸ªå®ä¾‹åœ¨è¿è¡Œï¼Œåˆ™é€€å‡ºå½“å‰å®ä¾‹
+                // Èç¹ûÒÑ¾­ÓĞÒ»¸öÊµÀıÔÚÔËĞĞ£¬ÔòÍË³öµ±Ç°ÊµÀı
                 Shutdown();
                 return null;
             }
@@ -59,28 +59,28 @@ namespace FluorescenceFullAutomatic
         }
         
         /// <summary>
-        /// ç¡®ä¿åº”ç”¨ç¨‹åºåªæœ‰ä¸€ä¸ªå®ä¾‹åœ¨è¿è¡Œ
+        /// È·±£Ó¦ÓÃ³ÌĞòÖ»ÓĞÒ»¸öÊµÀıÔÚÔËĞĞ
         /// </summary>
-        /// <returns>å¦‚æœæ˜¯ç¬¬ä¸€ä¸ªå®ä¾‹åˆ™è¿”å›trueï¼Œå¦åˆ™è¿”å›false</returns>
+        /// <returns>Èç¹ûÊÇµÚÒ»¸öÊµÀıÔò·µ»Øtrue£¬·ñÔò·µ»Øfalse</returns>
         private bool EnsureSingleInstance()
         {
             bool createdNew;
             
             try
             {
-                // å°è¯•åˆ›å»ºä¸€ä¸ªå‘½åäº’æ–¥é”
+                // ³¢ÊÔ´´½¨Ò»¸öÃüÃû»¥³âËø
                 _mutex = new Mutex(true, MutexName, out createdNew);
                 
                 if (!createdNew)
                 {
-                    // å¦‚æœäº’æ–¥é”å·²å­˜åœ¨ï¼Œè¯´æ˜å·²ç»æœ‰ä¸€ä¸ªå®ä¾‹åœ¨è¿è¡Œ
-                    // å°è¯•æŸ¥æ‰¾å¹¶æ¿€æ´»å·²è¿è¡Œçš„å®ä¾‹
+                    // Èç¹û»¥³âËøÒÑ´æÔÚ£¬ËµÃ÷ÒÑ¾­ÓĞÒ»¸öÊµÀıÔÚÔËĞĞ
+                    // ³¢ÊÔ²éÕÒ²¢¼¤»îÒÑÔËĞĞµÄÊµÀı
                     ActivateExistingInstance();
-                    //MessageBox.Show("åº”ç”¨ç¨‹åºå·²ç»åœ¨è¿è¡Œä¸­ã€‚", "æç¤º", MessageBoxButton.OK, MessageBoxImage.Information);
+                    //MessageBox.Show("Ó¦ÓÃ³ÌĞòÒÑ¾­ÔÚÔËĞĞÖĞ¡£", "ÌáÊ¾", MessageBoxButton.OK, MessageBoxImage.Information);
                     return false;
                 }
                 
-                // åœ¨åº”ç”¨ç¨‹åºé€€å‡ºæ—¶é‡Šæ”¾äº’æ–¥é”
+                // ÔÚÓ¦ÓÃ³ÌĞòÍË³öÊ±ÊÍ·Å»¥³âËø
                 Application.Current.Exit += (s, e) =>
                 {
                     if (_mutex != null)
@@ -94,45 +94,45 @@ namespace FluorescenceFullAutomatic
             }
             catch (Exception ex)
             {
-                // å¦‚æœåˆ›å»ºäº’æ–¥é”æ—¶å‘ç”Ÿå¼‚å¸¸ï¼Œè®°å½•æ—¥å¿—å¹¶å…è®¸åº”ç”¨ç¨‹åºç»§ç»­è¿è¡Œ
-                Log.Error($"åˆ›å»ºäº’æ–¥é”æ—¶å‘ç”Ÿå¼‚å¸¸: {ex.Message}");
+                // Èç¹û´´½¨»¥³âËøÊ±·¢ÉúÒì³££¬¼ÇÂ¼ÈÕÖ¾²¢ÔÊĞíÓ¦ÓÃ³ÌĞò¼ÌĞøÔËĞĞ
+                Log.Error($"´´½¨»¥³âËøÊ±·¢ÉúÒì³£: {ex.Message}");
                 return true;
             }
         }
         
         /// <summary>
-        /// æŸ¥æ‰¾å¹¶æ¿€æ´»å·²ç»è¿è¡Œçš„åº”ç”¨ç¨‹åºå®ä¾‹
+        /// ²éÕÒ²¢¼¤»îÒÑ¾­ÔËĞĞµÄÓ¦ÓÃ³ÌĞòÊµÀı
         /// </summary>
         private void ActivateExistingInstance()
         {
             try
             {
-                // è·å–å½“å‰è¿›ç¨‹åç§°
+                // »ñÈ¡µ±Ç°½ø³ÌÃû³Æ
                 string currentProcessName = Process.GetCurrentProcess().ProcessName;
                 
-                // æŸ¥æ‰¾å…·æœ‰ç›¸åŒåç§°çš„æ‰€æœ‰è¿›ç¨‹
+                // ²éÕÒ¾ßÓĞÏàÍ¬Ãû³ÆµÄËùÓĞ½ø³Ì
                 Process[] processes = Process.GetProcessesByName(currentProcessName);
                 
                 foreach (Process process in processes)
                 {
-                    // è·³è¿‡å½“å‰è¿›ç¨‹
+                    // Ìø¹ıµ±Ç°½ø³Ì
                     if (process.Id != Process.GetCurrentProcess().Id)
                     {
-                        // è·å–ä¸»çª—å£å¥æŸ„
+                        // »ñÈ¡Ö÷´°¿Ú¾ä±ú
                         IntPtr mainWindowHandle = process.MainWindowHandle;
                         
                         if (mainWindowHandle != IntPtr.Zero)
                         {
-                            // å¦‚æœçª—å£æ˜¯æœ€å°åŒ–çš„ï¼Œåˆ™æ¢å¤å®ƒ
+                            // Èç¹û´°¿ÚÊÇ×îĞ¡»¯µÄ£¬Ôò»Ö¸´Ëü
                             if (IsIconic(mainWindowHandle))
                             {
                                 ShowWindow(mainWindowHandle, SW_RESTORE);
                             }
                             
-                            // å°†çª—å£ç½®äºå‰å°
+                            // ½«´°¿ÚÖÃÓÚÇ°Ì¨
                             SetForegroundWindow(mainWindowHandle);
                             
-                            Log.Information("å·²å°†ç°æœ‰åº”ç”¨ç¨‹åºå®ä¾‹æ¿€æ´»å¹¶ç½®äºå‰å°");
+                            Log.Information("ÒÑ½«ÏÖÓĞÓ¦ÓÃ³ÌĞòÊµÀı¼¤»î²¢ÖÃÓÚÇ°Ì¨");
                             break;
                         }
                     }
@@ -140,7 +140,7 @@ namespace FluorescenceFullAutomatic
             }
             catch (Exception ex)
             {
-                Log.Error($"æ¿€æ´»ç°æœ‰å®ä¾‹æ—¶å‘ç”Ÿé”™è¯¯: {ex.Message}");
+                Log.Error($"¼¤»îÏÖÓĞÊµÀıÊ±·¢Éú´íÎó: {ex.Message}");
             }
         }
 
@@ -156,6 +156,7 @@ namespace FluorescenceFullAutomatic
             containerRegistry.RegisterSingleton<ILogService, LogService>();
             containerRegistry.RegisterSingleton<IHomeService, HomeService>();
             containerRegistry.RegisterSingleton<ISerialPortService, SerialPortService>();
+            containerRegistry.RegisterSingleton<ISerialPortCommandFacade, SerialPortCommandFacade>();
             containerRegistry.RegisterSingleton<IDialogCoordinator, DialogCoordinator>();
             containerRegistry.RegisterSingleton<IDataManagerService, DataManagerService>();
             containerRegistry.RegisterSingleton<ISettingsService, SettingsService>();
@@ -194,7 +195,7 @@ namespace FluorescenceFullAutomatic
             var exception = e.ExceptionObject as Exception;
             if (exception != null)
             {
-                Log.Fatal(exception, "å‘ç”Ÿäº†æœªå¤„ç†çš„å¼‚å¸¸");
+                Log.Fatal(exception, "·¢ÉúÁËÎ´´¦ÀíµÄÒì³£");
             }
         }
 
@@ -203,7 +204,7 @@ namespace FluorescenceFullAutomatic
             DispatcherUnhandledExceptionEventArgs e
         )
         {
-            Log.Error($"å‘ç”Ÿäº†é”™è¯¯ {e.Exception}");
+            Log.Error($"·¢ÉúÁË´íÎó {e.Exception}");
             //e.Handled = true;
         }
 

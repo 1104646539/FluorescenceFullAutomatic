@@ -37,6 +37,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
 
         private readonly IHomeService homeService;
         private readonly ISerialPortService serialPortService;
+        private readonly ISerialPortCommandFacade serialPortCommandFacade;
         private readonly IDispatcherService dispatcherService;
         private readonly IConfigService configRepository;
         private readonly IToolService toolRepository;
@@ -332,6 +333,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         #endregion
         public HomeViewModel(
             ISerialPortService serialPortService,
+            ISerialPortCommandFacade serialPortCommandFacade,
             IHomeService homeService,
             IConfigService configRepository,
             IDispatcherService dispatcherService,
@@ -345,6 +347,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             this.configRepository = configRepository;
             this.toolRepository = toolRepository;
             this.serialPortService = serialPortService;
+            this.serialPortCommandFacade = serialPortCommandFacade;
             this.homeService = homeService;
             this.dispatcherService = dispatcherService;
             this.homeService._dequeueCallback += OnReactionAreaDequeue;
@@ -2204,14 +2207,14 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             SelfInspectionFinished = false;
             logService.Info("执行 自检");
-            serialPortService.GetSelfInspectionState(configRepository.RetainReactionArea());
+            serialPortCommandFacade.GetSelfInspectionState(configRepository.RetainReactionArea());
         }
 
         public void GetMachineState()
         {
             MachineStateFinished = false;
             logService.Info("执行 仪器状态");
-            serialPortService.GetMachineState();
+            serialPortCommandFacade.GetMachineState();
         }
 
         public void MoveSampleShelf(int pos)
@@ -2219,7 +2222,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             SampleShelfPos = pos;
             MoveSampleShelfFinished = false;
             logService.Info($"执行 移动样本架 {pos + 1}");
-            serialPortService.MoveSampleShelf(pos + 1);
+            serialPortCommandFacade.MoveSampleShelf(pos + 1);
         }
 
         public void MoveSample(int pos)
@@ -2227,35 +2230,35 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             MoveSampleFinished = false;
             //SampleCurrentPos = pos;
             logService.Info($"执行 移动样本 {pos}");
-            serialPortService.MoveSample(pos + 1);
+            serialPortCommandFacade.MoveSample(pos + 1);
         }
 
         public void Sampling(string type, int volume)
         {
             SamplingFinished = false;
             logService.Info($"执行 取样，类型: {type}，体积: {volume}");
-            serialPortService.Sampling(type, volume);
+            serialPortCommandFacade.Sampling(type, volume);
         }
 
         public void CleanoutSamplingProbe()
         {
             CleanoutSamplingProbeFinished = false;
             logService.Info("执行 清洗取样针");
-            serialPortService.CleanoutSamplingProbe(configRepository.CleanoutDuration());
+            serialPortCommandFacade.CleanoutSamplingProbe(configRepository.CleanoutDuration());
         }
 
         public void AddingSample(int volume, string type)
         {
             AddingSampleFinished = false;
             logService.Info($"执行 加样，体积: {volume}，类型: {type}");
-            serialPortService.AddingSample(volume, type);
+            serialPortCommandFacade.AddingSample(volume, type);
         }
 
         public void Drainage()
         {
             DrainageFinished = false;
             logService.Info("执行 排水");
-            serialPortService.Drainage();
+            serialPortCommandFacade.Drainage();
         }
 
         public void PushCard()
@@ -2271,7 +2274,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 //推卡
                 PushCardFinished = false;
                 logService.Info("执行 推卡");
-                serialPortService.PushCard();
+                serialPortCommandFacade.PushCard();
             }
         }
 
@@ -2279,7 +2282,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             MoveReactionAreaFinished = false;
             logService.Info($"执行 移动反应区 ({x}, {y})");
-            serialPortService.MoveReactionArea(x, y);
+            serialPortCommandFacade.MoveReactionArea(x, y);
         }
 
         public void Test(
@@ -2298,7 +2301,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 $"执行 检测，坐标: ({x}, {y})，卡片类型: {cardType}，检测类型: {testType}，"
                     + $"扫描起始: {scanStart}，扫描结束: {scanEnd}，峰值宽度: {peakWidth}，峰值距离: {peakDistance}"
             );
-            serialPortService.Test(
+            serialPortCommandFacade.Test(
                 x,
                 y,
                 cardType,
@@ -2314,54 +2317,54 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             ReactionTempFinished = false;
             logService.Info($"执行 反应区温度，温度: {temp}");
-            serialPortService.GetReactionTemp(temp);
+            serialPortCommandFacade.GetReactionTemp(temp);
         }
 
         public void ClearReactionArea()
         {
             ClearReactionAreaFinished = false;
             logService.Info("执行 清空反应区");
-            serialPortService.ClearReactionArea();
+            serialPortCommandFacade.ClearReactionArea();
         }
 
         public void Motor(string motor, string direction, string value)
         {
             MotorFinished = false;
             logService.Info($"执行 电机控制，电机: {motor}，方向: {direction}，值: {value}");
-            serialPortService.Motor(motor, direction, value);
+            serialPortCommandFacade.Motor(motor, direction, value);
         }
 
         public void ResetParams()
         {
             ResetParamsFinished = false;
             logService.Info("执行 重置参数");
-            serialPortService.ResetParams();
+            serialPortCommandFacade.ResetParams();
         }
 
         public void Update()
         {
             UpdateFinished = false;
             logService.Info($"执行 升级");
-            serialPortService.Update();
+            serialPortCommandFacade.Update();
         }
 
         public void Squeezing(string type)
         {
             SqueezingFinished = false;
             logService.Info($"执行 挤压，类型: {type}");
-            serialPortService.Squeezing(type);
+            serialPortCommandFacade.Squeezing(type);
         }
 
         public void Pierced(string type)
         {
             PiercedFinished = false;
             logService.Info($"执行 刺破，类型: {type}");
-            serialPortService.Pierced(type);
+            serialPortCommandFacade.Pierced(type);
         }
 
         private void GetVersion()
         {
-            serialPortService.GetVersion();
+            serialPortCommandFacade.GetVersion();
         }
 
         string RunningErrorMsg = "";

@@ -18,13 +18,32 @@ namespace FluorescenceFullAutomatic.Platform.Utils
 {
     public class SerialPortHelper : ISerialPort
     {
-        private static readonly Lazy<SerialPortHelper> _instance = new Lazy<SerialPortHelper>(
-            () =>
-                SystemGlobal.IsCodeDebug
-                    ? new SerialPortHelper(new FakeSerialPortImpl())
-                    : new SerialPortHelper(new SerialPortImpl())
+        private static readonly object _instanceGate = new object();
+        private static Func<ISerialPort> _serialPortFactory = () =>
+            SystemGlobal.IsCodeDebug ? (ISerialPort)new FakeSerialPortImpl() : new SerialPortImpl();
+
+        private static Lazy<SerialPortHelper> _instance = new Lazy<SerialPortHelper>(
+            () => new SerialPortHelper(_serialPortFactory())
         );
+
         public static SerialPortHelper Instance => _instance.Value;
+
+        public static void Configure(Func<ISerialPort> serialPortFactory, bool resetInstance = false)
+        {
+            if (serialPortFactory == null)
+            {
+                throw new ArgumentNullException(nameof(serialPortFactory));
+            }
+
+            lock (_instanceGate)
+            {
+                _serialPortFactory = serialPortFactory;
+                if (resetInstance)
+                {
+                    _instance = new Lazy<SerialPortHelper>(() => new SerialPortHelper(_serialPortFactory()));
+                }
+            }
+        }
         readonly ISerialPort SerialPort;
         private readonly ConcurrentDictionary<string, TaskCompletionSource<bool>> _pendingRequests =
             new ConcurrentDictionary<string, TaskCompletionSource<bool>>();
@@ -238,17 +257,12 @@ namespace FluorescenceFullAutomatic.Platform.Utils
         /// <param name="str"></param>
         private void Reply(string code, string str)
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            Action dispatch = () =>
             {
                 BaseResponseModel<dynamic> temp = SerialUtils.TranToBaseT<dynamic>(str);
                 if (temp.State != BaseResponseModel<string>.State_Success)
                 {
-                    DispatchReceiveData(
-                        (item) =>
-                        {
-                            item.ReceiveStateError(temp);
-                        }
-                    );
+                    DispatchReceiveData((item) => item.ReceiveStateError(temp));
                     return;
                 }
                 switch (code)
@@ -483,7 +497,16 @@ namespace FluorescenceFullAutomatic.Platform.Utils
                         Log.Error($"Reply Œ¥’“µΩ code={code} str={str}");
                         break;
                 }
-            });
+            };
+
+            if (Application.Current != null)
+            {
+                Application.Current.Dispatcher.Invoke(dispatch);
+            }
+            else
+            {
+                dispatch();
+            }
         }
 
         public void Connect(string portName, int baudRate)
