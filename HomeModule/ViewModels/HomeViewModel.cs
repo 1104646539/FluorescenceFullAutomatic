@@ -18,6 +18,7 @@ using FluorescenceFullAutomatic.Core.Model;
 using FluorescenceFullAutomatic.HomeModule.Services;
 using FluorescenceFullAutomatic.Platform.Ex;
 using FluorescenceFullAutomatic.Platform.Model;
+using FluorescenceFullAutomatic.Platform.Model.Events;
 using FluorescenceFullAutomatic.Platform.Services;
 using FluorescenceFullAutomatic.Platform.Utils;
 using FluorescenceFullAutomatic.ViewModels;
@@ -44,6 +45,8 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private readonly IToolService toolRepository;
         private readonly IProjectService projectRepository;
         private readonly ILogService logService;
+        private readonly IEventMailboxService mailboxService;
+
 
         [ObservableProperty]
         public ReactionAreaViewModel reactionAreaViewModel;
@@ -340,7 +343,8 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             IDispatcherService dispatcherService,
             IToolService toolRepository,
             IProjectService projectRepository,
-            ILogService logService
+            ILogService logService,
+            IEventMailboxService mailboxService
         )
         {
             this.projectRepository = projectRepository;
@@ -352,6 +356,10 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             this.homeService = homeService;
             this.dispatcherService = dispatcherService;
             this.homeService._dequeueCallback += OnReactionAreaDequeue;
+            this.mailboxService = mailboxService;
+            //线程邮箱
+            this.mailboxService.Subscribe(HandlerEventAsync);
+            this.mailboxService.Start();
             // this.serialPortService.AddReceiveData(this);
             SampleShelfViewModel = new SampleShelfViewModel();
             ReactionAreaViewModel = ReactionAreaViewModel.Instance;
@@ -365,16 +373,125 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             UpdateState();
 
             homeService.Hl7IsRunning();
-            Test();
             OnDebugModeChange(configRepository.GetDebugMode());
         }
 
+        private async Task HandlerEventAsync(ITestEvent evt)
+        {
+            try
+            {
+                dispatcherService.Invoke(async () =>
+                {
+                    switch (evt)
+                    {
+                        case StartTestEvent e://请求开始
+                            StartTest();
+                            break;
+                        case SelfInspectionRequestEvent e://请求自检
+                            GoGetSelfMachineStatus();
+                            break;
+                        case MachineStatusRequestEvent e://获取仪器状态
+                            await GetMachineState();
+                            break;
+                        case MoveSampleShelfRequestEvent e://移动样本架
+                            await MoveSampleShelf(e.Position);
+                            break;
+                        case MoveSampleRequestEvent e://移动样本
+                            await MoveSample(e.Position);
+                            break;
+                        case SamplingRequestEvent e://取样
+                            await Sampling(e.Type, e.Volume);
+                            break;
+                        case CleanoutSamplingProbeRequestEvent e://取样针清洗
+                            await CleanoutSamplingProbe();
+                            break;
+                        case AddingSampleRequestEvent e://加样
+                            await AddingSample(e.Volume, e.Type);
+                            break;
+                        case PushCardRequestEvent e://推卡
+                            await PushCard();
+                            break;
+                        case TestRequestEvent e://检测
+                            execTest(e.item);
+                            break;
+                        case GetReactionTempRequestEvent e://获取反应区温度
+                            await GetReactionTemp();
+                            break;
+                        case DrainageRequestEvent e://排水
+                            await Drainage();
+                            break;
+                        case ScanBarcodeRequestEvent e://扫码
+                            ScanBarcode();
+                            break;
+                        case MoveReactionAreaRequestEvent e://移动反应区
+                            await MoveReactionArea(e.X, e.Y);
+                            break;
+                        case SelfInspectionCompletedEvent e://接收 自检完成
+                            ReceiveGetSelfMachineStatusModel(e.Result);
+                            break;
+                        case MachineStatusReceivedEvent e://接收 仪器状态
+                            ReceiveMachineStatusModel(e.Result);
+                            break;
+                        case MoveSampleShelfCompletedEvent e://接收 移动样本架完成
+                            ReceiveMoveSampleShelfModel(e.Result);
+                            break;
+                        case MoveSampleCompletedEvent e://接收 移动样本完成
+                            ReceiveMoveSampleModel(e.Result);
+                            break;
+                        case SamplingCompletedEvent e://接收 取样完成
+                            ReceiveSamplingModel(e.Result);
+                            break;
+                        case CleanoutSamplingProbeCompletedEvent e://接收 取样针清洗完成
+                            ReceiveCleanoutSamplingProbeModel(e.Result);
+                            break;
+                        case AddingSampleCompletedEvent e://接收 加样完成
+                            ReceiveAddingSampleModel(e.Result);
+                            break;
+                        case PushCardCompletedEvent e://接收 推卡完成
+                            ReceivePushCardModel(e.Result);
+                            break;
+                        case TestCompletedEvent e://接收 检测完成
+                            ReceiveTestModel(e.Result);
+                            break;
+                        case GetReactionTempCompletedEvent e://接收 获取反应区温度完成
+                            ReceiveReactionTempModel(e.Result);
+                            break;
+                        case DrainageCompletedEvent e://接收 排水完成
+                            ReceiveDrainageModel(e.Result);
+                            break;
+                        case BarcodeScanCompletedEvent e://接收 条码扫描
+                            ReceiveBarcodeScannedModel(e);
+                            break;
+                        case MoveReactionAreaCompletedEvent e://接收 移动反应区完成
+                            ReceiveMoveReactionAreaModel(e.Result);
+                            break;
+                        default:
+                            logService.Info($"未处理的事件: {evt.GetType().Name}");
+                            break;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                logService.Error($"处理失败 error: {ex}");
+            }
+        }
+        private void ReceiveBarcodeScannedModel(BarcodeScanCompletedEvent e)
+        {
+            if (e.Success)
+            {
+                ScanSuccess(e.Barcode);
+            }
+            else
+            {
+                ScanFailed();
+            }
+        }
         private void OnDebugModeChange(bool debugMode)
         {
             this.ShowDebugView = debugMode ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void Test() { }
 
         [RelayCommand]
         public void ClickTest1()
@@ -475,11 +592,12 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             {
                 FirstLoad = false;
 
+                RequestSelfInspection();
                 //if (
                 //SystemGlobal.IsCodeDebug ||
                 //)
                 //{
-                GoGetSelfMachineStatus();
+                // GoGetSelfMachineStatus();
                 //}
                 //else
                 //{
@@ -488,13 +606,17 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             }
         }
 
+        private void RequestSelfInspection()
+        {
+            mailboxService.Post(new SelfInspectionRequestEvent());
+        }
         [RelayCommand]
         public void ClickSelfMachineStatus()
         {
             FirstLoad = true;
             logService.Info($"Loaded FirstLoad={FirstLoad}");
             IsTestGetSelfMachineState = true;
-            GoGetSelfMachineStatus();
+            RequestSelfInspection();
         }
 
         private void GoGetSelfMachineStatus()
@@ -581,12 +703,16 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         [RelayCommand]
         public void ClickStart()
         {
+            mailboxService.Post(new StartTestEvent());
+        }
+
+        private void StartTest()
+        {
             if (VerifyMachineState())
             {
                 GoMachineStatus();
             }
         }
-
         /// <summary>
         /// 验证仪器状态是否可以开始检测
         /// </summary>
@@ -648,9 +774,12 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private void GoMachineStatus()
         {
             InitState();
-            GetMachineState();
+            requestMachineState();
         }
-
+        private void requestMachineState()
+        {
+            mailboxService.Post(new MachineStatusRequestEvent());
+        }
         [RelayCommand]
         public void Insert() { }
 
@@ -717,7 +846,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             if (string.IsNullOrEmpty(SelfMachineStateError))
             {
                 SetMachineStatus(MachineStatus.SelfInspectionSuccess);
-                GetMachineState();
+                requestMachineState();
                 //homeService.ShowHiltDialog(
                 //    this,
                 //    "提示",
@@ -749,7 +878,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 {
                     await homeService.HideMetroDialogAsync(this, dialog);
                     logService.Info("自检失败，点击 重新自检");
-                    GoGetSelfMachineStatus();
+                    RequestSelfInspection();
                 },
                 "暂不自检",
                 (d, dialog) =>
@@ -879,7 +1008,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 if (CardExist && CardNum > 0)
                 {
                     //有卡，推卡
-                    PushCard();
+                    requestPushCard();
                 }
                 else
                 {
@@ -970,9 +1099,12 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         /// </summary>
         private void MoveSampleShelfFirst()
         {
-            MoveSampleShelf(SampleShelfFirstPos);
+            requestMoveSampleShelf(SampleShelfFirstPos);
         }
-
+        private void requestMoveSampleShelf(int position)
+        {
+            mailboxService.Post(new MoveSampleShelfRequestEvent() { Position = position });
+        }
         /// <summary>
         /// 初始化样本架状态
         /// </summary>
@@ -1003,7 +1135,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 {
                     if (SampleShelf[i])
                     {
-                        MoveSampleShelf(i);
+                        requestMoveSampleShelf(i);
                         break;
                     }
                 }
@@ -1087,10 +1219,13 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             else
             {
                 //移动到下一个
-                MoveSample(++SampleCurrentPos);
+                requestMoveSample(++SampleCurrentPos);
             }
         }
-
+        private void requestMoveSample(int position)
+        {
+            mailboxService.Post(new MoveSampleRequestEvent() { Position = position });
+        }
         /// <summary>
         /// 样本是否是最后一个
         /// </summary>
@@ -1170,7 +1305,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 {
                     //需要扫描条码
                     logService.Info("需要扫描条码,去扫码");
-                    ScanBarcode();
+                    requestScanBarcode();
                 }
                 else
                 {
@@ -1230,7 +1365,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             if (CleanoutSamplingProbeFinished)
             {
                 //取样
-                Sampling(samplingType, configRepository.SamplingVolume());
+                requestSampling(samplingType, configRepository.SamplingVolume());
             }
             else
             {
@@ -1242,35 +1377,45 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             PushCardGetMachineState();
             //PushCard();
         }
-
+        private void requestSampling(string type, int volume)
+        {
+            mailboxService.Post(new SamplingRequestEvent() { Type = type, Volume = volume });
+        }
+        private void requestScanBarcode()
+        {
+            mailboxService.Post(new ScanBarcodeRequestEvent());
+        }
         /// <summary>
         /// 去扫码
         /// </summary>
         private void ScanBarcode()
         {
+
             serialPortService.ScanBarcode();
         }
 
         private void OnScanFailed(string error)
         {
-            if (SystemGlobal.MachineStatus.IsRunning())
-            {
-                dispatcherService.Invoke(() =>
-                {
-                    ScanFailed();
-                });
-            }
+            mailboxService.Post(new BarcodeScanCompletedEvent() { Barcode = error, Success = false });
+            // if (SystemGlobal.MachineStatus.IsRunning())
+            // {
+            //     dispatcherService.Invoke(() =>
+            //     {
+            //         ScanFailed();
+            //     });
+            // }
         }
 
         private void OnScanSuccess(string barcode)
         {
-            if (SystemGlobal.MachineStatus.IsRunning())
-            {
-                dispatcherService.Invoke(() =>
-                {
-                    ScanSuccess(barcode);
-                });
-            }
+            mailboxService.Post(new BarcodeScanCompletedEvent() { Barcode = barcode, Success = true });
+            // if (SystemGlobal.MachineStatus.IsRunning())
+            // {
+            //     dispatcherService.Invoke(() =>
+            //     {
+            //         ScanSuccess(barcode);
+            //     });
+            // }
         }
 
         /// <summary>
@@ -1512,7 +1657,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 //获取仪器状态，移动到下一个样本
                 IsMoveSampleGetMachineState = true;
                 MoveSampleFinished = false;
-                GetMachineState();
+                requestMachineState();
             }
         }
 
@@ -1550,7 +1695,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private void MoveSampleShelfReset()
         {
             //样本架复位
-            MoveSampleShelf(-1);
+            requestMoveSampleShelf(-1);
         }
 
         public void ReceiveSamplingModel(BaseResponseModel<SamplingModel> model)
@@ -1598,10 +1743,13 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 && !IsRestorePushCard
             )
             {
-                AddingSample(configRepository.SamplingVolume(), "1");
+                requestAddingSample(configRepository.SamplingVolume(), "1");
             }
         }
-
+        private void requestAddingSample(int volume, string type)
+        {
+            mailboxService.Post(new AddingSampleRequestEvent() { Volume = volume, Type = type });
+        }
         public void ReceiveCleanoutSamplingProbeModel(
             BaseResponseModel<CleanoutSamplingProbeModel> model
         )
@@ -1615,7 +1763,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             {
                 //恢复取样
                 IsRestoreSampling = false;
-                Sampling(RestoreSamplingType, configRepository.SamplingVolume());
+                requestSampling(RestoreSamplingType, configRepository.SamplingVolume());
             }
             else if (IsFirstCleanoutSamplingProbe)
             {
@@ -1706,9 +1854,12 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         /// </summary>
         private void GoCleanoutSamplingProbe()
         {
-            CleanoutSamplingProbe();
+            requestCleanoutSamplingProbe();
         }
-
+        private void requestCleanoutSamplingProbe()
+        {
+            mailboxService.Post(new CleanoutSamplingProbeRequestEvent());
+        }
         /// <summary>
         /// 移动检测卡到反应区等待
         /// </summary>
@@ -1718,7 +1869,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             {
                 logService.Info($"检测卡移动反应区 {ReactionAreaX} {ReactionAreaY}");
                 //反应区还有位置，移动到反应区
-                MoveReactionArea(ReactionAreaX, ReactionAreaY);
+                requestMoveReactionArea(ReactionAreaX, ReactionAreaY);
                 MoveReactionAreaTestResult = AddingSampleTestResult;
             }
             else
@@ -1726,6 +1877,10 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 //反应区已满
                 logService.Info("反应区已满");
             }
+        }
+        private void requestMoveReactionArea(int x, int y)
+        {
+            mailboxService.Post(new MoveReactionAreaRequestEvent() { X = x, Y = y });
         }
 
         /// <summary>
@@ -1839,7 +1994,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             PushCardSuccess = false;
             IsPushCardGetMachineState = true;
             //PushCardFinished = false;
-            GetMachineState();
+            requestMachineState();
         }
 
         public void ReceiveMoveReactionAreaModel(BaseResponseModel<MoveReactionAreaModel> model)
@@ -1879,7 +2034,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             {
                 //因为还未移动完毕导致的推卡暂停，移动完了，恢复推卡
                 IsRestorePushCard = false;
-                PushCard();
+                requestPushCard();
                 logService.Info("完成 移动反应区 结束");
             }
         }
@@ -1900,6 +2055,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         /// <returns></returns>
         public bool OnReactionAreaDequeue(ReactionAreaItem item)
         {
+
             if (IsTesting)
             {
                 //正在检测
@@ -1918,27 +2074,22 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 logService.Info("项目为空");
                 return false;
             }
+            IsTesting = true;
+            mailboxService.Post(new TestRequestEvent() { item = item });
+            return true;
+        }
+        private void execTest(ReactionAreaItem item)
+        {
+            IsTesting = true;
+            Project project = item.TestResult.Project;
             string cardType = project.ProjectType + ""; //项目类型 0：单联卡 1：双联卡
             string testType = project.TestType + ""; //测试类型 0：普通卡 1：质控卡
             TestResultId = item.TestResult.Id;
             //记录检测卡所在坐标
             ReactionAreaTestY = item.ReactionAreaY;
             ReactionAreaTestX = item.ReactionAreaX;
-            Test(
-                item.ReactionAreaX,
-                item.ReactionAreaY,
-                cardType,
-                testType,
-                project.ScanStart,
-                project.ScanEnd,
-                project.PeakWidth,
-                project.PeakDistance
-            );
-
-            IsTesting = true;
-            return true;
+            Test(item.ReactionAreaX, item.ReactionAreaY, cardType, testType, project.ScanStart, project.ScanEnd, project.PeakWidth, project.PeakDistance);
         }
-
         public void ReceiveTestModel(BaseResponseModel<TestModel> model)
         {
             //logService.Info($"接收到 检测2: {!ContinueTest(true)} {JsonConvert.SerializeObject(model)}");
@@ -2212,7 +2363,10 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
 
             await SafeSerialPortCallAsync(
                 () => serialPortCommandFacade.GetSelfInspectionStateAsync(configRepository.RetainReactionArea()),
-                ReceiveGetSelfMachineStatusModel);
+                (ret) =>
+                {
+                    mailboxService.Post(new SelfInspectionCompletedEvent() { Result = ret });
+                });
         }
 
 
@@ -2244,16 +2398,23 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             MachineStateFinished = false;
             logService.Info("执行 仪器状态");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.GetMachineStateAsync(),ReceiveMachineStatusModel);
-            
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.GetMachineStateAsync(),
+            (ret) =>
+            {
+                mailboxService.Post(new MachineStatusReceivedEvent() { Result = ret });
+            });
+
         }
 
-        public async void MoveSampleShelf(int pos)
+        public async Task MoveSampleShelf(int pos)
         {
             SampleShelfPos = pos;
             MoveSampleShelfFinished = false;
             logService.Info($"执行 移动样本架 {pos + 1}");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.MoveSampleShelfAsync(pos + 1),ReceiveMoveSampleShelfModel);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.MoveSampleShelfAsync(pos + 1), (ret) =>
+            {
+                mailboxService.Post(new MoveSampleShelfCompletedEvent() { Result = ret });
+            });
         }
 
         public async Task MoveSample(int pos)
@@ -2261,37 +2422,57 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             MoveSampleFinished = false;
             //SampleCurrentPos = pos;
             logService.Info($"执行 移动样本 {pos}");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.MoveSampleAsync(pos + 1),ReceiveMoveSampleModel);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.MoveSampleAsync(pos + 1), (ret) =>
+            {
+                mailboxService.Post(new MoveSampleCompletedEvent() { Result = ret });
+            });
         }
 
         public async Task Sampling(string type, int volume)
         {
             SamplingFinished = false;
             logService.Info($"执行 取样，类型: {type}，体积: {volume}");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.SamplingAsync(type, volume),ReceiveSamplingModel);
+
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.SamplingAsync(type, volume),
+            (ret) =>
+            {
+                mailboxService.Post(new SamplingCompletedEvent() { Result = ret });
+            });
         }
-        
-        public async Task CleanoutSamplingProbe()   
+
+        public async Task CleanoutSamplingProbe()
         {
             CleanoutSamplingProbeFinished = false;
             logService.Info("执行 清洗取样针");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.CleanoutSamplingProbeAsync(configRepository.CleanoutDuration()),ReceiveCleanoutSamplingProbeModel);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.CleanoutSamplingProbeAsync(configRepository.CleanoutDuration()), (ret) =>
+            {
+                mailboxService.Post(new CleanoutSamplingProbeCompletedEvent() { Result = ret });
+            });
         }
 
         public async Task AddingSample(int volume, string type)
         {
             AddingSampleFinished = false;
             logService.Info($"执行 加样，体积: {volume}，类型: {type}");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.AddingSampleAsync(volume, type),ReceiveAddingSampleModel);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.AddingSampleAsync(volume, type), (ret) =>
+            {
+                mailboxService.Post(new AddingSampleCompletedEvent() { Result = ret });
+            });
         }
 
         public async Task Drainage()
         {
             DrainageFinished = false;
             logService.Info("执行 排水");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.DrainageAsync(),ReceiveDrainageModel);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.DrainageAsync(), (ret) =>
+            {
+                mailboxService.Post(new DrainageCompletedEvent() { Result = ret });
+            });
         }
-
+        private void requestPushCard()
+        {
+            mailboxService.Post(new PushCardRequestEvent());
+        }
         public async Task PushCard()
         {
             if (!MoveReactionAreaFinished)
@@ -2305,7 +2486,10 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 //推卡
                 PushCardFinished = false;
                 logService.Info("执行 推卡");
-                await SafeSerialPortCallAsync(()=>serialPortCommandFacade.PushCardAsync(),ReceivePushCardModel);
+                await SafeSerialPortCallAsync(() => serialPortCommandFacade.PushCardAsync(), (ret) =>
+                {
+                    mailboxService.Post(new PushCardCompletedEvent() { Result = ret });
+                });
             }
         }
 
@@ -2313,7 +2497,10 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             MoveReactionAreaFinished = false;
             logService.Info($"执行 移动反应区 ({x}, {y})");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.MoveReactionAreaAsync(x, y),ReceiveMoveReactionAreaModel);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.MoveReactionAreaAsync(x, y), (ret) =>
+            {
+                mailboxService.Post(new MoveReactionAreaCompletedEvent() { Result = ret });
+            });
         }
 
         public async Task Test(
@@ -2332,7 +2519,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 $"执行 检测，坐标: ({x}, {y})，卡片类型: {cardType}，检测类型: {testType}，"
                     + $"扫描起始: {scanStart}，扫描结束: {scanEnd}，峰值宽度: {peakWidth}，峰值距离: {peakDistance}"
             );
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.TestAsync(
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.TestAsync(
                 x,
                 y,
                 cardType,
@@ -2341,35 +2528,50 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 scanEnd,
                 peakWidth,
                 peakDistance
-            ),ReceiveTestModel);
+            ), (ret) =>
+            {
+                mailboxService.Post(new TestCompletedEvent() { Result = ret });
+            });
         }
 
-        public async Task GetReactionTemp(string temp = "0")    
+        public async Task GetReactionTemp(string temp = "0")
         {
             ReactionTempFinished = false;
             logService.Info($"执行 反应区温度，温度: {temp}");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.GetReactionTempAsync(temp),ReceiveReactionTempModel);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.GetReactionTempAsync(temp), (ret) =>
+            {
+                mailboxService.Post(new GetReactionTempCompletedEvent() { Result = ret });
+            });
         }
 
         public async Task ClearReactionArea()
         {
             ClearReactionAreaFinished = false;
             logService.Info("执行 清空反应区");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.ClearReactionAreaAsync(),ReceiveClearReactionAreaModel);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.ClearReactionAreaAsync(), (ret) =>
+            {
+                mailboxService.Post(new ClearReactionAreaCompletedEvent() { Result = ret });
+            });
         }
 
         public async Task Motor(string motor, string direction, string value)
         {
             MotorFinished = false;
             logService.Info($"执行 电机控制，电机: {motor}，方向: {direction}，值: {value}");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.MotorAsync(motor, direction, value),ReceiveMotorModel);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.MotorAsync(motor, direction, value), (ret) =>
+            {
+                mailboxService.Post(new MotorCompletedEvent() { Result = ret });
+            });
         }
 
         public async Task ResetParams()
         {
             ResetParamsFinished = false;
             logService.Info("执行 重置参数");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.ResetParamsAsync(),ReceiveResetParamsModel);   
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.ResetParamsAsync(), (ret) =>
+            {
+                mailboxService.Post(new ResetParamsCompletedEvent() { Result = ret });
+            });
         }
 
 
@@ -2377,26 +2579,38 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             UpdateFinished = false;
             logService.Info($"执行 升级");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.UpdateAsync(),ReceiveUpdateModel);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.UpdateAsync(), (ret) =>
+            {
+                mailboxService.Post(new UpdateCompletedEvent() { Result = ret });
+            });
         }
 
         public async Task Squeezing(string type)
         {
             SqueezingFinished = false;
             logService.Info($"执行 挤压，类型: {type}");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.SqueezingAsync(type),ReceiveSqueezingModel);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.SqueezingAsync(type), (ret) =>
+            {
+                mailboxService.Post(new SqueezingCompletedEvent() { Result = ret });
+            });
         }
 
         public async Task Pierced(string type)
         {
             PiercedFinished = false;
             logService.Info($"执行 刺破，类型: {type}");
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.PiercedAsync(type),ReceivePiercedModel);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.PiercedAsync(type), (ret) =>
+            {
+                mailboxService.Post(new PiercedCompletedEvent() { Result = ret });
+            });
         }
 
         private async Task GetVersion()
         {
-            await SafeSerialPortCallAsync(()=>serialPortCommandFacade.GetVersionAsync(),ReceiveVersionModel);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.GetVersionAsync(), (ret) =>
+            {
+                mailboxService.Post(new GetVersionCompletedEvent() { Result = ret });
+            });
         }
 
         string RunningErrorMsg = "";

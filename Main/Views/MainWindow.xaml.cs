@@ -50,8 +50,8 @@ namespace FluorescenceFullAutomatic.Views
 
         private IntPtr WindowProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            Log.Information("WindowProc msg: {msg}, wParam: {wParam}, lParam: {lParam}£¬{hwnd}£¬{WM_SYSCOMMAND},{SC_MOVE},{WM_NCLBUTTONDOWN},{HTCAPTION},{WM_TOUCH},{WM_GESTURE}"
-                , msg, wParam, lParam, hwnd, WM_SYSCOMMAND, SC_MOVE, WM_NCLBUTTONDOWN, HTCAPTION, WM_TOUCH, WM_GESTURE);
+            //Log.Information("WindowProc msg: {msg}, wParam: {wParam}, lParam: {lParam}£¬{hwnd}£¬{WM_SYSCOMMAND},{SC_MOVE},{WM_NCLBUTTONDOWN},{HTCAPTION},{WM_TOUCH},{WM_GESTURE}"
+            //    , msg, wParam, lParam, hwnd, WM_SYSCOMMAND, SC_MOVE, WM_NCLBUTTONDOWN, HTCAPTION, WM_TOUCH, WM_GESTURE);
 
             if (msg == WM_SYSCOMMAND && (wParam.ToInt32() & 0xFFF0) == SC_MOVE)
             {

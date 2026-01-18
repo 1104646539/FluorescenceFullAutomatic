@@ -223,6 +223,11 @@
     <Compile Include="Ex\EnumEx.cs" />
     <Compile Include="Ex\StringEx.cs" />
     <Compile Include="Model\ApplyTest.cs" />
+    <Compile Include="Model\Events\BarcodeEvents.cs" />
+    <Compile Include="Model\Events\ITestEvent.cs" />
+    <Compile Include="Model\Events\ReactionAreaEvents.cs" />
+    <Compile Include="Model\Events\SerialPortEvents.cs" />
+    <Compile Include="Model\Events\UIEvents.cs" />
     <Compile Include="Model\Patient.cs" />
     <Compile Include="Model\Point.cs" />
     <Compile Include="Model\Project.cs" />
@@ -232,11 +237,13 @@
     <Compile Include="Model\TestResult.cs" />
     <Compile Include="PlatformModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\EventMailboxService.cs" />
     <Compile Include="Services\IApplyTestService.cs" />
     <Compile Include="Services\IConfigService.cs" />
     <Compile Include="Services\IDataManagerService.cs" />
     <Compile Include="Services\IDialogService.cs" />
     <Compile Include="Services\IDispatcherService.cs" />
+    <Compile Include="Services\IEventMailboxService.cs" />
     <Compile Include="Services\IExportExcelService.cs" />
     <Compile Include="Services\ILogService.cs" />
     <Compile Include="Services\IPatientService.cs" />

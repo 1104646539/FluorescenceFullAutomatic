@@ -154,6 +154,7 @@ namespace FluorescenceFullAutomatic
         protected override void RegisterTypes(IContainerRegistry containerRegistry) {
             //services
             containerRegistry.RegisterSingleton<ILogService, LogService>();
+            containerRegistry.RegisterSingleton<IEventMailboxService, EventMailboxService>();
             containerRegistry.RegisterSingleton<IHomeService, HomeService>();
             containerRegistry.RegisterSingleton<ISerialPortService, SerialPortService>();
             containerRegistry.RegisterSingleton<ISerialPortCommandFacade, SerialPortCommandFacade>();
