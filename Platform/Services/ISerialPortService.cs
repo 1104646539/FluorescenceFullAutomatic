@@ -136,36 +136,6 @@ namespace FluorescenceFullAutomatic.Platform.Services
             CancellationToken cancellationToken = default,
             int timeoutMs = 30000
         );
-
-        void GetSelfInspectionState(bool retainReactionArea);
-        void GetMachineState();
-        void MoveSampleShelf(int pos);
-        void MoveSample(int pos);
-        void Sampling(string type, int volume);
-        void CleanoutSamplingProbe(int duration);
-        void AddingSample(int volume, string type);
-        void Drainage();
-        void PushCard();
-        void MoveReactionArea(int x, int y);
-        void Test(
-            int x,
-            int y,
-            string cardType,
-            string testType,
-            string scanStart,
-            string scanEnd,
-            string peakWidth,
-            string peakDistance
-        );
-        void GetReactionTemp(string temp);
-        void ClearReactionArea();
-        void Motor(string motor, string direction, string value);
-        void ResetParams();
-        void Update();
-        void Squeezing(string type);
-        void Pierced(string type);
-        void GetVersion();
-        void Shutdown();
     }
 
     public interface ISerialPortService
@@ -202,46 +172,46 @@ namespace FluorescenceFullAutomatic.Platform.Services
 
 
 
-        // ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½
+        // ï¿½Ô¼ï¿½ï¿½ï¿½ï¿?
         void GetSelfInspectionState(bool retainReactionArea);
         
-        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?
         void GetMachineState();
         
-        // ï¿½ï¿½Ï´Òºï¿½ï¿½ï¿½
+        // ï¿½ï¿½Ï´Òºï¿½ï¿½ï¿?
         void GetCleanoutFluid();
         
-        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?
         void GetSampleShelf();
         void MoveSampleShelf(int pos);
         
-        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?
         void MoveSample( int pos);
         void Sampling(string type, int volume);
         void CleanoutSamplingProbe(int duration);
         void AddingSample(int volume, string type);
         void Drainage();
         
-        // ï¿½ï¿½Æ¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ï¿½ï¿½Æ¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?
         void PushCard();
         void MoveReactionArea(int x, int y);
         void Test(int x, int y, string cardType, string testType, string scanStart, 
                  string scanEnd, string peakWidth, string peakDistance);
         
-        // ï¿½Â¶ï¿½ï¿½ï¿½ï¿½
+        // ï¿½Â¶ï¿½ï¿½ï¿½ï¿?
         void GetReactionTemp(string temp);
         
         // ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         void ClearReactionArea();
         
-        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?
         void Motor(string motor, string direction, string value);
         
-        // ÏµÍ³ï¿½ï¿½ï¿½
+        // ÏµÍ³ï¿½ï¿½ï¿?
         void ResetParams();
         void Update();
         
-        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?
         void Squeezing(string type);
         void Pierced(string type);
 
@@ -941,124 +911,6 @@ namespace FluorescenceFullAutomatic.Platform.Services
                 cancellationToken,
                 timeoutMs
             );
-        }
-
-        public void GetSelfInspectionState(bool retainReactionArea)
-        {
-            _serialPortService.GetSelfInspectionState(retainReactionArea);
-        }
-
-        public void GetMachineState()
-        {
-            _serialPortService.GetMachineState();
-        }
-
-        public void MoveSampleShelf(int pos)
-        {
-            _serialPortService.MoveSampleShelf(pos);
-        }
-
-        public void MoveSample(int pos)
-        {
-            _serialPortService.MoveSample(pos);
-        }
-
-        public void Sampling(string type, int volume)
-        {
-            _serialPortService.Sampling(type, volume);
-        }
-
-        public void CleanoutSamplingProbe(int duration)
-        {
-            _serialPortService.CleanoutSamplingProbe(duration);
-        }
-
-        public void AddingSample(int volume, string type)
-        {
-            _serialPortService.AddingSample(volume, type);
-        }
-
-        public void Drainage()
-        {
-            _serialPortService.Drainage();
-        }
-
-        public void PushCard()
-        {
-            _serialPortService.PushCard();
-        }
-
-        public void MoveReactionArea(int x, int y)
-        {
-            _serialPortService.MoveReactionArea(x, y);
-        }
-
-        public void Test(
-            int x,
-            int y,
-            string cardType,
-            string testType,
-            string scanStart,
-            string scanEnd,
-            string peakWidth,
-            string peakDistance
-        )
-        {
-            _serialPortService.Test(
-                x,
-                y,
-                cardType,
-                testType,
-                scanStart,
-                scanEnd,
-                peakWidth,
-                peakDistance
-            );
-        }
-
-        public void GetReactionTemp(string temp)
-        {
-            _serialPortService.GetReactionTemp(temp);
-        }
-
-        public void ClearReactionArea()
-        {
-            _serialPortService.ClearReactionArea();
-        }
-
-        public void Motor(string motor, string direction, string value)
-        {
-            _serialPortService.Motor(motor, direction, value);
-        }
-
-        public void ResetParams()
-        {
-            _serialPortService.ResetParams();
-        }
-
-        public void Update()
-        {
-            _serialPortService.Update();
-        }
-
-        public void Squeezing(string type)
-        {
-            _serialPortService.Squeezing(type);
-        }
-
-        public void Pierced(string type)
-        {
-            _serialPortService.Pierced(type);
-        }
-
-        public void GetVersion()
-        {
-            _serialPortService.GetVersion();
-        }
-
-        public void Shutdown()
-        {
-            _serialPortService.Shutdown();
         }
 
         private Task<T> EnqueueAsync<T>(

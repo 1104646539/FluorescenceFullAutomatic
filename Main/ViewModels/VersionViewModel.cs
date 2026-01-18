@@ -25,12 +25,14 @@ namespace FluorescenceFullAutomatic.ViewModels
         [ObservableProperty]
         private string mcuVersion;
         private readonly ISerialPortService serialPortService;
+        private readonly ISerialPortCommandFacade serialPortCommandFacade;
         private readonly IDialogService dialogService;
         private readonly ILogService logService;
         private readonly IDispatcherService dispatcherService;
 
         public VersionViewModel(
             ISerialPortService serialPortService,
+            ISerialPortCommandFacade serialPortCommandFacade,
             IDialogService dialogService,
             ILogService logService,
             IDispatcherService dispatcherService
@@ -38,10 +40,11 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             this.dispatcherService = dispatcherService;
             this.serialPortService = serialPortService;
+            this.serialPortCommandFacade = serialPortCommandFacade;
             this.dialogService = dialogService;
             this.logService = logService;
             UpdateVersionInfo();
-            this.serialPortService.AddReceiveData(this);
+            // this.serialPortService.AddReceiveData(this);
         }
 
         protected override void Broadcast<T>(T oldValue, T newValue, string propertyName)
@@ -143,10 +146,9 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// <summary>
         /// Step 2、打开升级盘
         /// </summary>
-        private void OpenUpdateDrive()
+        private async void OpenUpdateDrive()
         {
-            serialPortService.Update();
-            Task.Run(async () =>
+             Task.Run(async () =>
             {
                 progressController = await dialogService.ShowProgressAsync(
                     this,
@@ -155,6 +157,17 @@ namespace FluorescenceFullAutomatic.ViewModels
                 );
                 progressController.SetIndeterminate();
             });
+           var ret =  serialPortCommandFacade.UpdateAsync();
+           ReceiveUpdateModel(ret.Result);
+            // Task.Run(async () =>
+            // {
+            //     progressController = await dialogService.ShowProgressAsync(
+            //         this,
+            //         "提示",
+            //         "正在升级，请等待."
+            //     );
+            //     progressController.SetIndeterminate();
+            // });
         }
 
         /// <summary>

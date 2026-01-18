@@ -28,6 +28,7 @@ namespace FluorescenceFullAutomatic.ViewModels
     {
         #region 字段
         private readonly ISerialPortService serialPortService;
+        private readonly ISerialPortCommandFacade serialPortCommandFacade;
         private readonly IPointService pointService;
         private readonly IToolService toolRepository;
         private readonly IProjectService projectRepository;
@@ -308,7 +309,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         private bool isEnabled;
 
         #endregion
-        public QCViewModel(IToolService toolRepository, ISerialPortService serialService, IConfigService configRepository
+        public QCViewModel(IToolService toolRepository, ISerialPortService serialService, ISerialPortCommandFacade serialPortCommandFacade
+        ,IConfigService configRepository
             ,IProjectService projectRepository,IReactionAreaQueueService reactionAreaQueueRepository
             ,IDialogService dialogRepository, IPointService pointService,IPrintService printService)
         {
@@ -317,11 +319,12 @@ namespace FluorescenceFullAutomatic.ViewModels
             this.toolRepository = toolRepository;
             this.projectRepository = projectRepository;
             this.serialPortService = serialService;
+            this.serialPortCommandFacade = serialPortCommandFacade;
             this.configRepository = configRepository;
             this.reactionAreaQueueRepository = reactionAreaQueueRepository;
             this.dialogRepository = dialogRepository;
             ReactionAreaViewModel = ReactionAreaViewModel.Instance;
-            serialPortService.AddReceiveData(this);
+            // serialPortService.AddReceiveData(this);
             //serialPortService.OnAddDequeue(OnReactionAreaDequeue);
 
             ClearResultPoints();
@@ -1085,66 +1088,99 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
             return true;
         }
+
+         private async Task SafeSerialPortCallAsync<T>(
+                   Func<Task<BaseResponseModel<T>>> command,
+                   Action<BaseResponseModel<T>> onSuccess,
+                   int? errorCode = null)
+        {
+            try
+            {
+                var ret = await command();
+                onSuccess?.Invoke(ret);
+            }
+            catch (SerialCommandException ex)
+            {
+                Log.Information($"串口指令异常: {ex.Code} {ex.Message}");
+                ReceiveStateError(new BaseResponseModel<dynamic> { Code = ex.Code });
+            }
+            catch (Exception ex)
+            {
+                Log.Information($"串口未知异常:  {ex.Message}");
+                if (errorCode.HasValue)
+                {
+                    ReceiveStateError(new BaseResponseModel<dynamic>());
+                }
+            }
+        }
         // 实现 ISerialPortService 的方法
-        public void GetSelfInspectionState(bool retainReactionArea)
+        public async Task GetSelfInspectionState(bool retainReactionArea)
         {
             SelfInspectionFinished = false;
             Log.Information("执行 自检");
-            serialPortService.GetSelfInspectionState(retainReactionArea);
+           await SafeSerialPortCallAsync(()=>serialPortCommandFacade.GetSelfInspectionStateAsync(retainReactionArea),
+           ReceiveGetSelfMachineStatusModel);
         }
 
-        public void GetMachineState()
+        public async Task GetMachineState()
         {
             MachineStateFinished = false;
             Log.Information("执行 仪器状态");
-            serialPortService.GetMachineState();
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.GetMachineStateAsync(),
+                ReceiveMachineStatusModel);
         }
 
-        public void MoveSampleShelf(int pos)
+        public async Task MoveSampleShelf(int pos)
         {
             SampleShelfPos = pos;
             MoveSampleShelfFinished = false;
             Log.Information($"执行 移动样本架 {pos + 1}");
-            serialPortService.MoveSampleShelf(pos + 1);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.MoveSampleShelfAsync(pos + 1),
+                ReceiveMoveSampleShelfModel);
         }
 
-        public void MoveSample(int pos)
+        public async Task MoveSample(int pos)
         {
             MoveSampleFinished = false;
             //SampleCurrentPos = pos;
             Log.Information($"执行 移动样本 {pos}");
-            serialPortService.MoveSample(pos + 1);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.MoveSampleAsync(pos + 1),
+                ReceiveMoveSampleModel);
         }
 
-        public void Sampling(string type, int volume)
+        public async Task Sampling(string type, int volume)
         {
             SamplingFinished = false;
             Log.Information($"执行 取样，类型: {type}，体积: {volume}");
-            serialPortService.Sampling(type, volume);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.SamplingAsync(type, volume),
+                ReceiveSamplingModel);
         }
 
-        public void CleanoutSamplingProbe()
+        public async Task CleanoutSamplingProbe()
         {
             CleanoutSamplingProbeFinished = false;
             Log.Information("执行 清洗取样针");
-            serialPortService.CleanoutSamplingProbe(configRepository.CleanoutDuration());
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.CleanoutSamplingProbeAsync(configRepository.CleanoutDuration()),
+                ReceiveCleanoutSamplingProbeModel);
         }
 
-        public void AddingSample(int volume, string type)
+        public async Task AddingSample(int volume, string type)
         {
             AddingSampleFinished = false;
             Log.Information($"执行 加样，体积: {volume}，类型: {type}");
-            serialPortService.AddingSample(volume, type);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.AddingSampleAsync(volume, type),
+                ReceiveAddingSampleModel);
         }
 
-        public void Drainage()
+        public async Task Drainage()
         {
             DrainageFinished = false;
             Log.Information("执行 排水");
-            serialPortService.Drainage();
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.DrainageAsync(),
+                ReceiveDrainageModel);
         }
 
-        public void PushCard()
+        public async Task PushCard()
         {
             if (!MoveReactionAreaFinished)
             {
@@ -1157,18 +1193,36 @@ namespace FluorescenceFullAutomatic.ViewModels
                 //推卡
                 PushCardFinished = false;
                 Log.Information("执行 推卡");
-                serialPortService.PushCard();
+                // serialPortCommandFacade.PushCard();
+                await SafeSerialPortCallAsync(() => serialPortCommandFacade.PushCardAsync(),
+                    ReceivePushCardModel);
+            }   
+            if (!MoveReactionAreaFinished)
+            {
+                //还未将上一张卡移动到反应区,先等待
+                IsRestorePushCard = true;
+                Log.Information("等待 移动反应区 结束");
+            }
+            else
+            {
+                //推卡
+                PushCardFinished = false;
+                Log.Information("执行 推卡");
+                // serialPortCommandFacade.PushCard();
+                   await SafeSerialPortCallAsync(() => serialPortCommandFacade.PushCardAsync(),
+                    ReceivePushCardModel);
             }
         }
 
-        public void MoveReactionArea(int x, int y)
+        public async Task MoveReactionArea(int x, int y)
         {
             MoveReactionAreaFinished = false;
             Log.Information($"执行 移动反应区 ({x}, {y})");
-            serialPortService.MoveReactionArea(x, y);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.MoveReactionAreaAsync(x, y),
+                ReceiveMoveReactionAreaModel);
         }
 
-        public void Test(
+        public async Task Test(
             int x,
             int y,
             string cardType,
@@ -1184,7 +1238,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 $"执行 检测，坐标: ({x}, {y})，卡片类型: {cardType}，检测类型: {testType}，"
                     + $"扫描起始: {scanStart}，扫描结束: {scanEnd}，峰值宽度: {peakWidth}，峰值距离: {peakDistance}"
             );
-            serialPortService.Test(
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.TestAsync(
                 x,
                 y,
                 cardType,
@@ -1193,56 +1247,63 @@ namespace FluorescenceFullAutomatic.ViewModels
                 scanEnd,
                 peakWidth,
                 peakDistance
-            );
+            ), ReceiveTestModel);
         }
 
-        public void GetReactionTemp(string temp = "0")
+        public async Task GetReactionTemp(string temp = "0")
         {
             ReactionTempFinished = false;
             Log.Information($"执行 反应区温度，温度: {temp}");
-            serialPortService.GetReactionTemp(temp);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.GetReactionTempAsync(temp),
+                ReceiveReactionTempModel);
         }
 
-        public void ClearReactionArea()
+        public async Task ClearReactionArea()
         {
             ClearReactionAreaFinished = false;
             Log.Information("执行 清空反应区");
-            serialPortService.ClearReactionArea();
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.ClearReactionAreaAsync(),
+                ReceiveClearReactionAreaModel);
         }
 
-        public void Motor(string motor, string direction, string value)
+        public async Task Motor(string motor, string direction, string value)
         {
             MotorFinished = false;
             Log.Information($"执行 电机控制，电机: {motor}，方向: {direction}，值: {value}");
-            serialPortService.Motor(motor, direction, value);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.MotorAsync(motor, direction, value),
+                ReceiveMotorModel);
         }
 
-        public void ResetParams()
+        public async Task ResetParams()
         {
             ResetParamsFinished = false;
             Log.Information("执行 重置参数");
-            serialPortService.ResetParams();
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.ResetParamsAsync(),
+                ReceiveResetParamsModel);
         }
 
-        public void Update()
+        public async Task Update()
         {
             UpdateFinished = false;
             Log.Information($"执行 升级");
-            serialPortService.Update();
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.UpdateAsync(),
+                ReceiveUpdateModel);
         }
 
-        public void Squeezing(string type)
+        public async Task Squeezing(string type)
         {
             SqueezingFinished = false;
             Log.Information($"执行 挤压，类型: {type}");
-            serialPortService.Squeezing(type);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.SqueezingAsync(type),
+                ReceiveSqueezingModel);
         }
 
-        public void Pierced(string type)
+        public async Task Pierced(string type)
         {
             PiercedFinished = false;
             Log.Information($"执行 刺破，类型: {type}");
-            serialPortService.Pierced(type);
+            await SafeSerialPortCallAsync(() => serialPortCommandFacade.PiercedAsync(type),
+                ReceivePiercedModel);
         }
 
         string RunningErrorMsg = "";
