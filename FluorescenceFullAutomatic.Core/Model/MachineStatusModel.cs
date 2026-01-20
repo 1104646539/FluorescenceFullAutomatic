@@ -42,15 +42,15 @@ namespace FluorescenceFullAutomatic.Core.Model
 			get { return cleanoutFluid; }
 			set { cleanoutFluid = value; }
 		}
-     /// <summary>
+        /// <summary>
         /// 样本架状态 0不存在，1存在
         /// </summary>
-        private List<int> samleShelf;
+        private List<int> sampleShelf;
 
-		public List<int> SamleShelf
+		public List<int> SampleShelf
         {
-			get { return samleShelf; }
-			set { samleShelf = value; }
+			get { return sampleShelf; }
+			set { sampleShelf = value; }
 		}
 
 	}

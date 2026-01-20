@@ -131,7 +131,7 @@ namespace FluorescenceFullAutomatic.Platform.Utils
                             CardExist = CardExist, // 卡仓存在
                             CardNum = CardNum, // 30张卡
                             CleanoutFluid = CleanoutFluid, // 清洗液存在
-                            SamleShelf = SamleShelf, // 样本架是否存在
+                            SampleShelf = SamleShelf, // 样本架是否存在
                         };
                         reply.Data = machineStatus;
                         break;

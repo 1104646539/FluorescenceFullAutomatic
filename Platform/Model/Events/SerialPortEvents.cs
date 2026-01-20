@@ -301,6 +301,21 @@ namespace FluorescenceFullAutomatic.Platform.Model.Events
     public class MoveReactionAreaCompletedEvent : TestEventBase
     {
         public BaseResponseModel<MoveReactionAreaModel> Result { get; set; }
+        
+        /// <summary>
+        /// 当前移动的检测结果 ID（从状态机 context 传递）
+        /// </summary>
+        public int TestResultId { get; set; } = -1;
+        
+        /// <summary>
+        /// 反应区 X 坐标
+        /// </summary>
+        public int ReactionAreaX { get; set; }
+        
+        /// <summary>
+        /// 反应区 Y 坐标
+        /// </summary>
+        public int ReactionAreaY { get; set; }
     }
 
     /// <summary>

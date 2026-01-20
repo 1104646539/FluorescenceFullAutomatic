@@ -257,6 +257,9 @@
     <Compile Include="Services\IToolService.cs" />
     <Compile Include="Sql\DB.cs" />
     <Compile Include="Sql\SqlHelper.cs" />
+    <Compile Include="StateMachine\DetectionState.cs" />
+    <Compile Include="StateMachine\DetectionTrigger.cs" />
+    <Compile Include="StateMachine\StateContext.cs" />
     <Compile Include="Utils\A4ReportHelper.cs" />
     <Compile Include="Utils\BarcodeHelper.cs" />
     <Compile Include="Utils\CRC16.cs" />

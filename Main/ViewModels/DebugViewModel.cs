@@ -922,7 +922,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 return;
             IsCmdRunningFinish = true;
             Msg =
-                $"收到机器状态响应: 卡仓存在={model.Data.CardExist}, 卡仓数量={model.Data.CardNum}, 清洗液存在={model.Data.CleanoutFluid}, 样本架状态={string.Join(",", model.Data.SamleShelf)}";
+                $"收到机器状态响应: 卡仓存在={model.Data.CardExist}, 卡仓数量={model.Data.CardNum}, 清洗液存在={model.Data.CleanoutFluid}, 样本架状态={string.Join(",", model.Data.SampleShelf)}";
             SystemGlobal.TestType = TestType.Test;
         }
 

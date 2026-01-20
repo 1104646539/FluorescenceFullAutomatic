@@ -627,7 +627,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             CleanoutFluidExist = data.CleanoutFluid == "1";
             for (int i = 0; i < 6; i++)
             {
-                SampleShelf[i] = data.SamleShelf[i] == 1;
+                SampleShelf[i] = data.SampleShelf[i] == 1;
             }
         }
 
