@@ -257,8 +257,13 @@ namespace FluorescenceFullAutomatic.Platform.StateMachine
         public bool AllConditionsMetForAddingSample =>
             SamplingCompleted && PushCardCompleted && PushCardSuccess;
 
+        /// <summary>
+        /// 是否正在检测动作
+        /// </summary>
+        public bool IsTesting { get; set; }
+
         // ========== 方法 ==========
-        
+
         /// <summary>
         /// 重置所有状态（准备开始新的检测）
         /// </summary>

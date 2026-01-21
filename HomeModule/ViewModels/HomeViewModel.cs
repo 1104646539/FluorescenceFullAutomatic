@@ -51,9 +51,6 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private readonly DetectionStateMachine detectionStateMachine;
 
         [ObservableProperty]
-        public ReactionAreaViewModel reactionAreaViewModel;
-
-        [ObservableProperty]
         public SampleShelfViewModel sampleShelfViewModel;
 
         /// <summary>
@@ -66,11 +63,6 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         /// 自检命令是否完成
         /// </summary>
         private bool SelfInspectionFinished { get; set; }
-
-        /// <summary>
-        /// 检测命令是否完成
-        /// </summary>
-        private bool TestFinished { get; set; }
 
         /// <summary>
         /// 获取/设置反应区温度命令是否完成
@@ -101,15 +93,6 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private string stateMsg;
 
         /// <summary>
-        /// 样本架当前位置
-        /// </summary>
-        private int SampleShelfPos = -1;
-
-        /// <summary>
-        /// 当前样本位置
-        /// </summary>
-        private int SampleCurrentPos = 0;
-        /// <summary>
         /// 是否是第一次加载
         /// </summary>
         private bool FirstLoad = true;
@@ -118,18 +101,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         /// 是否是检测前想要自检的（保留：用于 ReceiveGetSelfMachineStatusModel 判断是否处理响应）
         /// </summary>
         private bool IsTestGetSelfMachineState = true;
-        
-        /// <summary>
-        /// 检测结束要显示的提示
-        /// </summary>
-        string TestFinishedHiltMsg = "";
-
-        /// <summary>
-        /// 是否正在检测
-        /// </summary>
-        private bool IsTesting = false;
-
-       
+     
 
         /// <summary>
         /// 获取反应区温度定时器
@@ -165,17 +137,12 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             this.serialPortCommandFacade = serialPortCommandFacade;
             this.homeService = homeService;
             this.dispatcherService = dispatcherService;
-            this.homeService._dequeueCallback += OnReactionAreaDequeue;
             this.mailboxService = mailboxService;
             //线程邮箱
             this.mailboxService.Subscribe(HandlerEventAsync);
-            detectionStateMachine = new DetectionStateMachine(logService, mailboxService, serialPortCommandFacade, serialPortService, homeService, configRepository, projectRepository);
+            detectionStateMachine = new DetectionStateMachine(logService, mailboxService, serialPortCommandFacade, serialPortService, homeService, configRepository, projectRepository, toolRepository);
             this.mailboxService.Start();
-            // this.serialPortService.AddReceiveData(this);
             SampleShelfViewModel = new SampleShelfViewModel();
-            ReactionAreaViewModel = ReactionAreaViewModel.Instance;
-            this.serialPortService.AddScanSuccessListener(OnScanSuccess);
-            this.serialPortService.AddScanFailedListener(OnScanFailed);
             this.configRepository.AddDebugModeChangedListener(OnDebugModeChange);
             ChangeTestSettings();
             this.SampleShelfViewModel.onSelectedSampleItem += OnSampleItemSelected;
@@ -202,17 +169,18 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                         case SelfInspectionRequestEvent e:
                             await detectionStateMachine.FireAsync(DetectionTrigger.RequestSelfInspection);
                             break;
-                        case TestRequestEvent e:
-                            // 检测操作独立于取样状态机流转，由反应区队列时间驱动
-                            // 统一由状态机管理，以便监听检测结果并更新 UI
-                            await detectionStateMachine.ExecuteTestAsync(e.item);
+                        case CardAddedConfirmEvent e:
+                            await detectionStateMachine.FireAsync(DetectionTrigger.CardAvailable);
+                            break;
+                        case CancelDetectionRequestEvent e:
+                            await detectionStateMachine.FireAsync(DetectionTrigger.CancelDetection);
                             break;
                         // ========== UI 事件（状态机通知 UI 显示/隐藏对话框） ==========
                         case SelfInspectionStartedEvent e:
                             ShowSelfMachineDialog();
                             break;
                         case DetectionValidationErrorEvent e:
-                            HandleDetectionValidationError(e.ErrorKey);
+                            HandleDetectionValidationError(e.ErrorType);
                             break;
                         case MachineStatusValidationErrorEvent e:
                             HandleMachineStatusValidationError(e.ErrorMessage);
@@ -234,32 +202,17 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                         case SamplingCompletedEvent e:
                             ReceiveSamplingModel(e.Result);
                             break;
-                        // case CleanoutSamplingProbeCompletedEvent e:
-                        //     ReceiveCleanoutSamplingProbeModel(e.Result);
-                        //     break;
                         case AddingSampleCompletedEvent e:
                             ReceiveAddingSampleModel(e.Result);
                             break;
                         case PushCardCompletedEvent e:
                             ReceivePushCardModel(e.Result);
                             break;
-                        case TestCompletedEvent e:
-                            ReceiveTestModel(e.Result);
-                            break;
                         case GetReactionTempCompletedEvent e:
                             ReceiveReactionTempModel(e.Result);
                             break;
-                        // case DrainageCompletedEvent e:
-                        //     ReceiveDrainageModel(e.Result);
-                        //     break;
                         case BarcodeScanCompletedEvent e:
                             ReceiveBarcodeScannedModel(e);
-                            break;
-                        case MoveReactionAreaCompletedEvent e:
-                            ReceiveMoveReactionAreaModel(e.Result);
-                            break;
-                        case ApplyTestIdentifiedEvent e:
-                            HandleApplyTestIdentified(e.ApplyTest);
                             break;
                         case NoCardAvailableEvent e:
                             HandleNoCardAvailable(e.CurrentCardNum);
@@ -267,8 +220,11 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                         case SamplingFinishedEvent e:
                             HandleSamplingFinished(e.HintMessage);
                             break;
-                        case SamplePositionChangedEvent e:
-                            HandleSamplePositionChanged(e);
+                        case TestResultAddedEvent e:
+                            HandleTestResultAdded(e.TestResult);
+                            break;
+                        case TestResultUpdatedEvent e:
+                            HandleTestResultUpdated(e.TestResultId);
                             break;
                         default:
                             logService.Info($"未处理的事件: {evt.GetType().Name}");
@@ -283,68 +239,20 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         }
         private void ReceiveBarcodeScannedModel(BarcodeScanCompletedEvent e)
         {
-            if (e.Success)
-            {
-                // 仅更新 UI 状态
-                logService.Info($"[VM] 扫码成功 UI 更新: {e.Barcode}");
-                SampleShelfViewModel.UpdateSampleItems(
-                    SampleShelfPos,
-                    SampleCurrentPos,
-                    (item) =>
-                    {
-                        item.State = SampleState.ScanSuccess;
-                        return item;
-                    }
-                );
-                UpdateTestResultForSamplePos(
-                    SampleCurrentPos,
-                    (item) =>
-                    {
-                        item.ResultState = ResultState.ScanSuccess;
-                        item.Barcode = e.Barcode;
-                        return item;
-                    }
-                );
-            }
-            else
-            {
-                logService.Warning($"[VM] 扫码失败 UI 更新");
-                SampleShelfViewModel.UpdateSampleItems(
-                    SampleShelfPos,
-                    SampleCurrentPos,
-                    (item) =>
-                    {
-                        item.State = SampleState.ScanFailed;
-                        return item;
-                    }
-                );
-            }
+            logService.Info($"[VM] 收到扫码反馈 Success={e.Success} Barcode={e.Barcode}");
+            // 扫码逻辑已下沉到 SM.HandleBarcodeReceived
+            // 这里仅需更新样本架 UI 状态
+            SampleShelfViewModel.UpdateSampleItems(
+                detectionStateMachine.Context.CurrentShelfPos,
+                detectionStateMachine.Context.CurrentSamplePos,
+                (item) =>
+                {
+                    item.State = e.Success ? SampleState.ScanSuccess : SampleState.ScanFailed;
+                    return item;
+                }
+            );
         }
-        /// <summary>
-        /// 处理状态机识别到的申请信息
-        /// </summary>
-        private void HandleApplyTestIdentified(ApplyTest applyTest)
-        {
-            if (applyTest == null) return;
-
-            dispatcherService.Invoke(() =>
-            {
-                // 更新当前样本位的病人信息展示
-                UpdateTestResultForSamplePos(
-                    SampleCurrentPos,
-                    (item) =>
-                    {
-                        item.Patient = applyTest.Patient;
-                        item.PatientId = applyTest.PatientId;
-                        return item;
-                    }
-                );
-
-                // 发送数据变更通知以刷新 UI
-                RefreshChange(-1); // 或者传入具体的 ID
-                logService.Info($"[VM] 已同步状态机识别的申请信息: {applyTest.Patient?.PatientName}");
-            });
-        }
+   
 
         /// <summary>
         /// 处理检测卡不足事件，提示用户添加检测卡
@@ -365,9 +273,9 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
 
                 if (result == MessageBoxResult.OK)
                 {
-                    // 用户点击确定，触发 CardAvailable 继续流程
+                    // 用户点击确定，发送事件通知状态机继续流程
                     logService.Info("[VM] 用户确认已添加检测卡，继续流程");
-                    await detectionStateMachine.FireAsync(DetectionTrigger.CardAvailable);
+                    mailboxService.Post(new CardAddedConfirmEvent());
                 }
                 else
                 {
@@ -395,18 +303,6 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                     (d, dialog) => { }
                 );
             });
-        }
-
-        /// <summary>
-        /// 处理样本位置变更事件（从状态机 context 同步位置信息到 VM）
-        /// </summary>
-        private void HandleSamplePositionChanged(SamplePositionChangedEvent e)
-        {
-            logService.Info($"[VM] 收到位置同步事件: ShelfPos={e.ShelfPos}, SamplePos={e.SamplePos}, SampleType={e.SampleType}");
-
-            // 同步位置信息（从状态机中获取，不再本地维护）
-            SampleShelfPos = e.ShelfPos;
-            SampleCurrentPos = e.SamplePos;
         }
 
         private void OnDebugModeChange(bool debugMode)
@@ -533,15 +429,6 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         }
         
 
-        private void GoGetSelfMachineStatus()
-        {
-            logService.Info("自检失败，点击重新自检 GoGetSelfMachineStatus");
-            IsTestGetSelfMachineState = true;
-            SetMachineStatus(MachineStatus.None);
-
-            requestSelfMachineState();
-        }
-
         private void SetMachineStatus(MachineStatus state)
         {
             SystemGlobal.MachineStatus = state;
@@ -560,14 +447,6 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             SetMachineStatus(MachineStatus.Sampling);
             SystemGlobal.TestType = TestType.Test;
-
-            // 位置变量重置为初始值，实际值由状态机通过 SamplePositionChangedEvent 同步
-            SampleCurrentPos = 0;
-            SampleShelfPos = -1;
-            // ReactionAreaX = -1;这两个不能初始化，因为可能正在检测
-            // ReactionAreaY = 0;
-            TestFinishedHiltMsg = "";
-            
             SampleShelfViewModel.Clear();
 
             // 重置所有状态标志为 false
@@ -580,9 +459,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private void ResetAllStatusFlags()
         {
             SelfInspectionFinished = false;
-            TestFinished = false;
             ReactionTempFinished = false;
-            // 其他标志位已迁移到状态机的 StateContext 中管理
         }
 
         [RelayCommand]
@@ -594,27 +471,27 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         /// <summary>
         /// 处理检测启动校验失败的情况
         /// </summary>
-        private void HandleDetectionValidationError(string errorKey)
+        private void HandleDetectionValidationError(DetectionValidationErrorType errorType)
         {
-            switch (errorKey)
+            switch (errorType)
             {
-                case "SelfInspectionFailed":
+                case DetectionValidationErrorType.SelfInspectionFailed:
                     ShowSelfMachineErrorDialog();
                     break;
-                case "NotSelfInspected":
+                case DetectionValidationErrorType.NotSelfInspected:
                     homeService.ShowHiltDialog(this, "提示", "仪器尚未完成自检，请先进行自检。", "确定", (d, dialog) => { });
                     break;
-                case "AlreadyTesting":
+                case DetectionValidationErrorType.AlreadyTesting:
                     homeService.ShowHiltDialog(this, "提示", "仪器正在检测中，请等待检测完成。", "确定", (d, dialog) => { });
                     break;
-                case "ReactionAreaFull":
+                case DetectionValidationErrorType.ReactionAreaFull:
                     homeService.ShowHiltDialog(this, "提示", "反应区已满，请等待部分检测完成后再开始。", "确定", (d, dialog) => { });
                     break;
-                case "RunningError":
+                case DetectionValidationErrorType.RunningError:
                     homeService.ShowHiltDialog(this, "提示", "仪器处于错误状态，请检查硬件。", "确定", (d, dialog) => { });
                     break;
                 default:
-                    homeService.ShowHiltDialog(this, "提示", $"无法开始检测: {errorKey}", "确定", (d, dialog) => { });
+                    homeService.ShowHiltDialog(this, "提示", $"无法开始检测: {errorType}", "确定", (d, dialog) => { });
                     break;
             }
         }
@@ -638,7 +515,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 (d, dialog) =>
                 {
                     logService.Info("状态异常 点击 结束检测");
-                    _ = detectionStateMachine.FireAsync(DetectionTrigger.CancelDetection);
+                    mailboxService.Post(new CancelDetectionRequestEvent());
                 }
             );
         }
@@ -663,6 +540,22 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             );
         }
 
+        private void HandleTestResultAdded(TestResult tr)
+        {
+            dispatcherService.Invoke(() =>
+            {
+                TestResults.Add(tr);
+            });
+        }
+
+        private void HandleTestResultUpdated(int id)
+        {
+            dispatcherService.Invoke(() =>
+            {
+                RefreshChange(id);
+            });
+        }
+
         private void RefreshChange(int id)
         {
             logService.Info($"data 发出更新={id}");
@@ -685,7 +578,6 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             if (SystemGlobal.TestType != TestType.Test)
             {
-                // logService.Info($"非正常检测类型，当前类型：{SystemGlobal.TestType}");
                 return false;
             }
             return true;
@@ -703,7 +595,6 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             {
                 return;
             }
-            ClearReactionAreaState();
             ClearWaitTestCard();
             IsTestGetSelfMachineState = false;
             SelfInspectionFinished = true;
@@ -753,14 +644,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             homeService.ReactionAreaQueueClear();
         }
 
-        /// <summary>
-        /// 清空反应区状态
-        /// </summary>
-        private void ClearReactionAreaState()
-        {
-            ReactionAreaViewModel.Clear();
-        }
-
+    
         public string JoinSelfMachineError(List<string> data)
         {
             if (data == null || data.Count == 0)
@@ -786,10 +670,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 _getReactionTempTimer.Dispose();
             }
             _getReactionTempTimer = new Timer(
-                (state) =>
-                {
-                    //GetReactionTemp();
-                },
+                (state) => { },
                 null,
                 0,
                 GetReactionTempInterval
@@ -805,7 +686,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             if (!ContinueTest())
                 return;
             logService.Info(
-                $"接收到 仪器状态: {JsonConvert.SerializeObject(model)} SampleCurrentPos={SampleCurrentPos}"
+                $"接收到 仪器状态: {JsonConvert.SerializeObject(model)} SampleCurrentPos={detectionStateMachine.Context.CurrentSamplePos}"
             );
              // 更新 UI 状态展示
             switch (reason)
@@ -895,72 +776,37 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             if (!ContinueTest())
                 return;
             logService.Info(
-                $"接收到 移动样本: {JsonConvert.SerializeObject(model)} SampleShelfPos={SampleShelfPos} SampleCurrentPos={SampleCurrentPos}"
+                $"接收到 移动样本: {JsonConvert.SerializeObject(model)} SampleShelfPos={detectionStateMachine.Context.CurrentShelfPos} SampleCurrentPos={detectionStateMachine.Context.CurrentSamplePos}"
             );
 
-            // 处理移动样本数据 (VM 仅负责更新 UI 状态和本地 TestResults 集合)
-            if (model.Data.SampleType == MoveSampleModel.None)
-            {
-                InsertTestResult(null);
-                detectionStateMachine.Context.CurrentAddingSampleTestResult = TestResults[SampleCurrentPos];
-                SampleShelfViewModel.UpdateSampleItems(
-                    SampleShelfPos,
-                    SampleCurrentPos,
-                    (item) =>
+            // 更新 UI 状态
+            SampleShelfViewModel.UpdateSampleItems(
+               detectionStateMachine.Context.CurrentShelfPos,
+                detectionStateMachine.Context.CurrentSamplePos,
+                (item) =>
+                {
+                    if (model.Data.SampleType == MoveSampleModel.None)
                     {
                         item.State = SampleState.NotExist;
-                        return item;
                     }
-                );
-            }
-            else if (model.Data.SampleType == MoveSampleModel.SampleTube)
-            {
-                string testNum = configRepository.TestNumIncrement() + "";
-                TestResult tr = InsertTestResult(new TestResult() { TestNum = testNum });
-                detectionStateMachine.Context.CurrentAddingSampleTestResult = TestResults[SampleCurrentPos];
-                SampleShelfViewModel.UpdateSampleItems(
-                    SampleShelfPos,
-                    SampleCurrentPos,
-                    (item) =>
+                    else
                     {
                         item.State = SampleState.Exist;
-                        item.SampleType = SampleType.SampleTube;
-                        item.ResultId = tr.Id;
-                        return item;
+                        item.SampleType = model.Data.SampleType == MoveSampleModel.SampleTube ? SampleType.SampleTube : SampleType.SampleCup;
+                        
+                        var currentTr = detectionStateMachine.Context.CurrentAddingSampleTestResult;
+                        if (currentTr != null)
+                        {
+                            item.ResultId = currentTr.Id;
+                            item.TestResult = currentTr;
+                        }
                     }
-                );
-                RefreshAdd(tr.Id);
-            }
-            else if (model.Data.SampleType == MoveSampleModel.SampleCup)
-            {
-                string testNum = configRepository.TestNumIncrement() + "";
-                TestResult tr = InsertTestResult(new TestResult() { TestNum = testNum });
-                detectionStateMachine.Context.CurrentAddingSampleTestResult = TestResults[SampleCurrentPos];
-                SampleShelfViewModel.UpdateSampleItems(
-                    SampleShelfPos,
-                    SampleCurrentPos,
-                    (item) =>
-                    {
-                        item.State = SampleState.Exist;
-                        item.SampleType = SampleType.SampleCup;
-                        item.ResultId = tr.Id;
-                        return item;
-                    }
-                );
-                RefreshAdd(tr.Id);
-            }
+                    return item;
+                }
+            );
         }
 
-        private TestResult InsertTestResult(TestResult testResult)
-        {
-            if (testResult != null)
-            {
-                int id = homeService.InsertTestResult(testResult);
-                testResult.Id = id;
-            }
-            TestResults.Add(testResult);
-            return testResult;
-        }
+
 
       
         private void requestSampling(string type, int volume)
@@ -970,223 +816,6 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private void requestScanBarcode()
         {
             mailboxService.Post(new ScanBarcodeRequestEvent());
-        }
-        /// <summary>
-        /// 去扫码
-        /// </summary>
-        private void ScanBarcode()
-        {
-
-            serialPortService.ScanBarcode();
-        }
-
-        private void OnScanFailed(string error)
-        {
-            mailboxService.Post(new BarcodeScanCompletedEvent() { Barcode = error, Success = false });
-         
-        }
-
-        private void OnScanSuccess(string barcode)
-        {
-            mailboxService.Post(new BarcodeScanCompletedEvent() { Barcode = barcode, Success = true });
-           
-        }
-
-        /// <summary>
-        /// 扫码成功，取样推卡
-        /// </summary>
-        /// <param name="barcode"></param>
-        private void ScanSuccess(string barcode)
-        {
-            logService.Info($"收到 扫码成功:{barcode}");
-            //记录条码
-            SampleShelfViewModel.UpdateSampleItems(
-                SampleShelfPos,
-                SampleCurrentPos,
-                (item) =>
-                {
-                    item.State = SampleState.ScanSuccess;
-                    return item;
-                }
-            );
-            //更新结果
-            UpdateTestResultForSamplePos(
-                SampleCurrentPos,
-                (item) =>
-                {
-                    item.ResultState = ResultState.ScanSuccess;
-                    item.Barcode = barcode;
-                    return item;
-                }
-            );
-            //获取信息
-            TestResult tr = TestResults[SampleCurrentPos];
-
-            //实时获取申请信息，根据条码
-            RealTimeGetApplyTest(tr);
-
-            TestResults[SampleCurrentPos].Barcode = barcode;
-        }
-
-        /// <summary>
-        /// 实时获取申请信息
-        /// </summary>
-        /// <param name="tr"></param>
-        private void RealTimeGetApplyTest(TestResult tr)
-        {
-            dispatcherService.InvokeAsync(async () =>
-            {
-                bool isNeedLisGet = homeService.isNeedLisGet();
-                bool isMatchingBarcode = homeService.isMatchingBarcode();
-                QueryResult qr = await homeService.QueryApplyTestAsync(
-                    isNeedLisGet,
-                    isMatchingBarcode,
-                    tr.Barcode ?? "",
-                    tr.TestNum ?? ""
-                );
-                if (qr.ResultType == QueryResultType.Success)
-                {
-                    ApplyTest applyTest = qr.ApplyTests.FirstOrDefault();
-                    //接收到一个数据，更新检测结果
-                    if (applyTest != null)
-                    {
-                        dispatcherService.Invoke(() =>
-                        {
-                            applyTest.Patient.InspectDate = DateTime.Now;
-                            Patient patientTemp = applyTest.Patient;
-                            int patientId = homeService.InsertPatient(patientTemp);
-                            patientTemp.Id = patientId;
-                            applyTest.PatientId = patientId;
-                            applyTest.ApplyTestType = ApplyTestType.TestEnd;
-                            int applyTestId = homeService.InsertApplyTest(applyTest);
-                            logService.Info(
-                                $"插入了 patient={patientId} applyTestId={applyTestId}"
-                            );
-                            UpdateTestResultForId(
-                                tr.Id,
-                                (item) =>
-                                {
-                                    item.Patient = patientTemp;
-                                    item.PatientId = patientTemp.Id;
-                                    return item;
-                                }
-                            );
-                            //更新样本架的检测结果
-                            for (int i = 0; i < TestResults.Count; i++)
-                            {
-                                if (TestResults[i] != null && TestResults[i].Id == tr.Id)
-                                {
-                                    TestResults[i].Patient = patientTemp;
-                                    TestResults[i].PatientId = patientTemp.Id;
-                                    break;
-                                }
-                            }
-                            //刷新申请信息
-                            RefreshApplyTest(applyTest);
-                            logService.Info(
-                                $"申请信息={applyTest.Id} tr={tr.Id} {JsonConvert.SerializeObject(applyTest)} {JsonConvert.SerializeObject(tr)}"
-                            );
-
-                            //刷新结果
-                            RefreshChange(tr.Id);
-                        });
-                    }
-                    else
-                    {
-                        logService.Info(
-                            $"没有获取到申请信息 isNeedLisGet={isNeedLisGet} isMatchingBarcode={isMatchingBarcode} tr={tr.Id} barcode={tr.Barcode} testNum={tr.TestNum}"
-                        );
-                    }
-                }
-                else
-                {
-                    logService.Info(
-                        $"没有获取到申请信息 isNeedLisGet={isNeedLisGet} isMatchingBarcode={isMatchingBarcode} tr={tr.Id} barcode={tr.Barcode} testNum={tr.TestNum}"
-                    );
-                }
-            });
-        }
-
-        private void RefreshApplyTest(ApplyTest applyTest)
-        {
-            homeService.UpdateApplyTestCompleted(applyTest);
-            WeakReferenceMessenger.Default.Send(
-                new EventMsg<DataChangeMsg>(new DataChangeMsg() { ID = applyTest.Id })
-                {
-                    What = EventWhat.WHAT_CHANGE_APPLY_TEST,
-                }
-            );
-        }
-
-        /// <summary>
-        /// 更新对应ID的检测结果
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="func"></param>
-        private void UpdateTestResultForId(int id, Func<TestResult, TestResult> func)
-        {
-            if (id < 0)
-            {
-                return;
-            }
-            TestResult testResult = homeService.GetTestResult(id);
-            if (testResult == null)
-            {
-                logService.Info($"检测结果为空 UpdateTestResultForId id={id}");
-                return;
-            }
-
-            homeService.UpdateTestResult(func(testResult));
-        }
-
-        /// <summary>
-        /// 更新这排样本管内的检测结果
-        /// </summary>
-        /// <param name="sampleCurrentPos"></param>
-        /// <param name="func"></param>
-        private void UpdateTestResultForSamplePos(
-            int sampleCurrentPos,
-            Func<TestResult, TestResult> func
-        )
-        {
-            if (sampleCurrentPos < 0 || sampleCurrentPos >= TestResults.Count)
-            {
-                return;
-            }
-            TestResults[sampleCurrentPos] = func(TestResults[sampleCurrentPos]);
-
-            homeService.UpdateTestResult(TestResults[sampleCurrentPos]);
-        }
-
-        /// <summary>
-        /// 扫码失败，移动到下一个样本
-        /// </summary>
-        private void ScanFailed()
-        {
-            logService.Info($"收到 扫码失败 {SampleShelfPos} {SampleCurrentPos}");
-            SampleShelfViewModel.UpdateSampleItems(
-                SampleShelfPos,
-                SampleCurrentPos,
-                (item) =>
-                {
-                    item.State = SampleState.ScanFailed;
-                    UpdateTestResultForId(
-                        item.ResultId,
-                        (tr) =>
-                        {
-                            tr.ResultState = ResultState.ScanFailed;
-                            return tr;
-                        }
-                    );
-                    RefreshChange(item.ResultId);
-                    return item;
-                }
-            );
-
-            // 通知状态机扫码失败
-            detectionStateMachine.FireAsync(DetectionTrigger.ScanFailed);
-
-        
         }
 
         /// <summary>
@@ -1223,51 +852,23 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             if (!ContinueTest())
                 return;
             logService.Info($"接收到 取样: {JsonConvert.SerializeObject(model)}");
-            // 更新样本状态
-            SampleShelfViewModel.UpdateSampleItems(
-                SampleShelfPos,
-                SampleCurrentPos,
-                (item) =>
-                {
-                    item.State = SampleState.SamplingCompleted;
-                    return item;
-                }
-            );
-            var currentTestResult = detectionStateMachine.Context.CurrentAddingSampleTestResult;
-            if (currentTestResult != null)
-            {
-                UpdateTestResultForId(
-                    currentTestResult.Id,
-                    (item) =>
-                    {
-                        item.ResultState = ResultState.SamplingSuccess;
-                        return item;
-                    }
-                );
-            }
+            // 更新 UI 状态
+            // SampleShelfViewModel.UpdateSampleItems(
+            //    detectionStateMachine.Context.CurrentShelfPos,
+            //     detectionStateMachine.Context.CurrentSamplePos,
+            //     (item) =>
+            //     {
+            //         item.State = SampleState.SamplingCompleted;
+            //         return item;
+            //     }
+            // );
         }
 
-       
-     
         public void ReceiveAddingSampleModel(BaseResponseModel<AddingSampleModel> model)
         {
             if (!ContinueTest())
                 return;
             logService.Info($"接收到 加样: {JsonConvert.SerializeObject(model)}");
-            
-            // 更新检测结果状态
-            var currentTestResult = detectionStateMachine.Context.CurrentAddingSampleTestResult;
-            if (currentTestResult != null)
-            {
-                UpdateTestResultForId(
-                    currentTestResult.Id,
-                    (t) =>
-                    {
-                        t.ResultState = ResultState.AddSampleSuccess;
-                        return t;
-                    }
-                );
-            }
         }
 
         /// <summary>
@@ -1291,30 +892,28 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             if (!ContinueTest())
                 return;
-            logService.Info($"接收到 推卡完成: {JsonConvert.SerializeObject(model)}");
+            logService.Info($"接收到 推卡完成: CurrentAddingSampleTestResult {JsonConvert.SerializeObject(model)}");
 
             if (detectionStateMachine.Context.PushCardSuccess)
             {
-                // 更新 UI 状态（VM 依然负责 UI 相关的 TestResult 更新）
+                // 更新 UI 状态
                 var project = detectionStateMachine.Context.CurrentAddingSampleTestResult?.Project;
                 if (project != null)
                 {
-                    UpdateTestResultForSamplePos(
-                        SampleCurrentPos,
+                    SampleShelfViewModel.UpdateSampleItems(
+                     detectionStateMachine.Context.CurrentShelfPos,
+                detectionStateMachine.Context.CurrentSamplePos,
                         (item) =>
                         {
-                            item.ProjectId = project.Id;
-                            item.Project = project;
-                            item.CardQRCode = model.Data.QrCode;
+                            if (item.TestResult != null)
+                            {
+                                item.TestResult.ProjectId = project.Id;
+                                item.TestResult.Project = project;
+                                item.TestResult.CardQRCode = model.Data.QrCode;
+                            }
                             return item;
                         }
                     );
-                    // CurrentTestResult 已在 context 中更新，这里同步更新本地副本
-                    if (detectionStateMachine.Context.CurrentAddingSampleTestResult != null)
-                    {
-                        detectionStateMachine.Context.CurrentAddingSampleTestResult.Project = project;
-                        detectionStateMachine.Context.CurrentAddingSampleTestResult.ProjectId = project.Id;
-                    }
                 }
             }
         }
@@ -1332,248 +931,6 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         }
 
      
-        public void ReceiveMoveReactionAreaModel(BaseResponseModel<MoveReactionAreaModel> model)
-        {
-            if (!ContinueTest(isTestAction: true))
-                return;
-            var movingTestResult = detectionStateMachine.Context.MovingToReactionAreaTestResult;
-            logService.Info(
-                $"接收到 移动反应区: {movingTestResult.Id}{JsonConvert.SerializeObject(model)} ReactionAreaY={detectionStateMachine.Context.ReactionAreaY} ReactionAreaX={detectionStateMachine.Context.ReactionAreaX} id={movingTestResult?.Id}"
-            );
-            if (movingTestResult != null)
-            {
-                UpdateTestResultForId(
-                    movingTestResult.Id,
-                    (t) =>
-                    {
-                        t.ResultState = ResultState.Incubation;
-                        return t;
-                    }
-                );
-            }
-            // 更新反应区状态
-            ReactionAreaViewModel.UpdateItem(
-                detectionStateMachine.Context.ReactionAreaY,
-                detectionStateMachine.Context.ReactionAreaX,
-                (item) =>
-                {
-                    item.State = ReactionAreaItem.STATE_WAIT;
-                    item.TestResult = movingTestResult;
-                    item.ReactionAreaY = detectionStateMachine.Context.ReactionAreaY;
-                    item.ReactionAreaX = detectionStateMachine.Context.ReactionAreaX;
-                    // 加入等待检测队列
-                    Enqueue(item);
-                    logService.Info($"入队= {item.TestResult.Id}{JsonConvert.SerializeObject(item)}");
-                    return item;
-                }
-            );
-
-            // 由状态机处理下一步
-            _ = detectionStateMachine.FireAsync(DetectionTrigger.MoveToReactionAreaCompleted);
-        }
-
-        /// <summary>
-        /// 加入等待检测队列
-        /// </summary>
-        /// <param name="item"></param>
-        private void Enqueue(ReactionAreaItem item)
-        {
-            homeService.Enqueue(item);
-        }
-
-        /// <summary>
-        /// 检测卡出队，已经到检测时间
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public bool OnReactionAreaDequeue(ReactionAreaItem item)
-        {
-
-            if (IsTesting)
-            {
-                //正在检测
-                return false;
-            }
-            //如果检测模块运行错误，则不能检测
-            if (!ContinueTest(true))
-                return false;
-
-            logService.Info(
-                $"OnReactionAreaDequeue IsTesting={IsTesting} {!ContinueTest(true)} {JsonConvert.SerializeObject(item)}"
-            );
-            if (item.TestResult.Project == null)
-            {
-                logService.Info("项目为空");
-                return false;
-            }
-            IsTesting = true;
-            mailboxService.Post(new TestRequestEvent() { item = item });
-            return true;
-        }
-        public void ReceiveTestModel(BaseResponseModel<TestModel> model)
-        {
-            //logService.Info($"接收到 检测2: {!ContinueTest(true)} {JsonConvert.SerializeObject(model)}");
-
-            if (!ContinueTest(true))
-                return;
-            TestFinished = true;
-
-            logService.Info($"接收到 检测: {JsonConvert.SerializeObject(model)}");
-            // 处理检测数据
-            
-            int t = 0;
-            int c = 0;
-            int.TryParse(model.Data.T, out t);
-            int.TryParse(model.Data.C, out c);
-
-            int t2 = 0;
-            int c2 = 0;
-            int.TryParse(model.Data.T2, out t2);
-            int.TryParse(model.Data.C2, out c2);
-            TestResult temp = null;
-            int[] points = model.Data.Point.ToArray();
-            Platform.Model.Point point = new Platform.Model.Point()
-            {
-                Points = points,
-                Location = model.Data.Location,
-            };
-            t = t / 1000;
-            c = c / 1000;
-            t2 = t2 / 1000;
-            c2 = c2 / 1000;
-            point.T = "" + t;
-            point.C = "" + c;
-            point.T2 = "" + t2;
-            point.C2 = "" + c2;
-            point.Tc = toolRepository.CalcTC(t, c);
-            point.Tc2 = toolRepository.CalcTC(t2, c2);
-            int pointId = homeService.InsertPoint(point);
-            point.Id = pointId;
-            //更新检测结果
-            UpdateTestResultForId(
-                detectionStateMachine.Context.TestResultId,
-                (item) =>
-                {
-                    item.C = "" + c;
-                    item.T = "" + t;
-                    item.C2 = "" + c2;
-                    item.T2 = "" + t2;
-                    item.PointId = pointId;
-                    item.Point = point;
-                    item.ResultState = ResultState.TestFinish;
-                    item = toolRepository.CalcTestResult(item);
-                    return temp = item;
-                }
-            );
-            //刷新结果
-            RefreshChange(detectionStateMachine.Context.TestResultId);
-            //单个样本检测完毕
-            SingleSampleTestFinished(temp);
-            //更新反应区状态
-            ReactionAreaViewModel.UpdateItem(
-                detectionStateMachine.Context.ReactionAreaTestY,
-                detectionStateMachine.Context.ReactionAreaTestX,
-                (item) =>
-                {
-                    item.State = ReactionAreaItem.STATE_END;
-                    item.TestResult = temp;
-                    return item;
-                }
-            );
-
-            //检测完了
-            if (homeService.ReactionAreaQueueIsEmpty())
-            {
-                if (
-                    SystemGlobal.MachineStatus == MachineStatus.SamplingFinished
-                    || SystemGlobal.MachineStatus == MachineStatus.Testing
-                    || SystemGlobal.MachineStatus == MachineStatus.RunningError
-                )
-                {
-                    //只有已经取样完成||运行错误，才代表真正检测结束了
-                    SetMachineStatus(MachineStatus.TestingEnd);
-                    logService.Info("没有待检测的检测卡，则检测完成");
-                }
-                else
-                {
-                    //可能正在取样
-                    logService.Info("检测完成，但还有待取样的样本");
-                }
-            }
-            // 检测完成后恢复取样的逻辑已迁移到状态机的 CheckAndResumeIfPausedAsync 中
-            IsTesting = false;
-        }
-
-        /// <summary>
-        /// 单个样本检测完毕
-        /// 1、上传
-        /// 2、打印
-        ///
-        /// </summary>
-        /// <param name="temp"></param>
-        private void SingleSampleTestFinished(TestResult temp)
-        {
-            AutoUpload(temp);
-            AutoPrint(temp);
-        }
-
-        /// <summary>
-        /// 自动打印检测结果
-        /// </summary>
-        /// <param name="temp"></param>
-        private void AutoPrint(TestResult temp)
-        {
-            homeService.AutoPrintReport(
-                temp,
-                configRepository.IsAutoPrintA4Report(),
-                false,
-                configRepository.IsAutoPrintTicket(),
-                configRepository.GetPrinterName()
-            );
-        }
-
-        /// <summary>
-        /// 自动上传检测结果
-        /// </summary>
-        /// <param name="temp"></param>
-        private void AutoUpload(TestResult temp)
-        {
-            //已连接并且自动上传已开启
-            if (homeService.Hl7NeedAutoUpload())
-            {
-                dispatcherService.InvokeAsync(async () =>
-                {
-                    logService.Info($"开始上传: {temp.Id}");
-                    //上传检测结果
-                    UploadResult ur = await homeService.UploadTestResultAsync(temp);
-                    if (ur != null && ur.ResultType == UploadResultType.Success)
-                    {
-                        logService.Info($"上传检测结果成功: {ur?.TestResultId}");
-                        dispatcherService.Invoke(() =>
-                        {
-                            //更新检测结果状态
-                            UpdateTestResultForId(
-                                ur.TestResultId,
-                                (item) =>
-                                {
-                                    item.IsUploaded = true;
-                                    return item;
-                                }
-                            );
-                        });
-
-                        RefreshChange(ur.TestResultId);
-                    }
-                    else
-                    {
-                        logService.Info(
-                            $"上传检测结果失败: {ur?.TestResultId} {JsonConvert.SerializeObject(temp)}"
-                        );
-                    }
-                });
-            }
-        }
-
         public void ReceiveReactionTempModel(BaseResponseModel<ReactionTempModel> model)
         {
             if (!ContinueTest())

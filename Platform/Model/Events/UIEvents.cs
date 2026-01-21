@@ -31,11 +31,47 @@ namespace FluorescenceFullAutomatic.Platform.Model.Events
     }
 
     /// <summary>
+    /// 检测启动校验错误类型
+    /// </summary>
+    public enum DetectionValidationErrorType
+    {
+        /// <summary>
+        /// 无错误
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// 自检失败
+        /// </summary>
+        SelfInspectionFailed,
+
+        /// <summary>
+        /// 尚未完成自检
+        /// </summary>
+        NotSelfInspected,
+
+        /// <summary>
+        /// 正在检测中
+        /// </summary>
+        AlreadyTesting,
+
+        /// <summary>
+        /// 反应区已满
+        /// </summary>
+        ReactionAreaFull,
+
+        /// <summary>
+        /// 仪器运行错误
+        /// </summary>
+        RunningError
+    }
+
+    /// <summary>
     /// 检测启动校验失败事件（用于通知 UI 显示错误提示）
     /// </summary>
     public class DetectionValidationErrorEvent : TestEventBase
     {
-        public string ErrorKey { get; set; }
+        public DetectionValidationErrorType ErrorType { get; set; }
     }
 
     /// <summary>
@@ -69,6 +105,22 @@ namespace FluorescenceFullAutomatic.Platform.Model.Events
         public int CurrentCardNum { get; set; }
     }
 
+    /// <summary>
+    /// 检测结果已添加到数据库事件
+    /// </summary>
+    public class TestResultAddedEvent : TestEventBase
+    {
+        public TestResult TestResult { get; set; }
+    }
+
+    /// <summary>
+    /// 检测结果已更新事件
+    /// </summary>
+    public class TestResultUpdatedEvent : TestEventBase
+    {
+        public int TestResultId { get; set; }
+    }
+
 
     /// <summary>
     /// 取样结束事件（清洗取样针和样本架复位都完成后通知 VM）
@@ -76,6 +128,20 @@ namespace FluorescenceFullAutomatic.Platform.Model.Events
     public class SamplingFinishedEvent : TestEventBase
     {
         public string HintMessage { get; set; }
+    }
+
+    /// <summary>
+    /// 用户确认已添加检测卡事件
+    /// </summary>
+    public class CardAddedConfirmEvent : TestEventBase
+    {
+    }
+
+    /// <summary>
+    /// 用户请求取消检测事件
+    /// </summary>
+    public class CancelDetectionRequestEvent : TestEventBase
+    {
     }
 
     /// <summary>

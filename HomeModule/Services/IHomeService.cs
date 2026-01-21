@@ -9,6 +9,7 @@ using FluorescenceFullAutomatic.Platform.Services;
 using FluorescenceFullAutomatic.Platform.Sql;
 using FluorescenceFullAutomatic.Platform.Utils;
 using FluorescenceFullAutomatic.Platform.ViewModels;
+using FluorescenceFullAutomatic.ViewModels;
 using FluorescenceFullAutomatic.UploadModule.Upload;
 using MahApps.Metro.Controls.Dialogs;
 
@@ -71,6 +72,22 @@ namespace FluorescenceFullAutomatic.HomeModule.Services
         bool Hl7NeedAutoUpload();
 
        void AutoPrintReport(TestResult tr, bool autoPrint, bool autoUploadFtp, bool autoPrintTicket, string printerName);
+
+        /// <summary>
+        /// 获取反应区下一个可用位置
+        /// </summary>
+        /// <param name="y">行号</param>
+        /// <param name="x">列号</param>
+        /// <returns>是否找到可用位置</returns>
+        bool GetReactionAreaNextPosition(out int y, out int x);
+
+        /// <summary>
+        /// 更新反应区指定位置的项
+        /// </summary>
+        /// <param name="y">行号</param>
+        /// <param name="x">列号</param>
+        /// <param name="action">更新操作</param>
+        void UpdateReactionAreaItem(int y, int x, Func<ReactionAreaItem, ReactionAreaItem> action);
     }
 
     public class HomeService : IHomeService
@@ -235,6 +252,16 @@ namespace FluorescenceFullAutomatic.HomeModule.Services
         public Task HideMetroDialogAsync(object context, BaseMetroDialog dialog, MetroDialogSettings settings = null)
         {
             return _dialogRepository.HideMetroDialogAsync(context, dialog, settings);
+        }
+
+        public bool GetReactionAreaNextPosition(out int y, out int x)
+        {
+            return ReactionAreaViewModel.Instance.GetReactionAreaNext(out y, out x);
+        }
+
+        public void UpdateReactionAreaItem(int y, int x, Func<ReactionAreaItem, ReactionAreaItem> action)
+        {
+            ReactionAreaViewModel.Instance.UpdateItem(y, x, action);
         }
     }
 }
