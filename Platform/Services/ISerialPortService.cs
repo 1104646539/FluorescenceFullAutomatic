@@ -925,7 +925,7 @@ namespace FluorescenceFullAutomatic.Platform.Services
             {
                 if (_pendingByCmd.TryGetValue(cmd, out var existing) && !existing.IsCompleted)
                 {
-                    throw new InvalidOperationException($"鍛戒护姝ｅ湪鎵ц涓紝涓嶅厑璁稿苟鍙戙�傚懡浠ょ爜={cmd}");
+                    throw new InvalidOperationException($"串口重发 命令={cmd}");
                 }
                 _pendingByCmd[cmd] = pending;
             }
@@ -961,7 +961,7 @@ namespace FluorescenceFullAutomatic.Platform.Services
                     throw new OperationCanceledException(cancellationToken);
                 }
 
-                var ex = new TimeoutException($"涓插彛鍛戒护瓒呮椂銆傚懡浠ょ爜={cmd} 瓒呮椂={timeoutMs}ms");
+                var ex = new TimeoutException($"串口接收超时 命令={cmd} 超时时间={timeoutMs}ms");
                 pending.Tcs.TrySetException(ex);
                 RemovePending(cmd, pending);
                 throw ex;

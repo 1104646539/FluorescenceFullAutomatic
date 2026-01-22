@@ -170,4 +170,51 @@ namespace FluorescenceFullAutomatic.Platform.Model.Events
         /// </summary>
         public int TestResultId { get; set; }
     }
+
+    /// <summary>
+    /// 串口错误类型
+    /// </summary>
+    public enum SerialPortErrorType
+    {
+        /// <summary>
+        /// 超时未响应
+        /// </summary>
+        Timeout,
+
+        /// <summary>
+        /// 命令重发（同一命令正在执行中）
+        /// </summary>
+        CommandDuplicate,
+
+        /// <summary>
+        /// 设备执行错误
+        /// </summary>
+        DeviceError,
+
+        /// <summary>
+        /// 其他异常
+        /// </summary>
+        Other
+    }
+
+    /// <summary>
+    /// 串口错误事件（用于通知 UI 显示串口通信错误提示）
+    /// </summary>
+    public class SerialPortErrorEvent : TestEventBase
+    {
+        /// <summary>
+        /// 错误类型
+        /// </summary>
+        public SerialPortErrorType ErrorType { get; set; }
+
+        /// <summary>
+        /// 命令码
+        /// </summary>
+        public string CommandCode { get; set; }
+
+        /// <summary>
+        /// 错误消息
+        /// </summary>
+        public string ErrorMessage { get; set; }
+    }
 }

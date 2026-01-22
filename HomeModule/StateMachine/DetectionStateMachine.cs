@@ -1340,11 +1340,45 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             catch (SerialCommandException ex)
             {
                 _logService.Error($"[状态机] 串口指令异常: {ex.Code} {ex.Message}");
+                _mailboxService.Post(new SerialPortErrorEvent
+                {
+                    ErrorType = SerialPortErrorType.DeviceError,
+                    CommandCode = ex.Code,
+                    ErrorMessage = ex.DeviceError
+                });
+                await HandleSerialError();
+            }
+            catch (TimeoutException ex)
+            {
+                _logService.Error($"[状态机] 串口超时: {ex.Message}");
+                _mailboxService.Post(new SerialPortErrorEvent
+                {
+                    ErrorType = SerialPortErrorType.Timeout,
+                    CommandCode = "",
+                    ErrorMessage = ex.Message
+                });
+                await HandleSerialError();
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("串口重发"))
+            {
+                _logService.Error($"[状态机] 串口命令重发: {ex.Message}");
+                _mailboxService.Post(new SerialPortErrorEvent
+                {
+                    ErrorType = SerialPortErrorType.CommandDuplicate,
+                    CommandCode = "",
+                    ErrorMessage = ex.Message
+                });
                 await HandleSerialError();
             }
             catch (Exception ex)
             {
                 _logService.Error($"[状态机] 串口异常: {ex.Message}");
+                _mailboxService.Post(new SerialPortErrorEvent
+                {
+                    ErrorType = SerialPortErrorType.Other,
+                    CommandCode = "",
+                    ErrorMessage = ex.Message
+                });
                 await HandleSerialError();
             }
         }

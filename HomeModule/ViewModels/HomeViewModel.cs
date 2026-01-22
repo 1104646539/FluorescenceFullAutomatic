@@ -226,6 +226,9 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                         case TestResultUpdatedEvent e:
                             HandleTestResultUpdated(e.TestResultId);
                             break;
+                        case SerialPortErrorEvent e:
+                            HandleSerialPortError(e);
+                            break;
                         default:
                             logService.Info($"未处理的事件: {evt.GetType().Name}");
                             break;
@@ -494,6 +497,44 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                     homeService.ShowHiltDialog(this, "提示", $"无法开始检测: {errorType}", "确定", (d, dialog) => { });
                     break;
             }
+        }
+
+        /// <summary>
+        /// 处理串口错误事件，显示用户提示
+        /// </summary>
+        private void HandleSerialPortError(SerialPortErrorEvent e)
+        {
+            string title = "串口通信错误";
+            string message;
+
+            switch (e.ErrorType)
+            {
+                case SerialPortErrorType.Timeout:
+                    message = $"串口通信超时\n{e.ErrorMessage}";
+                    break;
+                case SerialPortErrorType.CommandDuplicate:
+                    message = $"串口命令重复发送\n{e.ErrorMessage}";
+                    break;
+                case SerialPortErrorType.DeviceError:
+                    message = $"设备执行错误\n命令码: {e.CommandCode}\n{e.ErrorMessage}";
+                    break;
+                default:
+                    message = $"串口通信异常\n{e.ErrorMessage}";
+                    break;
+            }
+
+            logService.Error($"[VM] 串口错误: {e.ErrorType} - {e.ErrorMessage}");
+
+            dispatcherService.Invoke(() =>
+            {
+                homeService.ShowHiltDialog(
+                    this,
+                    title,
+                    message,
+                    "确定",
+                    (d, dialog) => { }
+                );
+            });
         }
 
         /// <summary>
