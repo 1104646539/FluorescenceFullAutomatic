@@ -246,6 +246,7 @@
     <Compile Include="Services\IEventMailboxService.cs" />
     <Compile Include="Services\IExportExcelService.cs" />
     <Compile Include="Services\ILogService.cs" />
+    <Compile Include="Services\IMachineStateService.cs" />
     <Compile Include="Services\IPatientService.cs" />
     <Compile Include="Services\IPointService.cs" />
     <Compile Include="Services\IPrintService.cs" />

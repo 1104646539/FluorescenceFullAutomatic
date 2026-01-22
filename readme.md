@@ -229,3 +229,166 @@ flowchart TD
 3. **VM 职责单一**：ViewModel 只负责 UI 展示和事件转发
 4. **检测独立**：检测操作独立于取样状态机流转，只检查仪器异常
 5. **并行优化**：取样+推卡并行，清洗+后续操作并行，移动反应区+下一个样本并行
+
+# QC 检测流程架构（状态机设计）
+
+## 架构概述
+
+项目采用 **状态机 + 事件邮箱** 架构进行 QC 检测流程：
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     QCViewModel                                 │
+│  - UI 事件转发（点击开始质控）                                  │
+│  - 接收状态机事件通知，更新 UI                                 │
+│  - 质控操作调度（反应区队列时间驱动）                          │
+└─────────────────────────────────┬───────────────────────────────┘
+                                  │ 事件邮箱
+                                  ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                 QCStateMachine                                  │
+│  - QC 检测流程状态机（Stateless 库）                           │
+│  - 硬件指令下发与回调处理                                      │
+│  - 通过事件通知 VM 更新 UI                                     │
+│  - QC 检测操作（独立于状态流转，只检查仪器异常）              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## 业务状态（MachineStatus）
+
+- 等待自检：None
+- 已就绪：SelfInspectionSuccess / TestingEnd
+- 检测中（取样阶段）：Sampling
+- 取样完成：SamplingFinished
+- 检测中（仅等待反应区检测任务）：Testing
+- 自检失败：SelfInspectionFailed
+- 运行错误：RunningError
+- QC 检测：Sampling（使用 TestType 区分）
+
+对应定义：FluorescenceFullAutomatic.Core\Config\MachineStatus.cs
+
+## 状态机状态（QCState）
+
+| 状态 | 说明 |
+|------|------|
+| Idle | 空闲状态 |
+| VerifyingQCStart | 验证质控启动条件 |
+| GettingMachineStatus | 获取仪器状态 |
+| PushingCard | 推卡 |
+| MovingToReactionArea | 移动到反应区 |
+| Testing | 检测中 |
+| WaitingForNextTest | 等待下次检测 |
+| ProcessingResults | 处理检测结果 |
+| CalculatingQCResults | 计算质控结果 |
+| QCCompleted | 质控完成 |
+| Error | 错误状态 |
+
+## 状态机流转图
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle
+    
+    %% 验证质控启动
+    Idle --> VerifyingQCStart: StartQC
+    VerifyingQCStart --> GettingMachineStatus: VerificationPassed
+    VerifyingQCStart --> Idle: VerificationFailed
+    
+    %% 获取仪器状态
+    GettingMachineStatus --> PushingCard: MachineStatusReceived
+    GettingMachineStatus --> Error: ErrorOccurred
+    
+    %% 推卡流程
+    PushingCard --> MovingToReactionArea: CardPushed
+    PushingCard --> Idle: CardPushFailed
+    PushingCard --> Error: ErrorOccurred
+    
+    %% 移动到反应区
+    MovingToReactionArea --> Testing: ReactionAreaMoved
+    MovingToReactionArea --> Error: ErrorOccurred
+    
+    %% 检测流程
+    Testing --> ProcessingResults: TestCompleted
+    Testing --> Error: ErrorOccurred
+    
+    %% 处理结果
+    ProcessingResults --> Testing: NextTestReady
+    ProcessingResults --> CalculatingQCResults: QCFinished
+    
+    %% 计算结果
+    CalculatingQCResults --> QCCompleted: QCFinished
+    
+    %% 完成状态
+    QCCompleted --> VerifyingQCStart: StartQC
+    QCCompleted --> [*]
+    
+    %% 错误处理
+    Error --> VerifyingQCStart: Retry
+    Error --> Idle: StartQC
+```
+
+## 业务流程图
+
+```mermaid
+flowchart TD
+    subgraph "QC 启动流程"
+        A1[点击开始质控] --> A2{验证仪器状态}
+        A2 -- 失败 --> A3[提示错误]
+        A2 -- 通过 --> A4[获取仪器状态]
+        A4 --> A5{验证状态<br/>卡仓/卡数/清洗液}
+        A5 -- 失败 --> A6[提示重新获取]
+        A5 -- 通过 --> A7[开始推卡]
+    end
+    
+    subgraph "推卡与反应区"
+        B1[推卡] --> B2{推卡结果}
+        B2 -- 成功 --> B3[获取项目信息]
+        B2 -- 失败 --> B4[重新推卡]
+        B3 --> B5[移动到反应区]
+        B5 --> B6[移动完成]
+    end
+    
+    subgraph "QC 检测循环"
+        C1[执行检测] --> C2{检测完成}
+        C2 -- 完成 --> C3[处理检测数据]
+        C2 -- 失败 --> C4[错误处理]
+        C3 --> C5{达到检测次数?}
+        C5 -- 否 --> C6[延时等待]
+        C6 --> C1
+        C5 -- 是 --> C7[计算质控结果]
+    end
+    
+    subgraph "结果处理"
+        D1[计算质控结果] --> D2[变异系数计算]
+        D2 --> D3{是否合格?}
+        D3 -- 合格 --> D4[显示合格结果]
+        D3 -- 不合格 --> D5[显示不合格结果]
+        D4 --> D6[结束流程]
+        D5 --> D6
+    end
+    
+    A7 --> B1
+    B6 --> C1
+    C7 --> D1
+```
+
+## 核心文件说明
+
+| 文件 | 职责 |
+|------|------|
+| Main/ViewModels/QCViewModel.cs | UI 事件转发，状态展示，结果展示 |
+| Main/StateMachine/QCStateMachine.cs | QC 检测流程状态机，硬件指令下发 |
+| Platform/StateMachine/QCState.cs | QC 状态枚举定义 |
+| Platform/StateMachine/QCTrigger.cs | QC 触发器枚举定义 |
+| Platform/StateMachine/QCStateContext.cs | QC 状态上下文，标志位管理 |
+| Platform/Model/Events/QCUIEvents.cs | QC 相关 UI 事件定义 |
+| Platform/Model/Events/QCHardwareEvents.cs | QC 硬件回调事件定义 |
+
+## 实现要点
+
+1. **状态一致性**：确保状态机状态与 UI 状态保持一致
+2. **错误处理**：统一的错误处理机制，支持重试
+3. **数据管理**：检测结果、变异系数等数据的管理
+4. **并行处理**：检测过程中的并行操作优化
+5. **用户交互**：及时的 UI 反馈和状态更新
+6. **流程控制**：QC 检测次数控制和结束条件判断

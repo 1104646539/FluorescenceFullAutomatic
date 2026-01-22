@@ -37,6 +37,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IDataManagerService _dataManagerService;
         private readonly IDialogCoordinator _dialogCoordinator;
         private readonly IDispatcherService _dispatcherService;
+        private readonly IMachineStateService machineStateService;
 
         [ObservableProperty]
         ObservableCollection<TestResult> testResults;
@@ -190,7 +191,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private bool VerifyRunning()
         {
-            if (SystemGlobal.MachineStatus.IsRunning())
+            if (machineStateService.IsRunning())
             {
                 dialogService.ShowHiltDialog(
                     this,
@@ -252,7 +253,8 @@ namespace FluorescenceFullAutomatic.ViewModels
             IDialogCoordinator dialogCoordinator,
             IDispatcherService dispatcherService,
             IDialogService dialogService,
-            ILisService lisService
+            ILisService lisService,
+            IMachineStateService machineStateService
         )
         {
             this.lisService = lisService;
@@ -260,6 +262,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             _dataManagerService = dataManagerService;
             _dialogCoordinator = dialogCoordinator;
             _dispatcherService = dispatcherService;
+            this.machineStateService = machineStateService;
 
             PagingControlViewModel = new PagingControlViewModel();
             PagingControlViewModel.PageChanged += OnPageChanged;

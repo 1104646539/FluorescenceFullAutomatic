@@ -34,6 +34,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
         private readonly IProjectService _projectService;
 
         private readonly IToolService _toolService;
+        private readonly IMachineStateService _machineStateService;
 
         /// <summary>
         /// 当前状态
@@ -53,7 +54,8 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             IHomeService homeService,
             IConfigService configService,
             IProjectService projectService,
-            IToolService toolService)
+            IToolService toolService,
+            IMachineStateService machineStateService)
         {
             _logService = logService;
             _mailboxService = mailboxService;
@@ -63,6 +65,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             _configService = configService;
             _projectService = projectService;
             _toolService = toolService;
+            _machineStateService = machineStateService;
 
             _context = new StateContext(_configService);
             _homeService._dequeueCallback += OnReactionAreaDequeue;
@@ -93,7 +96,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
                 return false;
             }
             //如果运行错误，则不能检测
-            if (SystemGlobal.MachineStatus.IsRunningError())
+            if (_machineStateService.IsRunningError())
             {
                 return false;
             }
@@ -239,7 +242,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
                 .OnEntry(() =>
                 {
                     _logService.Info("[状态机] 全部检测完成");
-                    SystemGlobal.MachineStatus = MachineStatus.TestingEnd;
+                    _machineStateService.SetMachineStatus(MachineStatus.TestingEnd);
                 })
                 .PermitDynamic(DetectionTrigger.StartDetection, () =>
                 {
@@ -260,7 +263,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
                 .OnEntry(() =>
                 {
                     _logService.Error("[状态机] 进入错误状态");
-                    SystemGlobal.MachineStatus = MachineStatus.RunningError;
+                    _machineStateService.SetMachineStatus(MachineStatus.RunningError);
                 })
                 .Permit(DetectionTrigger.Retry, DetectionState.PreparingDetection)
                 .Permit(DetectionTrigger.ForceComplete, DetectionState.Completed);
@@ -900,7 +903,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
         private async Task OnEnterFinishingAsync()
         {
             _logService.Info("[状态机] 进入 Finishing 状态，取样结束收尾");
-            SystemGlobal.MachineStatus = MachineStatus.SamplingFinished;
+            _machineStateService.SetMachineStatus(MachineStatus.SamplingFinished);
             // 如果已经在清洗了，就不清洗
             var cleanTask = Task.CompletedTask;
             if (_context.CleaningCompleted)
@@ -941,7 +944,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             _logService.Info($"[状态机] 状态迁移: {transition.Source} --[{transition.Trigger}]--> {transition.Destination}");
 
             // 更新全局 MachineStatus
-            SystemGlobal.MachineStatus = MapToMachineStatus(transition.Destination);
+            _machineStateService.SetMachineStatus(MapToMachineStatus(transition.Destination));
 
             // 发送消息通知其他 UI 变更（如主窗口图标、状态显示等）
             notifyMachineStatus();
@@ -1310,9 +1313,9 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             }
             if (_homeService.ReactionAreaQueueIsEmpty())
             {
-                if (SystemGlobal.MachineStatus == MachineStatus.SamplingFinished
-                    || SystemGlobal.MachineStatus == MachineStatus.Testing
-                    || SystemGlobal.MachineStatus == MachineStatus.RunningError)
+                if (_machineStateService.CurrentMachineStatus == MachineStatus.SamplingFinished
+                    || _machineStateService.CurrentMachineStatus == MachineStatus.Testing
+                    || _machineStateService.CurrentMachineStatus == MachineStatus.RunningError)
                 {
                     notifyMachineStatus();
                     _logService.Info("没有待检测的检测卡，则检测完成");
