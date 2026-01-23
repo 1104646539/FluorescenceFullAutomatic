@@ -48,7 +48,6 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private readonly IProjectService projectRepository;
         private readonly ILogService logService;
         private readonly IEventMailboxService mailboxService;
-        private readonly IMachineStateService machineStateService;
         private readonly DetectionStateMachine detectionStateMachine;
 
         [ObservableProperty]
@@ -128,8 +127,6 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             IProjectService projectRepository,
             ILogService logService,
             IEventMailboxService mailboxService
-        ,
-            IMachineStateService machineStateService
         )
         {
             this.projectRepository = projectRepository;
@@ -141,10 +138,9 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             this.homeService = homeService;
             this.dispatcherService = dispatcherService;
             this.mailboxService = mailboxService;
-            this.machineStateService = machineStateService;
             //线程邮箱
             this.mailboxService.Subscribe(HandlerEventAsync);
-            detectionStateMachine = new DetectionStateMachine(logService, mailboxService, serialPortCommandFacade, serialPortService, homeService, configRepository, projectRepository, toolRepository, machineStateService);
+            detectionStateMachine = new DetectionStateMachine(logService, mailboxService, serialPortCommandFacade, serialPortService, homeService, configRepository, projectRepository, toolRepository);
             this.mailboxService.Start();
             SampleShelfViewModel = new SampleShelfViewModel();
             this.configRepository.AddDebugModeChangedListener(OnDebugModeChange);
@@ -393,7 +389,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                     else if (m.What == MainStatusChangeMsg.What_ChangeState)
                     {
                         // 状态变更时，统一更新本地状态文字描述
-                        StateMsg = machineStateService.CurrentMachineStatus.GetDescription();
+                        StateMsg = SystemGlobal.MachineStatus.GetDescription();
                     }
                 }
             );
@@ -438,7 +434,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
 
         private void SetMachineStatus(MachineStatus state)
         {
-            machineStateService.SetMachineStatus(state);
+            SystemGlobal.MachineStatus = state;
             // 通知 UI 变更（现在主要由状态机触发，VM 手动触发时也保持一致）
             WeakReferenceMessenger.Default.Send(
                 new MainStatusChangeMsg() { What = MainStatusChangeMsg.What_ChangeState }
@@ -990,7 +986,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
        
         private bool ContinueTest(bool isTestAction = false)
         {
-            if (machineStateService.IsRunningError())
+            if (SystemGlobal.MachineStatus.IsRunningError())
             {
                 if (isTestAction && SystemGlobal.ErrorContinueTest)
                 {

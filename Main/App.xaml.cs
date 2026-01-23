@@ -175,7 +175,6 @@ namespace FluorescenceFullAutomatic
             containerRegistry.RegisterSingleton<IToolService, ToolService>();
             containerRegistry.RegisterSingleton<IDispatcherService, DispatcherService>();
             containerRegistry.RegisterSingleton<IReactionAreaQueueService, ReactionAreaQueueService>();
-            containerRegistry.RegisterSingleton<IMachineStateService, MachineStateService>();
 
             //containerRegistry.RegisterSingleton<IDialogCoordinator, DialogCoordinator>();
             //containerRegistry.RegisterSingleton<IDataManagerService, DataManagerService>();

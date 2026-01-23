@@ -53,13 +53,11 @@ namespace FluorescenceFullAutomatic.ViewModels
          private readonly IConfigService configRepository;
         private readonly IDialogService dialogRepository;
         private readonly IToolService toolRepository;
-        private readonly IMachineStateService machineStateService;
-        public TestSettingsViewModel(IToolService toolRepository,IConfigService configRepository,IDialogService dialogRepository, IMachineStateService machineStateService)
+        public TestSettingsViewModel(IToolService toolRepository,IConfigService configRepository,IDialogService dialogRepository)
          {
             this.toolRepository = toolRepository;
              this.configRepository = configRepository;
              this.dialogRepository = dialogRepository;
-             this.machineStateService = machineStateService;
              LoadSettings();
              WeakReferenceMessenger.Default.Register<EventMsg<string>>(this, (r, m) =>
              {
@@ -137,7 +135,7 @@ namespace FluorescenceFullAutomatic.ViewModels
          [RelayCommand]
          private void SaveSettings()
          {
-            if (machineStateService.IsRunning()) {
+            if (SystemGlobal.MachineStatus.IsRunning()) {
                 dialogRepository.ShowHiltDialog(this,"提示", "当前仪器正在运行，请先等待检测完毕！", "确定", (m, d) => { });
                 return;
             }

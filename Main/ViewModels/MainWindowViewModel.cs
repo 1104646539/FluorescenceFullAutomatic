@@ -66,7 +66,6 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly ILogService logService;
         private readonly IReactionAreaQueueService reactionAreaQueueService;
         private readonly IToolService toolService;
-        private readonly IMachineStateService machineStateService;
         private int _selectedIndex;
         Dictionary<int, int> notity_What = new Dictionary<int, int>() { };
         private readonly List<string> regions = new List<string>()
@@ -153,8 +152,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             IDialogService dialogService,
             IReactionAreaQueueService reactionAreaQueueService,
             ILogService logService,
-            IToolService toolService,
-            IMachineStateService machineStateService
+            IToolService toolService
         )
         {
             this.toolService = toolService;
@@ -166,7 +164,6 @@ namespace FluorescenceFullAutomatic.ViewModels
             this.lisService = lisService;
             this.configRepository = configRepository;
             this.regionManager = regionManager;
-            this.machineStateService = machineStateService;
             notity_What.Add(0, EventWhat.WHAT_CLICK_HOME);
             notity_What.Add(1, EventWhat.WHAT_CLICK_APPLY_TEST);
             notity_What.Add(2, EventWhat.WHAT_CLICK_DATA_MANAGER);
@@ -428,7 +425,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         private void InitBottomStatus()
         {
             CurrentDate = DateTime.Now.GetDateTimeString4();
-            CurrentStatus = machineStateService.CurrentMachineStatus.GetDescription();
+            CurrentStatus = SystemGlobal.MachineStatus.GetDescription();
             CurrentMsg = "暂无信息";
             UpdateBottomStatus();
             StartTimeer();
@@ -449,7 +446,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private void UpdateBottomStatus()
         {
-            CurrentStatus = machineStateService.CurrentMachineStatus.GetDescription();
+            CurrentStatus = SystemGlobal.MachineStatus.GetDescription();
             ImgBarcode = GlobalConfig.Instance.ScanBarcode
                 ? path + "barcode_open.png"
                 : path + "barcode_close.png";
@@ -461,15 +458,15 @@ namespace FluorescenceFullAutomatic.ViewModels
             ImgTemp = SystemGlobal.TempStandard
                 ? path + "temp_standard.png"
                 : path + "temp_error.png";
-            if (machineStateService.IsPrepare())
+            if (SystemGlobal.MachineStatus.IsPrepare())
             {
                 ImgStartTest = path + "start_success.png";
             }
-            else if (machineStateService.IsRunning() && !SystemGlobal.IsRunningtStop)
+            else if (SystemGlobal.MachineStatus.IsRunning() && !SystemGlobal.IsRunningtStop)
             {
                 ImgStartTest = path + "stop_success.png";
             }
-            else if (machineStateService.IsRunning() && SystemGlobal.IsRunningtStop)
+            else if (SystemGlobal.MachineStatus.IsRunning() && SystemGlobal.IsRunningtStop)
             {
                 ImgStartTest = path + "stop_error.png";
             }
@@ -534,7 +531,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                     if (!string.IsNullOrEmpty(s))
                     {
                         MessageBox.Show($"通讯串口 {s}");
-                        machineStateService.SetMachineStatus(MachineStatus.RunningError);
+                        SystemGlobal.MachineStatus = MachineStatus.RunningError;
                         SystemGlobal.ErrorContinueTest = false;
                         return;
                     }
@@ -647,7 +644,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private bool VerifyShutdown()
         {
-            return !machineStateService.IsRunning() && reactionAreaQueueService.Count() == 0;
+            return !SystemGlobal.MachineStatus.IsRunning() && reactionAreaQueueService.Count() == 0;
         }
     }
 }

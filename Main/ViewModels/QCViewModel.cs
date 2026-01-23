@@ -21,7 +21,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using FluorescenceFullAutomatic.Platform.Ex;
 using FluorescenceFullAutomatic.Core.Model;
 using FluorescenceFullAutomatic.Platform.Utils;
-using FluorescenceFullAutomatic.Platform.Services;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -37,7 +36,6 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IReactionAreaQueueService reactionAreaQueueRepository;
         private readonly IPrintService printService;
         private readonly IDialogService dialogRepository;
-        private readonly IMachineStateService machineStateService;
         // 命令执行 状态跟踪
         /// <summary>
         /// 取样命令是否完成
@@ -314,7 +312,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         public QCViewModel(IToolService toolRepository, ISerialPortService serialService, ISerialPortCommandFacade serialPortCommandFacade
         ,IConfigService configRepository
             ,IProjectService projectRepository,IReactionAreaQueueService reactionAreaQueueRepository
-            ,IDialogService dialogRepository, IPointService pointService,IPrintService printService, IMachineStateService machineStateService)
+            ,IDialogService dialogRepository, IPointService pointService,IPrintService printService)
         {
             this.printService = printService;
             this.pointService = pointService;
@@ -325,7 +323,6 @@ namespace FluorescenceFullAutomatic.ViewModels
             this.configRepository = configRepository;
             this.reactionAreaQueueRepository = reactionAreaQueueRepository;
             this.dialogRepository = dialogRepository;
-            this.machineStateService = machineStateService;
             ReactionAreaViewModel = ReactionAreaViewModel.Instance;
             // serialPortService.AddReceiveData(this);
             //serialPortService.OnAddDequeue(OnReactionAreaDequeue);
@@ -371,9 +368,9 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private void SetMachineStatus(MachineStatus state)
         {
-            machineStateService.SetMachineStatus(state);
+            SystemGlobal.MachineStatus = state;
             UpdateMainState();
-            StateMsg = machineStateService.CurrentMachineStatus.GetDescription();
+            StateMsg = SystemGlobal.MachineStatus.GetDescription();
         }
         private void UpdateMainState()
         {
@@ -417,19 +414,19 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             string errorMsg = "";
             if (
-                machineStateService.CurrentMachineStatus == MachineStatus.Sampling
-                || machineStateService.CurrentMachineStatus == MachineStatus.SamplingFinished
+                SystemGlobal.MachineStatus == MachineStatus.Sampling
+                || SystemGlobal.MachineStatus == MachineStatus.SamplingFinished
             )
             {
                 Log.Information("正在检测，请等待检测结束。");
                 errorMsg = "正在检测，请等待检测结束。";
             }
-            else if (machineStateService.CurrentMachineStatus == MachineStatus.SelfInspectionFailed)
+            else if (SystemGlobal.MachineStatus == MachineStatus.SelfInspectionFailed)
             {
                 Log.Information("自检失败，请先自检。");
                 errorMsg = "自检失败，请先自检。";
             }
-            else if (machineStateService.CurrentMachineStatus == MachineStatus.None)
+            else if (SystemGlobal.MachineStatus == MachineStatus.None)
             {
                 Log.Information("仪器未自检，请先自检。");
                 errorMsg = "仪器未自检，请先自检。";
@@ -439,7 +436,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 Log.Information("反应区不为空，请等待检测结束。");
                 errorMsg = "反应区不为空，请等待检测结束。";
             }
-            else if (machineStateService.IsRunningError())
+            else if (SystemGlobal.MachineStatus.IsRunningError())
             {
                 Log.Information("仪器运行异常");
                 errorMsg = RunningErrorMsg;
@@ -609,7 +606,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// </summary>
         private void TestFinishedAction()
         {
-            if (machineStateService.CurrentMachineStatus == MachineStatus.SamplingFinished)
+            if (SystemGlobal.MachineStatus == MachineStatus.SamplingFinished)
             {
                 return;
             }
@@ -1010,7 +1007,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             if (!IsQCType())
                 return;
-            machineStateService.SetMachineStatus(MachineStatus.RunningError);
+            SystemGlobal.MachineStatus = MachineStatus.RunningError;
             SystemGlobal.ErrorContinueTest = true;
             //如果本来就是检测或移动反应区错误，则运行错误后不继续检测
             if (
@@ -1065,7 +1062,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private bool ContinueTest(bool isTestAction = false)
         {
-            if (machineStateService.IsRunningError())
+            if (SystemGlobal.MachineStatus.IsRunningError())
             {
                 if (isTestAction && SystemGlobal.ErrorContinueTest)
                 {
