@@ -448,7 +448,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         /// </summary>
         private void InitState()
         {
-            SetMachineStatus(MachineStatus.Sampling);
+            SetMachineStatus(MachineStatus.SelfInspection);
             SystemGlobal.TestType = TestType.Test;
             SampleShelfViewModel.Clear();
 
@@ -565,6 +565,11 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private void requestSelfMachineState()
         {
             InitState();
+            //SetMachineStatus(MachineStatus.SelfInspection);
+            //SystemGlobal.TestType = TestType.Test;
+            //SampleShelfViewModel.Clear();
+            //ResetAllStatusFlags();
+
             mailboxService.Post(new SelfInspectionRequestEvent());
         }
         [RelayCommand]

@@ -1,11 +1,12 @@
 using FluorescenceFullAutomatic.Platform.StateMachine;
+using System;
 
 namespace FluorescenceFullAutomatic.Platform.Model.Events
 {
     /// <summary>
     /// ×´Ì¬Ç¨ÒÆÊÂ¼þ
     /// </summary>
-    public class StateTransitionEvent : ITestEvent
+    public class StateTransitionEvent : TestEventBase
     {
         /// <summary>
         /// Ô´×´Ì¬

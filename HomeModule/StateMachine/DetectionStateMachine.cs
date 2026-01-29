@@ -912,10 +912,11 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
                      _context.CleaningCompleted = false;
                      return _commandFacade.CleanoutSamplingProbeAsync(_context.GetCleanoutDuration());
                  },
-                 (ret) =>
+                 async (ret) =>
                  {
                      _context.CleaningCompleted = true;
                      _mailboxService.Post(new CleanoutSamplingProbeCompletedEvent() { Result = ret });
+                     await Task.CompletedTask;
                  });
             }
             // Ñù±¾¼Ü¸´Î»

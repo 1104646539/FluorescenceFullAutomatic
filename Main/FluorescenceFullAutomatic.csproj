@@ -247,6 +247,9 @@
     <Reference Include="SqlSugar, Version=5.1.4.188, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\SqlSugar.5.1.4.188\lib\SqlSugar.dll</HintPath>
     </Reference>
+    <Reference Include="Stateless, Version=4.0.0.0, Culture=neutral, PublicKeyToken=93038f0927583c9a, processorArchitecture=MSIL">
+      <HintPath>packages\Stateless.5.20.0\lib\net462\Stateless.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Buffers.4.6.0\lib\net462\System.Buffers.dll</HintPath>
@@ -353,6 +356,7 @@
     <Compile Include="ViewModels\TestSettingsViewModel.cs" />
     <Compile Include="ViewModels\UploadSettingsViewModel.cs" />
     <Compile Include="ViewModels\VersionViewModel.cs" />
+    <Compile Include="StateMachine\QCStateMachine.cs" />
     <Compile Include="Views\ApplyTestView.xaml.cs">
       <DependentUpon>ApplyTestView.xaml</DependentUpon>
     </Compile>

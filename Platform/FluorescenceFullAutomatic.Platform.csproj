@@ -225,8 +225,10 @@
     <Compile Include="Model\ApplyTest.cs" />
     <Compile Include="Model\Events\BarcodeEvents.cs" />
     <Compile Include="Model\Events\ITestEvent.cs" />
+    <Compile Include="Model\Events\QCEvents.cs" />
     <Compile Include="Model\Events\ReactionAreaEvents.cs" />
     <Compile Include="Model\Events\SerialPortEvents.cs" />
+    <Compile Include="Model\Events\StateTransitionEvent.cs" />
     <Compile Include="Model\Events\UIEvents.cs" />
     <Compile Include="Model\Patient.cs" />
     <Compile Include="Model\Point.cs" />
@@ -259,6 +261,8 @@
     <Compile Include="Sql\SqlHelper.cs" />
     <Compile Include="StateMachine\DetectionState.cs" />
     <Compile Include="StateMachine\DetectionTrigger.cs" />
+    <Compile Include="StateMachine\QCState.cs" />
+    <Compile Include="StateMachine\QCTrigger.cs" />
     <Compile Include="StateMachine\StateContext.cs" />
     <Compile Include="Utils\A4ReportHelper.cs" />
     <Compile Include="Utils\BarcodeHelper.cs" />
