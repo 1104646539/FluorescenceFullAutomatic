@@ -406,6 +406,9 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
         /// </summary>
         public async Task HandleBarcodeReceived(string barcode, bool success)
         {
+            if (SystemGlobal.TestType != TestType.Test) {
+                return;
+            }
             _logService.Info($"[状态机] 收到扫码结果: {barcode}, 成功: {success}");
 
             if (success)

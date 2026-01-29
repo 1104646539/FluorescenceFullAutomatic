@@ -1,0 +1,44 @@
+name: Build and Test
+
+# 触发条件：当推送到 master 或 main 分支，或者提 Pull Request 时触发
+on:
+  push:
+    branches: [ "master", "main","feature_state_machine" ]
+  pull_request:
+    branches: [ "master", "main","feature_state_machine" ]
+
+jobs:
+  build:
+    name: Build on Windows
+    runs-on: windows-latest  # 必须使用 Windows 运行环境，因为项目是 .NET Framework
+
+    steps:
+    # 1.不仅下载代码，还获取所有历史记录，以防版本号生成需要
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # 2. 配置 MSBuild (微软构建工具)
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    # 3. 配置 NuGet (包管理器)
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v2
+      
+    # 4. 配置 VSTest (测试运行器)
+    - name: Setup VSTest
+      uses: darenm/Setup-VSTest@v1
+
+    # 5. 还原 NuGet 包
+    - name: Restore NuGet Packages
+      run: nuget restore Main\FluorescenceFullAutomatic.sln
+
+    # 6. 编译项目 (使用 Release 模式)
+    - name: Build Solution
+      run: msbuild Main\FluorescenceFullAutomatic.sln /p:Configuration=Release /p:Platform="Any CPU"
+
+    # 7. 运行测试
+    - name: Run Tests
+      run: vstest.console.exe TestMain\bin\Release\TestMain.dll
