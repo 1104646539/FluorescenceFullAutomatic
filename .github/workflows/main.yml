@@ -1,50 +1,104 @@
-name: Build and Test
+name: Build and Release
 
-# 触发条件：当推送到 master 或 main 分支，或者提 Pull Request 时触发
 on:
   push:
-    branches: [ "master", "main","feature_state_machine" ]
+    branches: [ "master", "main", "feature_state_machine" ]
+    tags: [ "v*" ] # Trigger release workflow on version tags
   pull_request:
-    branches: [ "master", "main","feature_state_machine" ]
+    branches: [ "master", "main", "feature_state_machine" ]
+
+env:
+  SOLUTION_NAME: Main\FluorescenceFullAutomatic.sln
+  TEST_DLL: TestMain\bin\Release\TestMain.dll
 
 jobs:
-  build:
-    name: Build on Windows
-    runs-on: windows-latest  # 必须使用 Windows 运行环境，因为项目是 .NET Framework
+  build-and-test:
+    name: Build & Test
+    runs-on: windows-latest
+    
+    outputs:
+      version: ${{ steps.get_version.outputs.VERSION }}
 
     steps:
-    # 1.不仅下载代码，还获取所有历史记录，以防版本号生成需要
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0
+        fetch-depth: 0 # Fetch all history for versioning
 
-    # 2. 配置 MSBuild (微软构建工具)
+    # 1. Cache NuGet packages
+    - name: Cache NuGet packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.packages.config', '**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    # 3. 配置 NuGet (包管理器)
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v2
-      
-    # 4. 配置 VSTest (测试运行器)
+
     - name: Setup VSTest
       uses: darenm/Setup-VSTest@v1
 
-    # 5. 还原 NuGet 包
     - name: Restore NuGet Packages
-      run: nuget restore Main\FluorescenceFullAutomatic.sln
+      run: nuget restore ${{ env.SOLUTION_NAME }}
 
-    # 6. 编译项目 (使用 Release 模式)
+    # 2. Get Version (from Tag or default)
+    - name: Get Version
+      id: get_version
+      shell: pwsh
+      run: |
+        if ($env:GITHUB_REF -match 'refs/tags/v(.+)') {
+          $version = $matches[1]
+        } else {
+          $version = "1.0.0-build." + $env:GITHUB_RUN_NUMBER
+        }
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        echo "Detected Version: $version"
+
+    # 3. Build with Version
     - name: Build Solution
-      run: msbuild Main\FluorescenceFullAutomatic.sln /p:Configuration=Release /p:Platform="Any CPU"
+      run: msbuild ${{ env.SOLUTION_NAME }} /p:Configuration=Release /p:Platform="Any CPU" /p:Version=${{ steps.get_version.outputs.VERSION }}
 
-    # 7. 运行测试
     - name: Run Tests
-      run: vstest.console.exe TestMain\bin\Release\TestMain.dll
-    # 8. 上传构建产物
-    - name: Upload artifact
+      # Continue on error so we can see test results even if some fail (optional, currently strict)
+      run: vstest.console.exe ${{ env.TEST_DLL }}
+
+    # 4. Zip Artifacts
+    - name: Zip Release
+      run: |
+        powershell Compress-Archive -Path Main\bin\Release\* -DestinationPath FluorescenceFullAutomatic-${{ steps.get_version.outputs.VERSION }}.zip
+
+    - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: build
-        path: Main\bin\Release
+        name: binary-package
+        path: FluorescenceFullAutomatic-${{ steps.get_version.outputs.VERSION }}.zip
+
+  # 5. Create Release Job (Only runs on tags)
+  create-release:
+    name: Create GitHub Release
+    needs: build-and-test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: binary-package
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          *.zip
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
