@@ -242,7 +242,7 @@
     <Compile Include="Services\EventMailboxService.cs" />
     <Compile Include="Services\IApplyTestService.cs" />
     <Compile Include="Services\IConfigService.cs" />
-    <Compile Include="Services\IDataManagerService.cs" />
+
     <Compile Include="Services\IDialogService.cs" />
     <Compile Include="Services\IDispatcherService.cs" />
     <Compile Include="Services\IEventMailboxService.cs" />

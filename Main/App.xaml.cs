@@ -158,7 +158,6 @@ namespace FluorescenceFullAutomatic
             containerRegistry.RegisterSingleton<ISerialPortService, SerialPortService>();
             containerRegistry.RegisterSingleton<ISerialPortCommandFacade, SerialPortCommandFacade>();
             containerRegistry.RegisterSingleton<IDialogCoordinator, DialogCoordinator>();
-            containerRegistry.RegisterSingleton<IDataManagerService, DataManagerService>();
             containerRegistry.RegisterSingleton<ISettingsService, SettingsService>();
 
             containerRegistry.RegisterSingleton<IApplyTestService, ApplyTestService>();

@@ -24,7 +24,6 @@ namespace TestMain.ViewModels
     public class DataManagerViewModelUnitTest
     {
         // 服务和ViewModel实例
-        private IDataManagerService _dataManagerService;
         private DataManagerViewModel _viewModel;
         private Mock<IDialogCoordinator> _mockDialogCoordinator;
 
@@ -53,11 +52,19 @@ namespace TestMain.ViewModels
             //_printRepository = new FakePrintRepository();
 
             //// 创建DataManagerService实例
-            //_dataManagerService = new DataManagerService(_projectRepository, _testResultRepository, _exportExcelRepository,
-            //    _configRepository, _patientRepository, _dialogRepository, _printRepository);
             //_mockDialogCoordinator = new Mock<IDialogCoordinator>();
             //// 创建ViewModel实例
-            //_viewModel = new DataManagerViewModel(_dataManagerService, _mockDialogCoordinator.Object,new FakeDispatcherService());
+            //_viewModel = new DataManagerViewModel(
+            //    _projectRepository, 
+            //    _testResultRepository, 
+            //    _exportExcelRepository, 
+            //    _configRepository, 
+            //    _patientRepository, 
+            //    _printRepository, 
+            //    _mockDialogCoordinator.Object,
+            //    new FakeDispatcherService(),
+            //    _dialogRepository,
+            //    new Mock<ILisService>().Object);
         }
 
         /// <summary>
@@ -131,7 +138,7 @@ namespace TestMain.ViewModels
         //    // Arrange - 准备已选中的测试数据
         //    _testResultRepository.InitData();
         //    await _viewModel.LoadData();
-            
+
         //    // 先全选
         //    _viewModel.IsAllSelected = true;
         //    _viewModel.SelectAllCommand.Execute(null);

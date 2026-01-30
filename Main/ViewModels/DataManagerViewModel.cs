@@ -23,18 +23,27 @@ using FluorescenceFullAutomatic.UploadModule.Upload;
 using FluorescenceFullAutomatic.ViewModels;
 using FluorescenceFullAutomatic.Views;
 using FluorescenceFullAutomatic.Views.Ctr;
+using FluorescenceFullAutomatic.Views.Ctr;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using OpenTK.Graphics.ES10;
+using Prism.Services.Dialogs;
 using Serilog;
 using SqlSugar;
+using IDialogService = FluorescenceFullAutomatic.Platform.Services.IDialogService;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
     public partial class DataManagerViewModel : ObservableObject
     {
-        private readonly IDataManagerService _dataManagerService;
+        private readonly IProjectService _projectService;
+        private readonly ITestResultService _testResultService;
+        private readonly IExportExcelService _exportExcelService;
+        private readonly IConfigService _configService;
+        private readonly IPatientService _patientService;
+        private readonly IPrintService _printService;
+
         private readonly IDialogCoordinator _dialogCoordinator;
         private readonly IDispatcherService _dispatcherService;
 
@@ -159,17 +168,15 @@ namespace FluorescenceFullAutomatic.ViewModels
                 "确定",
                 async (vm, d) =>
                 {
-                    await MainWindow.Instance.HideMetroDialogAsync(d);
                     DeleteData();
                 },
                 "取消",
-                (vm, d) => { }
-            );
+                (vm, d) => { });
         }
 
         private async void DeleteData()
         {
-            int retCount = _dataManagerService.DeleteTestResult(SelectedItems.ToList());
+            int retCount = _testResultService.DeleteTestResult(SelectedItems.ToList());
 
             dialogService.ShowHiltDialog(this, "提示", $"删除成功", "确定", (vm, d) => { });
             if (retCount > 0)
@@ -247,8 +254,15 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IDialogService dialogService;
         private readonly ILisService lisService;
 
+
+
         public DataManagerViewModel(
-            IDataManagerService dataManagerService,
+            IProjectService projectService,
+            ITestResultService testResultService,
+            IExportExcelService exportExcelService,
+            IConfigService configService,
+            IPatientService patientService,
+            IPrintService printService,
             IDialogCoordinator dialogCoordinator,
             IDispatcherService dispatcherService,
             IDialogService dialogService,
@@ -257,7 +271,12 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             this.lisService = lisService;
             this.dialogService = dialogService;
-            _dataManagerService = dataManagerService;
+            _projectService = projectService;
+            _testResultService = testResultService;
+            _exportExcelService = exportExcelService;
+            _configService = configService;
+            _patientService = patientService;
+            _printService = printService;
             _dialogCoordinator = dialogCoordinator;
             _dispatcherService = dispatcherService;
 
@@ -316,7 +335,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private void RunChangeData(int id)
         {
-            TestResult tr = _dataManagerService.GetTestResult(id);
+            TestResult tr = _testResultService.GetTestResultForID(id);
             if (TestResults != null && tr != null)
             {
                 for (int i = 0; i < TestResults.Count; i++)
@@ -334,7 +353,7 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private void RunAddData(int id)
         {
-            TestResult tr = _dataManagerService.GetTestResult(id);
+            TestResult tr = _testResultService.GetTestResultForID(id);
             if (TestResults != null && tr != null && CurrentPage == 1)
             {
                 if (TestResults.Count >= PageSize)
@@ -373,11 +392,11 @@ namespace FluorescenceFullAutomatic.ViewModels
         public async Task GetAllTestResult()
         {
             Log.Information($"GetAllTestResult {DateTime.Now.GetDateTimeString2()}");
-            TotalPage = await _dataManagerService.GetAllTestResultCountPage(condition, PageSize);
+            TotalPage = await _testResultService.GetAllTestResultCountPageAsync(condition, PageSize);
             PagingControlViewModel.SetTotalPages(TotalPage);
             Log.Information($"GetAllTestResult2 {DateTime.Now.GetDateTimeString2()}");
 
-            var result = await _dataManagerService.GetAllTestResult(
+            var result = await _testResultService.GetAllTestResultAsync(
                 condition,
                 CurrentPage,
                 PageSize
@@ -392,7 +411,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         public void ClickResultDetails(TestResult testResult)
         {
             Log.Information($"点击详情: {JsonConvert.SerializeObject(testResult)}");
-            testResult = _dataManagerService.GetTestResultAndPoint(testResult.Id);
+            testResult = _testResultService.GetTestResultPointForID(testResult.Id);
             ResultDetailsViewModel resultDetailsViewModel = new ResultDetailsViewModel();
             resultDetailsViewModel.Result = testResult;
             resultDetailsViewModel.CloseAction = () =>
@@ -449,19 +468,19 @@ namespace FluorescenceFullAutomatic.ViewModels
                 if (tempPatient.Id == 0)
                 {
                     //保存
-                    int id = _dataManagerService.InsertPatient(tempPatient);
+                    int id = _patientService.InsertPatient(tempPatient);
                     tempPatient.Id = id;
                 }
                 else
                 {
                     //更新
-                    _dataManagerService.UpdatePatient(tempPatient);
+                    _patientService.UpdatePatient(tempPatient);
                 }
                 tr.Patient = tempPatient;
                 tr.PatientId = tempPatient.Id;
+                _testResultService.UpdateTestResult(tr);
+                RunChangeData(tr.Id);
             }
-            _dataManagerService.UpdateTestResult(tr);
-            RunChangeData(tr.Id);
         }
 
         [RelayCommand]
@@ -503,9 +522,9 @@ namespace FluorescenceFullAutomatic.ViewModels
                 );
                 return;
             }
-            _dataManagerService.PrintReport(
+            _printService.PrintReport(
                 SelectedItems.ToList(),
-                _dataManagerService.GetPrinterName(),
+                _configService.GetPrinterName(),
                 (msg) =>
                 {
                     _dispatcherService.Invoke(() =>
@@ -549,7 +568,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 );
                 return;
             }
-            _dataManagerService.PrintTicket(
+            _printService.PrintTicket(
                 SelectedItems.ToList(),
                 (msg) =>
                 {
@@ -601,7 +620,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         [RelayCommand]
         public async Task ExportAllToExcel()
         {
-            int count = await _dataManagerService.GetAllTestResultCount(condition);
+            int count = await _testResultService.GetAllTestResultCountAsync(condition);
             if (count > Max_Export_Count)
             {
                 dialogService.ShowHiltDialog(
@@ -613,7 +632,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 );
                 return;
             }
-            List<TestResult> tempTr = await _dataManagerService.GetAllTestResult(condition);
+            List<TestResult> tempTr = await _testResultService.GetAllTestResultAsync(condition);
             await ExportDataToExcel(tempTr);
         }
 
@@ -645,7 +664,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                     Task.Run(async () =>
                     {   //等待一会儿，让对话框显示出来
                         await Task.Delay(1500);
-                        var success = await _dataManagerService.ExportTestResultsToExcelAsync(
+                        var success = await _exportExcelService.ExportTestResultsToExcelAsync(
                             dataToExport,
                             saveFileDialog.FileName
                         );
