@@ -63,22 +63,46 @@ jobs:
     - name: Build Solution
       run: msbuild ${{ env.SOLUTION_NAME }} /p:Configuration=Release /p:Platform="Any CPU" /p:Version=${{ steps.get_version.outputs.VERSION }}
 
+    # 4. Run Tests and Generate Report
     - name: Run Tests
-      # Continue on error so we can see test results even if some fail (optional, currently strict)
-      run: vstest.console.exe ${{ env.TEST_DLL }}
+      # /Logger:trx generates a .trx file for the reporter
+      run: vstest.console.exe ${{ env.TEST_DLL }} /Logger:trx;LogFileName=test_results.trx
+      continue-on-error: true # Ensure reporter runs even if tests fail
 
-    # 4. Zip Artifacts
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: success() || failure() # Run even if tests fail
+      with:
+        name: Auto-Tests
+        path: "TestResults/*.trx"
+        reporter: dotnet-trx
+
+    # 5. Build Installer (Inno Setup)
+    - name: Compile Installer
+      uses: minhaskamal/inno-setup-action@v1
+      with:
+        path: setup.iss
+        # Pass version to script override
+        options: /DMyAppVersion=${{ steps.get_version.outputs.VERSION }}
+
+    # 6. Zip Artifacts (Optional: keep zip for raw bin access, or just keep installer)
     - name: Zip Release
       run: |
-        powershell Compress-Archive -Path Main\bin\Release\* -DestinationPath FluorescenceFullAutomatic-${{ steps.get_version.outputs.VERSION }}.zip
+        powershell Compress-Archive -Path Main\bin\Release\* -DestinationPath FluorescenceFullAutomatic-Bin-${{ steps.get_version.outputs.VERSION }}.zip
 
-    - name: Upload Build Artifact
+    - name: Upload Installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: setup-installer
+        path: Output/*.exe
+
+    - name: Upload Binaries
       uses: actions/upload-artifact@v4
       with:
         name: binary-package
-        path: FluorescenceFullAutomatic-${{ steps.get_version.outputs.VERSION }}.zip
+        path: FluorescenceFullAutomatic-Bin-${{ steps.get_version.outputs.VERSION }}.zip
 
-  # 5. Create Release Job (Only runs on tags)
+  # 7. Create Release Job (Only runs on tags)
   create-release:
     name: Create GitHub Release
     needs: build-and-test
@@ -88,7 +112,12 @@ jobs:
       contents: write
 
     steps:
-    - name: Download Artifact
+    - name: Download Installer
+      uses: actions/download-artifact@v4
+      with:
+        name: setup-installer
+
+    - name: Download Binaries
       uses: actions/download-artifact@v4
       with:
         name: binary-package
@@ -97,6 +126,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
+          *.exe
           *.zip
         draft: false
         prerelease: false
