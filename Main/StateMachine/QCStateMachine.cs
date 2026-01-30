@@ -1,16 +1,15 @@
 using System;
+using System.Runtime.Remoting.Contexts;
 using System.Threading.Tasks;
-using Stateless;
-using Serilog;
 using FluorescenceFullAutomatic.Core.Config;
 using FluorescenceFullAutomatic.Core.Model;
+using FluorescenceFullAutomatic.Platform.Ex;
 using FluorescenceFullAutomatic.Platform.Model;
 using FluorescenceFullAutomatic.Platform.Model.Events;
 using FluorescenceFullAutomatic.Platform.Services;
 using FluorescenceFullAutomatic.Platform.StateMachine;
-using FluorescenceFullAutomatic.HomeModule.Services;
-using System.Runtime.Remoting.Contexts;
-using FluorescenceFullAutomatic.Platform.Ex;
+using Serilog;
+using Stateless;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -35,11 +34,10 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IEventMailboxService _mailboxService;
         private readonly ISerialPortCommandFacade _commandFacade;
         private readonly IProjectService _projectService;
-        private readonly IHomeService _homeService;
         private readonly ILogService _logService;
         private readonly IToolService _toolService;
         private readonly IPointService _pointService;
-
+        private readonly IReactionAreaService _reactionAreaService;
         private readonly IConfigService _configService;
         private readonly StateMachine<QCState, QCTrigger> _machine;
 
@@ -95,17 +93,18 @@ namespace FluorescenceFullAutomatic.ViewModels
             ILogService logService,
             IToolService toolService,
             IPointService pointService,
-            IHomeService homeService,
-            IConfigService configService)
+            IReactionAreaService reactionAreaService,
+            IConfigService configService
+        )
         {
             _mailboxService = mailboxService;
             _commandFacade = commandFacade;
             _projectService = projectService;
-            _homeService = homeService;
             _logService = logService;
             _toolService = toolService;
             _pointService = pointService;
             _configService = configService;
+            _reactionAreaService = reactionAreaService;
             _context = new StateContext(_configService);
             // 创建状态机
             _machine = new StateMachine<QCState, QCTrigger>(
@@ -125,21 +124,26 @@ namespace FluorescenceFullAutomatic.ViewModels
         private void ConfigureStateMachine()
         {
             // ====== Idle 空闲状态 ======
-            _machine.Configure(QCState.Idle)
-                .PermitDynamic(QCTrigger.StartQC, () =>
-                {
-                    var errorType = ValidateStartQC();
-                    if (errorType == QCValidationErrorType.None)
+            _machine
+                .Configure(QCState.Idle)
+                .PermitDynamic(
+                    QCTrigger.StartQC,
+                    () =>
                     {
-                        return QCState.PreparingQC;
+                        var errorType = ValidateStartQC();
+                        if (errorType == QCValidationErrorType.None)
+                        {
+                            return QCState.PreparingQC;
+                        }
+                        // 校验失败，通知 UI 错误原因
+                        _mailboxService.Post(new QCValidationErrorEvent { ErrorType = errorType });
+                        return QCState.Idle;
                     }
-                    // 校验失败，通知 UI 错误原因
-                    _mailboxService.Post(new QCValidationErrorEvent { ErrorType = errorType });
-                    return QCState.Idle;
-                });
+                );
 
             // ====== PreparingQC 准备质控 ======
-            _machine.Configure(QCState.PreparingQC)
+            _machine
+                .Configure(QCState.PreparingQC)
                 .OnEntryAsync(OnEnterPreparingQCAsync)
                 .Permit(QCTrigger.CardAvailable, QCState.PushingCard)
                 .Permit(QCTrigger.CardNotAvailable, QCState.WaitingForCard)
@@ -147,13 +151,15 @@ namespace FluorescenceFullAutomatic.ViewModels
                 .Permit(QCTrigger.ErrorOccurred, QCState.Error);
 
             // ====== WaitingForCard 等待添加检测卡 ======
-            _machine.Configure(QCState.WaitingForCard)
-                .Permit(QCTrigger.RetryPushCard, QCState.PreparingQC)//重试推卡
-                .Permit(QCTrigger.ProjectInvalid, QCState.PreparingQC)//无效重试推卡
+            _machine
+                .Configure(QCState.WaitingForCard)
+                .Permit(QCTrigger.RetryPushCard, QCState.PreparingQC) //重试推卡
+                .Permit(QCTrigger.ProjectInvalid, QCState.PreparingQC) //无效重试推卡
                 .Permit(QCTrigger.CancelQC, QCState.Idle);
 
             // ====== PushingCard 推卡中 ======
-            _machine.Configure(QCState.PushingCard)
+            _machine
+                .Configure(QCState.PushingCard)
                 .OnEntryAsync(OnEnterPushingCardAsync)
                 .Permit(QCTrigger.ProjectValid, QCState.MovingToReaction)
                 .Permit(QCTrigger.ProjectInvalid, QCState.WaitingForCard)
@@ -167,32 +173,35 @@ namespace FluorescenceFullAutomatic.ViewModels
             //    .Permit(QCTrigger.CancelQC, QCState.Idle);
 
             // ====== MovingToReaction 移动到反应区 ======
-            _machine.Configure(QCState.MovingToReaction)
+            _machine
+                .Configure(QCState.MovingToReaction)
                 .OnEntryAsync(OnEnterMovingToReactionAsync)
                 .Permit(QCTrigger.MoveReactionCompleted, QCState.Testing)
                 .Permit(QCTrigger.ErrorOccurred, QCState.Error);
 
             // ====== Testing 检测中 ======
-            _machine.Configure(QCState.Testing)
+            _machine
+                .Configure(QCState.Testing)
                 .OnEntryAsync(OnEnterTestingAsync)
                 .Permit(QCTrigger.TestSingleCompleted, QCState.WaitingNextTest)
                 .Permit(QCTrigger.AllTestsCompleted, QCState.Completed)
                 .Permit(QCTrigger.ErrorOccurred, QCState.Error);
 
             // ====== WaitingNextTest 等待下一次检测 ======
-            _machine.Configure(QCState.WaitingNextTest)
+            _machine
+                .Configure(QCState.WaitingNextTest)
                 .OnEntryAsync(OnEnterWaitingNextTestAsync)
                 .Permit(QCTrigger.RetryPushCard, QCState.Testing)
                 .Permit(QCTrigger.ErrorOccurred, QCState.Error);
 
             // ====== Completed 完成 ======
-            _machine.Configure(QCState.Completed)
+            _machine
+                .Configure(QCState.Completed)
                 .OnEntry(OnEnterCompleted)
                 .Permit(QCTrigger.StartQC, QCState.PreparingQC);
 
             // ====== Error 错误状态 ======
-            _machine.Configure(QCState.Error)
-                .Permit(QCTrigger.CancelQC, QCState.Idle);
+            _machine.Configure(QCState.Error).Permit(QCTrigger.CancelQC, QCState.Idle);
         }
         #endregion
 
@@ -204,7 +213,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// </summary>
         private async Task SafeSerialPortCallAsync<T>(
             Func<Task<BaseResponseModel<T>>> command,
-            Action<BaseResponseModel<T>> onSuccess)
+            Action<BaseResponseModel<T>> onSuccess
+        )
         {
             try
             {
@@ -214,45 +224,53 @@ namespace FluorescenceFullAutomatic.ViewModels
             catch (SerialCommandException ex)
             {
                 _logService.Error($"[状态机] 串口指令异常: {ex.Code} {ex.Message}");
-                _mailboxService.Post(new SerialPortErrorEvent
-                {
-                    ErrorType = SerialPortErrorType.DeviceError,
-                    CommandCode = ex.Code,
-                    ErrorMessage = ex.DeviceError
-                });
+                _mailboxService.Post(
+                    new SerialPortErrorEvent
+                    {
+                        ErrorType = SerialPortErrorType.DeviceError,
+                        CommandCode = ex.Code,
+                        ErrorMessage = ex.DeviceError,
+                    }
+                );
                 await HandleSerialError();
             }
             catch (TimeoutException ex)
             {
                 _logService.Error($"[状态机] 串口超时: {ex.Message}");
-                _mailboxService.Post(new SerialPortErrorEvent
-                {
-                    ErrorType = SerialPortErrorType.Timeout,
-                    CommandCode = "",
-                    ErrorMessage = ex.Message
-                });
+                _mailboxService.Post(
+                    new SerialPortErrorEvent
+                    {
+                        ErrorType = SerialPortErrorType.Timeout,
+                        CommandCode = "",
+                        ErrorMessage = ex.Message,
+                    }
+                );
                 await HandleSerialError();
             }
             catch (InvalidOperationException ex) when (ex.Message.Contains("串口重发"))
             {
                 _logService.Error($"[状态机] 串口命令重发: {ex.Message}");
-                _mailboxService.Post(new SerialPortErrorEvent
-                {
-                    ErrorType = SerialPortErrorType.CommandDuplicate,
-                    CommandCode = "",
-                    ErrorMessage = ex.Message
-                });
+                _mailboxService.Post(
+                    new SerialPortErrorEvent
+                    {
+                        ErrorType = SerialPortErrorType.CommandDuplicate,
+                        CommandCode = "",
+                        ErrorMessage = ex.Message,
+                    }
+                );
                 await HandleSerialError();
             }
             catch (Exception ex)
             {
                 _logService.Error($"[状态机] 串口异常: {ex.Message}");
-                _mailboxService.Post(new SerialPortErrorEvent
-                {
-                    ErrorType = SerialPortErrorType.Other,
-                    CommandCode = "",
-                    ErrorMessage = ex.Message
-                });
+                _mailboxService.Post(
+                    new SerialPortErrorEvent
+                    {
+                        ErrorType = SerialPortErrorType.Other,
+                        CommandCode = "",
+                        ErrorMessage = ex.Message,
+                    }
+                );
                 await HandleSerialError();
             }
         }
@@ -267,6 +285,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 await _machine.FireAsync(QCTrigger.ErrorOccurred);
             }
         }
+
         /// <summary>
         /// 触发状态迁移
         /// </summary>
@@ -306,8 +325,10 @@ namespace FluorescenceFullAutomatic.ViewModels
                 return QCValidationErrorType.SelfInspectionFailed;
             }
 
-            if (SystemGlobal.MachineStatus == MachineStatus.Sampling ||
-                SystemGlobal.MachineStatus == MachineStatus.SamplingFinished)
+            if (
+                SystemGlobal.MachineStatus == MachineStatus.Sampling
+                || SystemGlobal.MachineStatus == MachineStatus.SamplingFinished
+            )
             {
                 return QCValidationErrorType.AlreadyTesting;
             }
@@ -318,18 +339,22 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
 
             // 检查反应区是否为空
-            if (!_homeService.ReactionAreaQueueIsEmpty())
+            if (!_reactionAreaService.IsFull())
             {
                 return QCValidationErrorType.ReactionAreaNotEmpty;
             }
 
             return QCValidationErrorType.None;
         }
+
         string hintMsg = "";
+
         /// <summary>
         /// 处理仪器状态反馈
         /// </summary>
-        public async Task HandleMachineStatusReceivedAsync(BaseResponseModel<MachineStatusModel> model)
+        public async Task HandleMachineStatusReceivedAsync(
+            BaseResponseModel<MachineStatusModel> model
+        )
         {
             if (_currentState != QCState.PreparingQC)
             {
@@ -346,7 +371,8 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
             else
             {
-                string errorMsg = $"仪器状态异常,{(_cardExist == false ? "卡仓不存在," : "")}{(_cardNum <= 0 ? "检测卡不足," : "")}";
+                string errorMsg =
+                    $"仪器状态异常,{(_cardExist == false ? "卡仓不存在," : "")}{(_cardNum <= 0 ? "检测卡不足," : "")}";
                 hintMsg = errorMsg.TrimEnd(',');
                 _mailboxService.Post(new QCNoCardAvailableEvent { ErrorMessage = hintMsg });
                 await FireAsync(QCTrigger.CardNotAvailable);
@@ -364,7 +390,8 @@ namespace FluorescenceFullAutomatic.ViewModels
             }
 
             var data = model.Data;
-            bool success = data.Success == PushCardModel.PushCardSuccess && !string.IsNullOrEmpty(data.QrCode);
+            bool success =
+                data.Success == PushCardModel.PushCardSuccess && !string.IsNullOrEmpty(data.QrCode);
 
             if (success)
             {
@@ -399,7 +426,9 @@ namespace FluorescenceFullAutomatic.ViewModels
             if (_currentProject.TestType != Project.Test_Type_QC)
             {
                 Log.Information("[QCStateMachine] 此项目不是质控项目");
-                _mailboxService.Post(new QCProjectInvalidEvent { ErrorMessage = "此项目不是质控项目" });
+                _mailboxService.Post(
+                    new QCProjectInvalidEvent { ErrorMessage = "此项目不是质控项目" }
+                );
                 await FireAsync(QCTrigger.ProjectInvalid);
                 return;
             }
@@ -412,26 +441,28 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// <summary>
         /// 处理移动反应区反馈
         /// </summary>
-        public async Task HandleMoveReactionAreaReceivedAsync(BaseResponseModel<MoveReactionAreaModel> model)
+        public async Task HandleMoveReactionAreaReceivedAsync(
+            BaseResponseModel<MoveReactionAreaModel> model
+        )
         {
             if (_currentState != QCState.MovingToReaction)
             {
                 return;
             }
             //更新反应区状态
-            _homeService.UpdateReactionAreaItem(
-           _context.ReactionAreaY,
-           _context.ReactionAreaX,
-           (item) =>
-           {
-               item.State = ReactionAreaItem.STATE_WAIT;
-               item.TestResult = _context.MovingToReactionAreaTestResult;
-               item.ReactionAreaY = _context.ReactionAreaY;
-               item.ReactionAreaX = _context.ReactionAreaX;
-                _mailboxService.Post(new QCDequeueEvent { CurrentTestItem = item });
-               return item;
-           }
-       );
+            _reactionAreaService.UpdateItem(
+                _context.ReactionAreaY,
+                _context.ReactionAreaX,
+                (item) =>
+                {
+                    item.State = ReactionAreaItem.STATE_WAIT;
+                    item.TestResult = _context.MovingToReactionAreaTestResult;
+                    item.ReactionAreaY = _context.ReactionAreaY;
+                    item.ReactionAreaX = _context.ReactionAreaX;
+                    _mailboxService.Post(new QCDequeueEvent { CurrentTestItem = item });
+                    return item;
+                }
+            );
             await FireAsync(QCTrigger.MoveReactionCompleted);
         }
 
@@ -451,20 +482,19 @@ namespace FluorescenceFullAutomatic.ViewModels
             // 处理测试结果逻辑
             ProcessTestResult(model);
 
-
             if (_currentTestCount >= QC_TEST_COUNT)
             {
-                _homeService.UpdateReactionAreaItem(
-           _context.ReactionAreaY,
-           _context.ReactionAreaX,
-           (item) =>
-           {
-               item.State = ReactionAreaItem.STATE_END;
-               item.TestResult = _context.MovingToReactionAreaTestResult;
-               item.ReactionAreaY = _context.ReactionAreaY;
-               item.ReactionAreaX = _context.ReactionAreaX;
-               return item;
-           }
+                _reactionAreaService.UpdateItem(
+                    _context.ReactionAreaY,
+                    _context.ReactionAreaX,
+                    (item) =>
+                    {
+                        item.State = ReactionAreaItem.STATE_END;
+                        item.TestResult = _context.MovingToReactionAreaTestResult;
+                        item.ReactionAreaY = _context.ReactionAreaY;
+                        item.ReactionAreaX = _context.ReactionAreaX;
+                        return item;
+                    }
                 );
 
                 qualityFinish();
@@ -475,7 +505,6 @@ namespace FluorescenceFullAutomatic.ViewModels
             {
                 await FireAsync(QCTrigger.TestSingleCompleted);
             }
-
         }
 
         private void qualityFinish()
@@ -517,6 +546,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             // resultMsg += $"标准方差范围：{VarianceScope}\n" +
             //             $"质控结果：{QcResult}";
         }
+
         /// <summary>
         /// 用户确认已添加检测卡
         /// </summary>
@@ -584,10 +614,13 @@ namespace FluorescenceFullAutomatic.ViewModels
             InitState();
             try
             {
-                await SafeSerialPortCallAsync(() => _commandFacade.GetMachineStateAsync(), async (ret) =>
-                 {
-                     await HandleMachineStatusReceivedAsync(ret);
-                 });
+                await SafeSerialPortCallAsync(
+                    () => _commandFacade.GetMachineStateAsync(),
+                    async (ret) =>
+                    {
+                        await HandleMachineStatusReceivedAsync(ret);
+                    }
+                );
             }
             catch (Exception ex)
             {
@@ -604,10 +637,13 @@ namespace FluorescenceFullAutomatic.ViewModels
             Log.Information("[QCStateMachine] 进入 PushingCard 状态，执行推卡");
             try
             {
-                await SafeSerialPortCallAsync(() => _commandFacade.PushCardAsync(), async (ret) =>
-                {
-                    await HandlePushCardReceivedAsync(ret);
-                });
+                await SafeSerialPortCallAsync(
+                    () => _commandFacade.PushCardAsync(),
+                    async (ret) =>
+                    {
+                        await HandlePushCardReceivedAsync(ret);
+                    }
+                );
             }
             catch (Exception ex)
             {
@@ -624,15 +660,21 @@ namespace FluorescenceFullAutomatic.ViewModels
             Log.Information("[QCStateMachine] 进入 MovingToReaction 状态，移动到反应区 (0, 0)");
             try
             {
-                await SafeSerialPortCallAsync(() =>
-                {
-                    _context.ReactionAreaX = 0;
-                    _context.ReactionAreaY = 0;
-                    return _commandFacade.MoveReactionAreaAsync(_context.ReactionAreaX, _context.ReactionAreaY);
-                }, async (ret) =>
-                {
-                    await HandleMoveReactionAreaReceivedAsync(ret);
-                });
+                await SafeSerialPortCallAsync(
+                    () =>
+                    {
+                        _context.ReactionAreaX = 0;
+                        _context.ReactionAreaY = 0;
+                        return _commandFacade.MoveReactionAreaAsync(
+                            _context.ReactionAreaX,
+                            _context.ReactionAreaY
+                        );
+                    },
+                    async (ret) =>
+                    {
+                        await HandleMoveReactionAreaReceivedAsync(ret);
+                    }
+                );
             }
             catch (Exception ex)
             {
@@ -646,7 +688,9 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// </summary>
         private async Task OnEnterTestingAsync()
         {
-            Log.Information($"[QCStateMachine] 进入 Testing 状态，开始第 {_currentTestCount + 1} 次检测");
+            Log.Information(
+                $"[QCStateMachine] 进入 Testing 状态，开始第 {_currentTestCount + 1} 次检测"
+            );
 
             if (_currentProject == null)
             {
@@ -664,21 +708,25 @@ namespace FluorescenceFullAutomatic.ViewModels
                 testType = "" + Project.Test_Type_Stadard;
             }
 
-            await SafeSerialPortCallAsync(async () =>
-            {
-                return await _commandFacade.TestAsync(
-                    0, 0,
-                    cardType,
-                    testType,
-                    _currentProject.ScanStart,
-                    _currentProject.ScanEnd,
-                    _currentProject.PeakWidth,
-                    _currentProject.PeakDistance
-                );
-            }, async (result) =>
-            {
-                await HandleTestReceivedAsync(result);
-            });
+            await SafeSerialPortCallAsync(
+                async () =>
+                {
+                    return await _commandFacade.TestAsync(
+                        0,
+                        0,
+                        cardType,
+                        testType,
+                        _currentProject.ScanStart,
+                        _currentProject.ScanEnd,
+                        _currentProject.PeakWidth,
+                        _currentProject.PeakDistance
+                    );
+                },
+                async (result) =>
+                {
+                    await HandleTestReceivedAsync(result);
+                }
+            );
         }
 
         /// <summary>
@@ -686,7 +734,9 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// </summary>
         private async Task OnEnterWaitingNextTestAsync()
         {
-            Log.Information($"[QCStateMachine] 进入 WaitingNextTest 状态，延时 {TEST_INTERVAL}ms 后继续");
+            Log.Information(
+                $"[QCStateMachine] 进入 WaitingNextTest 状态，延时 {TEST_INTERVAL}ms 后继续"
+            );
             await Task.Delay(TEST_INTERVAL);
             await FireAsync(QCTrigger.RetryPushCard);
         }
@@ -702,7 +752,9 @@ namespace FluorescenceFullAutomatic.ViewModels
             SetMachineState(MachineStatus.TestingEnd);
             _mailboxService.Post(new QCCompletedEvent { Message = "质控完成" });
         }
-        private void SetMachineState(MachineStatus status) {
+
+        private void SetMachineState(MachineStatus status)
+        {
             _mailboxService.Post(new MachineStateChangeEvent { NewState = status });
         }
         #endregion
@@ -713,9 +765,13 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// </summary>
         private void ProcessTestResult(BaseResponseModel<TestModel> model)
         {
-            if (model.Data == null) return;
+            if (model.Data == null)
+                return;
 
-            double t = 0, c = 0, t2 = 0, c2 = 0;
+            double t = 0,
+                c = 0,
+                t2 = 0,
+                c2 = 0;
             double.TryParse(model.Data.T, out t);
             double.TryParse(model.Data.C, out c);
             double.TryParse(model.Data.T2, out t2);
@@ -731,16 +787,16 @@ namespace FluorescenceFullAutomatic.ViewModels
                 T2 = "" + t2,
                 C2 = "" + c2,
                 Tc = _toolService.CalcTC(t, c),
-                Tc2 = _toolService.CalcTC(t2, c2)
+                Tc2 = _toolService.CalcTC(t2, c2),
             };
             int pointId = _pointService.InsertPoint(point);
             point.Id = pointId;
 
-            _mailboxService.Post(new QCResultProcessedEvent { Point = point, Index = _currentTestCount - 1 });
+            _mailboxService.Post(
+                new QCResultProcessedEvent { Point = point, Index = _currentTestCount - 1 }
+            );
         }
 
         #endregion
-
-
     }
 }

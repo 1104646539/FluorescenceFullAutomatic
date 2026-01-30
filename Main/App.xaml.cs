@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
-using FluorescenceFullAutomatic.HomeModule.Services;
 using FluorescenceFullAutomatic.HomeModule.Views;
 using FluorescenceFullAutomatic.Platform;
 using FluorescenceFullAutomatic.Platform.Services;
@@ -28,19 +27,19 @@ namespace FluorescenceFullAutomatic
         // 定义互斥锁，用于确保应用程序只有一个实例
         private static Mutex _mutex = null;
         private const string MutexName = "FluorescenceFullAutomaticSingleInstance";
-        
+
         // Windows API 声明，用于查找和激活窗口
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
-        
+
         [DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-        
+
         [DllImport("user32.dll")]
         private static extern bool IsIconic(IntPtr hWnd);
-        
+
         private const int SW_RESTORE = 9;
-        
+
         protected override Window CreateShell()
         {
             // 检查应用程序是否已经在运行
@@ -50,14 +49,14 @@ namespace FluorescenceFullAutomatic
                 Shutdown();
                 return null;
             }
-            
+
             AppDomain.CurrentDomain.UnhandledException += HandleUnhandledException;
             Init();
             //Workbook workbook = null;
             //workbook.PrintDocument.Print();
             return Container.Resolve<MainWindow>();
         }
-        
+
         /// <summary>
         /// 确保应用程序只有一个实例在运行
         /// </summary>
@@ -65,12 +64,12 @@ namespace FluorescenceFullAutomatic
         private bool EnsureSingleInstance()
         {
             bool createdNew;
-            
+
             try
             {
                 // 尝试创建一个命名互斥锁
                 _mutex = new Mutex(true, MutexName, out createdNew);
-                
+
                 if (!createdNew)
                 {
                     // 如果互斥锁已存在，说明已经有一个实例在运行
@@ -79,7 +78,7 @@ namespace FluorescenceFullAutomatic
                     //MessageBox.Show("应用程序已经在运行中。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                     return false;
                 }
-                
+
                 // 在应用程序退出时释放互斥锁
                 Application.Current.Exit += (s, e) =>
                 {
@@ -89,7 +88,7 @@ namespace FluorescenceFullAutomatic
                         _mutex.Close();
                     }
                 };
-                
+
                 return true;
             }
             catch (Exception ex)
@@ -99,7 +98,7 @@ namespace FluorescenceFullAutomatic
                 return true;
             }
         }
-        
+
         /// <summary>
         /// 查找并激活已经运行的应用程序实例
         /// </summary>
@@ -109,10 +108,10 @@ namespace FluorescenceFullAutomatic
             {
                 // 获取当前进程名称
                 string currentProcessName = Process.GetCurrentProcess().ProcessName;
-                
+
                 // 查找具有相同名称的所有进程
                 Process[] processes = Process.GetProcessesByName(currentProcessName);
-                
+
                 foreach (Process process in processes)
                 {
                     // 跳过当前进程
@@ -120,7 +119,7 @@ namespace FluorescenceFullAutomatic
                     {
                         // 获取主窗口句柄
                         IntPtr mainWindowHandle = process.MainWindowHandle;
-                        
+
                         if (mainWindowHandle != IntPtr.Zero)
                         {
                             // 如果窗口是最小化的，则恢复它
@@ -128,10 +127,10 @@ namespace FluorescenceFullAutomatic
                             {
                                 ShowWindow(mainWindowHandle, SW_RESTORE);
                             }
-                            
+
                             // 将窗口置于前台
                             SetForegroundWindow(mainWindowHandle);
-                            
+
                             Log.Information("已将现有应用程序实例激活并置于前台");
                             break;
                         }
@@ -151,11 +150,11 @@ namespace FluorescenceFullAutomatic
             moduleCatalog.AddModule<HomeModule_Module>();
         }
 
-        protected override void RegisterTypes(IContainerRegistry containerRegistry) {
+        protected override void RegisterTypes(IContainerRegistry containerRegistry)
+        {
             //services
             containerRegistry.RegisterSingleton<ILogService, LogService>();
             containerRegistry.RegisterSingleton<IEventMailboxService, EventMailboxService>();
-            containerRegistry.RegisterSingleton<IHomeService, HomeService>();
             containerRegistry.RegisterSingleton<ISerialPortService, SerialPortService>();
             containerRegistry.RegisterSingleton<ISerialPortCommandFacade, SerialPortCommandFacade>();
             containerRegistry.RegisterSingleton<IDialogCoordinator, DialogCoordinator>();
@@ -174,7 +173,7 @@ namespace FluorescenceFullAutomatic
             containerRegistry.RegisterSingleton<ITestResultService, TestResultService>();
             containerRegistry.RegisterSingleton<IToolService, ToolService>();
             containerRegistry.RegisterSingleton<IDispatcherService, DispatcherService>();
-            containerRegistry.RegisterSingleton<IReactionAreaQueueService, ReactionAreaQueueService>();
+            containerRegistry.RegisterSingleton<IReactionAreaService, ReactionAreaService>();
 
             //containerRegistry.RegisterSingleton<IDialogCoordinator, DialogCoordinator>();
             //containerRegistry.RegisterSingleton<IDataManagerService, DataManagerService>();
@@ -209,8 +208,9 @@ namespace FluorescenceFullAutomatic
             //e.Handled = true;
         }
 
-   
-        private void Init() {
+
+        private void Init()
+        {
             InitLog();
             InitDB();
         }

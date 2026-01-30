@@ -109,9 +109,11 @@
     <Compile Include="Repositorys\FakeExportExcelRepository.cs" />
     <Compile Include="Repositorys\FakePrintRepository.cs" />
     <Compile Include="Services\FakeDispatcherService.cs" />
+    <Compile Include="StateMachine\QCStateMachineTests.cs" />
     <Compile Include="UnitTest1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\DataManagerViewModelUnitTest.cs" />
+    <Compile Include="ViewModels\QCViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

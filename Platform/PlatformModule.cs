@@ -13,7 +13,7 @@ namespace FluorescenceFullAutomatic.Platform
     {
         public void OnInitialized(IContainerProvider containerProvider)
         {
-            
+
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
@@ -29,7 +29,8 @@ namespace FluorescenceFullAutomatic.Platform
             //containerRegistry.RegisterSingleton<IPointService, PointService>();
             //containerRegistry.RegisterSingleton<IPrintService, PrintService>();
             //containerRegistry.RegisterSingleton<IProjectService, ProjectService>();
-            //containerRegistry.RegisterSingleton<IReactionAreaQueueService, ReactionAreaQueueService>();
+            //containerRegistry.RegisterSingleton<IProjectService, ProjectService>();
+
             //containerRegistry.RegisterSingleton<ISerialPortService, SerialPortService>();
             //containerRegistry.RegisterSingleton<ITestResultService, TestResultService>();
             //containerRegistry.RegisterSingleton<IExportExcelService, ExportExcelService>();
@@ -41,6 +42,7 @@ namespace FluorescenceFullAutomatic.Platform
             //containerRegistry.RegisterSingleton<ISettingsService, SettingsService>();
             //containerRegistry.RegisterSingleton<IHomeService, HomeService>();
             //containerRegistry.RegisterSingleton<ILisService, LisService>();
+            //containerRegistry.RegisterSingleton<IReactionAreaService, ReactionAreaService>();
         }
     }
 }

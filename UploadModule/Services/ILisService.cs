@@ -79,7 +79,7 @@ namespace FluorescenceFullAutomatic.Platform.Services
         void Connect();
         void Disconnect();
         bool IsConnected();
-
+        bool isNeedLisGet();
         // HL7Helper 连接事件处理
         void AddConnectionSucceededHandler(ConnectionStatusChangedHandler handler);
         void RemoveConnectionSucceededHandler(ConnectionStatusChangedHandler handler);
@@ -305,6 +305,11 @@ namespace FluorescenceFullAutomatic.Platform.Services
         public void UploadTestResult(List<TestResult> testResults, Action<List<Hl7Result.UploadResult>> callback)
         {
             hL7Helper.UploadTestResult(testResults, callback);
+        }
+
+        public bool isNeedLisGet()
+        {
+            return GetOpenUpload() && GetTwoWay() && GetAutoGetApplyTest();
         }
     }
 }

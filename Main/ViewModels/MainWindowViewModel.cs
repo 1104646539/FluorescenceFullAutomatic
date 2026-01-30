@@ -12,7 +12,6 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FluorescenceFullAutomatic.Core.Config;
 using FluorescenceFullAutomatic.Core.Model;
-using FluorescenceFullAutomatic.HomeModule.Services;
 using FluorescenceFullAutomatic.Platform.Core.Config;
 using FluorescenceFullAutomatic.Platform.Ex;
 using FluorescenceFullAutomatic.Platform.Model;
@@ -65,7 +64,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IDispatcherService dispatcherService;
         private readonly IDialogService dialogService;
         private readonly ILogService logService;
-        private readonly IReactionAreaQueueService reactionAreaQueueService;
+        private readonly IReactionAreaService reactionAreaQueueService;
         private readonly IToolService toolService;
         private int _selectedIndex;
         Dictionary<int, int> notity_What = new Dictionary<int, int>() { };
@@ -115,7 +114,8 @@ namespace FluorescenceFullAutomatic.ViewModels
         private void ClickLogo()
         {
             var now = DateTime.Now;
-            if (_lastLogoClickTime == DateTime.MinValue) {
+            if (_lastLogoClickTime == DateTime.MinValue)
+            {
                 _lastLogoClickTime = now;
             }
             double interval = (now - _lastLogoClickTime).TotalSeconds;
@@ -151,7 +151,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             ISerialPortService serialPortService,
             IDispatcherService dispatcherService,
             IDialogService dialogService,
-            IReactionAreaQueueService reactionAreaQueueService,
+    IReactionAreaService reactionAreaQueueService,
             ILogService logService,
             IToolService toolService
         )
@@ -228,7 +228,8 @@ namespace FluorescenceFullAutomatic.ViewModels
                 ShowCloseButton = true;
                 ShowResizeMode = ResizeMode.CanMinimize;
             }
-            else {
+            else
+            {
                 toolService.HideTaskBar();
                 ShowCloseButton = false;
                 ShowResizeMode = ResizeMode.NoResize;
@@ -293,7 +294,8 @@ namespace FluorescenceFullAutomatic.ViewModels
                         new System.Drawing.Printing.PrinterSettings().PrinterName;
                 }
             }
-            catch {
+            catch
+            {
                 //打印
                 GlobalConfig.Instance.PrinterName =
                     new System.Drawing.Printing.PrinterSettings().PrinterName;
@@ -306,7 +308,8 @@ namespace FluorescenceFullAutomatic.ViewModels
                     GlobalConfig.Instance.ReportTemplatePath = SystemGlobal.Template_Path;
                 }
             }
-            catch {
+            catch
+            {
                 GlobalConfig.Instance.ReportTemplatePath = SystemGlobal.Template_Path;
             }
             try
@@ -317,7 +320,8 @@ namespace FluorescenceFullAutomatic.ViewModels
                     GlobalConfig.Instance.ReportDoubleTemplatePath = SystemGlobal.DoubleTemplate_Path;
                 }
             }
-            catch {
+            catch
+            {
                 GlobalConfig.Instance.ReportDoubleTemplatePath = SystemGlobal.DoubleTemplate_Path;
             }
         }
@@ -572,7 +576,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             App.Current.Resources.MergedDictionaries[0].Source = new Uri(path);
         }
 
-    
+
         private void ExecuteNavCommand(int index)
         {
             SelectedIndex = index;
@@ -620,9 +624,11 @@ namespace FluorescenceFullAutomatic.ViewModels
         [RelayCommand]
         public void ClickShutdown()
         {
-            
-            if (!VerifyShutdown()) {
-                dialogService.ShowHiltDialog(this, "提示", "正在检测，请等待检测完毕。", "好的", (v,d) => { 
+
+            if (!VerifyShutdown())
+            {
+                dialogService.ShowHiltDialog(this, "提示", "正在检测，请等待检测完毕。", "好的", (v, d) =>
+                {
 
                 });
                 return;
@@ -640,7 +646,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 "取消",
                 (v, d) => { }
             );
-            
+
         }
 
         private bool VerifyShutdown()

@@ -10,9 +10,9 @@ using FluorescenceFullAutomatic.Platform.Model;
 using FluorescenceFullAutomatic.Platform.Model.Events;
 using FluorescenceFullAutomatic.Platform.Services;
 using FluorescenceFullAutomatic.Platform.StateMachine;
-using FluorescenceFullAutomatic.HomeModule.Services;
 using FluorescenceFullAutomatic.UploadModule.Upload;
 using Newtonsoft.Json;
+using FluorescenceFullAutomatic.Platform.Core.Config;
 
 namespace FluorescenceFullAutomatic.HomeModule.StateMachine
 {
@@ -27,14 +27,18 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
         // 依赖服务
         private readonly ILogService _logService;
         private readonly IEventMailboxService _mailboxService;
-        private readonly ISerialPortCommandFacade _commandFacade;
+        private readonly ISerialPortCommandFacade _serialPortCommandFacade;
         private readonly ISerialPortService _serialPortService;
-        private readonly IHomeService _homeService;
         private readonly IConfigService _configService;
         private readonly IProjectService _projectService;
-
         private readonly IToolService _toolService;
-
+        private readonly IPointService _pointService;
+        private readonly ITestResultService _testResultService;
+        private readonly IReactionAreaService _reactionAreaService;
+        private readonly IPrintService _printService;
+        private readonly ILisService _lisService;
+        private readonly IPatientService _patientService;
+        private readonly IApplyTestService _applyTestService;
         /// <summary>
         /// 当前状态
         /// </summary>
@@ -48,28 +52,39 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
         public DetectionStateMachine(
             ILogService logService,
             IEventMailboxService mailboxService,
-            ISerialPortCommandFacade commandFacade,
+            ISerialPortCommandFacade serialPortCommandFacade,
             ISerialPortService serialPortService,
-            IHomeService homeService,
             IConfigService configService,
             IProjectService projectService,
-            IToolService toolService)
+            IToolService toolService,
+            IPointService pointService,
+            ITestResultService testResultService,
+            IReactionAreaService reactionAreaService,
+            IPrintService printService,
+            IPatientService patientService,
+            IApplyTestService applyTestService,
+            ILisService lisService)
         {
             _logService = logService;
             _mailboxService = mailboxService;
-            _commandFacade = commandFacade;
+            _serialPortCommandFacade = serialPortCommandFacade;
             _serialPortService = serialPortService;
-            _homeService = homeService;
             _configService = configService;
             _projectService = projectService;
             _toolService = toolService;
+            _pointService = pointService;
+            _testResultService = testResultService;
+            _reactionAreaService = reactionAreaService;
+            _patientService = patientService;
+            _printService = printService;
+            _lisService = lisService;
+            _applyTestService = applyTestService;
 
-            _context = new StateContext(_configService);
-            _homeService._dequeueCallback += OnReactionAreaDequeue;
+            _reactionAreaService._dequeueCallback += OnReactionAreaDequeue;
             // 订阅扫码回调
             _serialPortService.AddScanSuccessListener(async barcode => await HandleBarcodeReceived(barcode, true));
             _serialPortService.AddScanFailedListener(async error => await HandleBarcodeReceived(error, false));
-
+            _context = new StateContext(_configService);
             // 创建状态机
             _machine = new StateMachine<DetectionState, DetectionTrigger>(
                 () => _context.CurrentState,
@@ -275,7 +290,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
 
             // 执行自检指令
             await SafeSerialPortCallAsync(
-              () => _commandFacade.GetMachineStateAsync(),
+              () => _serialPortCommandFacade.GetMachineStateAsync(),
               async (ret) =>
               {
                   _mailboxService.Post(new MachineStatusReceivedEvent() { Result = ret, Reason = MachineStatusRequestReason.AfterSelfInspection }); // 通知 UI
@@ -406,7 +421,8 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
         /// </summary>
         public async Task HandleBarcodeReceived(string barcode, bool success)
         {
-            if (SystemGlobal.TestType != TestType.Test) {
+            if (SystemGlobal.TestType != TestType.Test)
+            {
                 return;
             }
             _logService.Info($"[状态机] 收到扫码结果: {barcode}, 成功: {success}");
@@ -441,12 +457,12 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             try
             {
                 _context.CurrentBarcode = barcode;
-                bool isNeedLisGet = _homeService.isNeedLisGet();
-                bool isMatchingBarcode = _homeService.isMatchingBarcode();
+                bool isNeedLisGet = _lisService.isNeedLisGet();
+                bool isMatchingBarcode = _lisService.GetMatchBarcode();
 
                 _logService.Info($"[状态机] 正在查询申请信息: Barcode={barcode}, Position={_context.CurrentSamplePos}");
 
-                var qr = await _homeService.QueryApplyTestAsync(
+                var qr = await _lisService.QueryApplyTestAsync(
                     isNeedLisGet,
                     isMatchingBarcode,
                     barcode ?? "",
@@ -460,12 +476,12 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
 
                     // 执行数据库持久化逻辑
                     applyTest.Patient.InspectDate = DateTime.Now;
-                    int patientId = _homeService.InsertPatient(applyTest.Patient);
+                    int patientId = _patientService.InsertPatient(applyTest.Patient);
                     applyTest.Patient.Id = patientId;
                     applyTest.PatientId = patientId;
                     applyTest.ApplyTestType = ApplyTestType.TestEnd;
-                    _homeService.InsertApplyTest(applyTest);
-                    _homeService.UpdateApplyTestCompleted(applyTest);
+                    _applyTestService.InsertApplyTest(applyTest);
+                    _applyTestService.UpdateApplyTestCompleted(applyTest);
 
                     // 更新上下文中的结果对象并持久化
                     UpdateTestResult(_context.CurrentAddingSampleTestResult?.Id ?? -1, (tr) =>
@@ -532,7 +548,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             // 加样完成后启动清洗取样针（为下一次取样做准备，不阻塞后续流程）
             _context.CleaningCompleted = false;
             _ = SafeSerialPortCallAsync(
-                () => _commandFacade.CleanoutSamplingProbeAsync(_context.GetCleanoutDuration()),
+                () => _serialPortCommandFacade.CleanoutSamplingProbeAsync(_context.GetCleanoutDuration()),
                 (cleanRet) =>
                 {
                     _logService.Info("[状态机] 清洗完成（为下一次取样做准备）");
@@ -564,7 +580,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
 
             // 执行自检指令
             await SafeSerialPortCallAsync(
-                () => _commandFacade.GetSelfInspectionStateAsync(_context.GetRetainReactionArea()),
+                () => _serialPortCommandFacade.GetSelfInspectionStateAsync(_context.GetRetainReactionArea()),
                 async (ret) =>
                 {
                     _mailboxService.Post(new SelfInspectionCompletedEvent() { Result = ret }); // 通知 UI
@@ -579,7 +595,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             SystemGlobal.TestType = TestType.Test;
 
             await SafeSerialPortCallAsync(
-                () => _commandFacade.GetMachineStateAsync(),
+                () => _serialPortCommandFacade.GetMachineStateAsync(),
                 async (ret) =>
                 {
                     _mailboxService.Post(new MachineStatusReceivedEvent() { Result = ret, Reason = MachineStatusRequestReason.BeforeTest }); // 通知 UI
@@ -593,7 +609,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             _context.InitSampleShelfState();
             _context.CleaningCompleted = false;
             await SafeSerialPortCallAsync(
-                () => _commandFacade.CleanoutSamplingProbeAsync(_context.GetCleanoutDuration()),
+                () => _serialPortCommandFacade.CleanoutSamplingProbeAsync(_context.GetCleanoutDuration()),
                 async (ret) =>
                 {
                     _context.CleaningCompleted = true;
@@ -607,7 +623,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             _logService.Info($"[状态机] 进入 MovingToShelf 状态，移动到样本架 {_context.CurrentShelfPos + 1}");
 
             await SafeSerialPortCallAsync(
-                () => _commandFacade.MoveSampleShelfAsync(_context.CurrentShelfPos + 1),
+                () => _serialPortCommandFacade.MoveSampleShelfAsync(_context.CurrentShelfPos + 1),
                 async (ret) =>
                 {
                     // 移动样本架完成后，重置当前样本位为 0
@@ -632,7 +648,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             _logService.Info($"[状态机] 进入 PositioningAtSample 状态，定位样本位 {_context.CurrentSamplePos}");
 
             await SafeSerialPortCallAsync(
-                () => _commandFacade.MoveSampleAsync(_context.CurrentSamplePos + 1),
+                () => _serialPortCommandFacade.MoveSampleAsync(_context.CurrentSamplePos + 1),
                 async (ret) =>
                 {
                     // 先处理逻辑（更新 context 中的样本类型等信息）
@@ -661,14 +677,14 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             _logService.Info("[状态机] 进入 SamplingAndPushingCard 状态");
             _context.ResetConditionFlags();
 
-            if (_homeService.ReactionAreaQueueIsFull())
+            if (_reactionAreaService.IsFull())
             {
                 //如果反应区已经没有位置了，需要等待
                 await FireAsync(DetectionTrigger.ReactionAreaFull);
             }
             // 先获取仪器状态，检查检测卡数量
             await SafeSerialPortCallAsync(
-                () => _commandFacade.GetMachineStateAsync(),
+                () => _serialPortCommandFacade.GetMachineStateAsync(),
                 async (ret) =>
                 {
                     if (ret?.Data == null)
@@ -726,7 +742,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
 
             // 取样任务
             var samplingTask = SafeSerialPortCallAsync(
-                () => _commandFacade.SamplingAsync(_context.GetSampleTypeString(), _context.GetSampleVolume()),
+                () => _serialPortCommandFacade.SamplingAsync(_context.GetSampleTypeString(), _context.GetSampleVolume()),
                 async (ret) =>
                 {
                     _logService.Info("[状态机] 收到取样反馈");
@@ -742,7 +758,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
 
             // 推卡任务
             var pushCardTask = SafeSerialPortCallAsync(
-                () => _commandFacade.PushCardAsync(),
+                () => _serialPortCommandFacade.PushCardAsync(),
                 async (ret) =>
                 {
                     await HandlePushCardReceivedInternal(ret);
@@ -824,7 +840,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             _logService.Info("[状态机] 进入 AddingSample 状态，开始加样");
 
             await SafeSerialPortCallAsync(
-                () => _commandFacade.AddingSampleAsync(_context.GetSampleVolume(), "1"),
+                () => _serialPortCommandFacade.AddingSampleAsync(_context.GetSampleVolume(), "1"),
                 async (ret) =>
                 {
                     _mailboxService.Post(new AddingSampleCompletedEvent() { Result = ret }); // 通知 UI
@@ -853,7 +869,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
 
             // 获取反应区下一个位置
             int y = 0, x = 0;
-            _homeService.GetReactionAreaNextPosition(out y, out x);
+            _reactionAreaService.GetReactionAreaNext(out y, out x);
             _context.ReactionAreaY = y;
             _context.ReactionAreaX = x;
 
@@ -861,7 +877,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
 
             // 异步启动移动反应区操作（不等待完成，与下一个样本检测并行）
             _ = SafeSerialPortCallAsync(
-                () => _commandFacade.MoveReactionAreaAsync(_context.ReactionAreaX, _context.ReactionAreaY),
+                () => _serialPortCommandFacade.MoveReactionAreaAsync(_context.ReactionAreaX, _context.ReactionAreaY),
                 async (ret) =>
                 {
                     _mailboxService.Post(new MoveReactionAreaCompletedEvent
@@ -883,7 +899,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
         private void HandleMoveReactionAreaCompleted()
         {
             // 更新反应区状态
-            _homeService.UpdateReactionAreaItem(
+            _reactionAreaService.UpdateItem(
                 _context.ReactionAreaY,
                 _context.ReactionAreaX,
                 (item) =>
@@ -893,7 +909,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
                     item.ReactionAreaY = _context.ReactionAreaY;
                     item.ReactionAreaX = _context.ReactionAreaX;
                     // 加入等待检测队列
-                    _homeService.Enqueue(item);
+                    _reactionAreaService.Enqueue(item);
                     _logService.Info($"入队= {item.TestResult?.Id}{JsonConvert.SerializeObject(item)}");
                     return item;
                 }
@@ -913,7 +929,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
                  () =>
                  {
                      _context.CleaningCompleted = false;
-                     return _commandFacade.CleanoutSamplingProbeAsync(_context.GetCleanoutDuration());
+                     return _serialPortCommandFacade.CleanoutSamplingProbeAsync(_context.GetCleanoutDuration());
                  },
                  async (ret) =>
                  {
@@ -924,7 +940,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             }
             // 样本架复位
             var resetTask = SafeSerialPortCallAsync(
-                () => _commandFacade.MoveSampleShelfAsync(0), // 0 表示复位
+                () => _serialPortCommandFacade.MoveSampleShelfAsync(0), // 0 表示复位
                 (ret) => _mailboxService.Post(new MoveSampleShelfCompletedEvent() { Result = ret }));
 
             await Task.WhenAll(cleanTask, resetTask);
@@ -1022,7 +1038,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
                 return DetectionValidationErrorType.AlreadyTesting;
             }
 
-            if (_homeService.ReactionAreaQueueIsFull())
+            if (_reactionAreaService.IsFull())
             {
                 return DetectionValidationErrorType.ReactionAreaFull;
             }
@@ -1149,7 +1165,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             _context.TestResultId = item.TestResult.Id;
 
             await SafeSerialPortCallAsync(
-                () => _commandFacade.TestAsync(
+                () => _serialPortCommandFacade.TestAsync(
                     item.ReactionAreaX,
                     item.ReactionAreaY,
                     cardType,
@@ -1199,7 +1215,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
                 Tc = _toolService.CalcTC(t / 1000, c / 1000),
                 Tc2 = _toolService.CalcTC(t2 / 1000, c2 / 1000)
             };
-            int pointId = _homeService.InsertPoint(point);
+            int pointId = _pointService.InsertPoint(point);
 
             // 3. 更新 TestResult 记录并执行计算
             UpdateTestResult(resultId, (tr) =>
@@ -1222,7 +1238,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
                 return calculatedTr;
             });
             //更新为已检测
-            _homeService.UpdateReactionAreaItem(
+            _reactionAreaService.UpdateItem(
                 _context.ReactionAreaTestY,
                 _context.ReactionAreaTestX,
                 (item) =>
@@ -1238,7 +1254,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
         private async Task HandlePostTestActions(TestResult tr)
         {
             // 自动打印
-            _homeService.AutoPrintReport(
+            _printService.AutoPrintReport(
                 tr,
                 _configService.IsAutoPrintA4Report(),
                 false,
@@ -1247,10 +1263,10 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             );
 
             // 自动上传
-            if (_homeService.Hl7NeedAutoUpload())
+            if ((_lisService.IsConnected() && _lisService.GetAutoUpload()))
             {
                 _logService.Info($"[状态机] 开始自动上传: {tr.Id}");
-                var ur = await _homeService.UploadTestResultAsync(tr);
+                var ur = await _lisService.UploadTestResultAsync(tr);
                 if (ur?.ResultType == Hl7Result.UploadResultType.Success)
                 {
                     UpdateTestResult(tr.Id, (item) =>
@@ -1276,7 +1292,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
             if (testNum != null)
             {
                 tr = new TestResult { TestNum = testNum };
-                int id = _homeService.InsertTestResult(tr);
+                int id = _testResultService.InsertTestResult(tr);
                 tr.Id = id;
             }
 
@@ -1290,11 +1306,11 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
         /// </summary>
         public void UpdateTestResult(int id, Func<TestResult, TestResult> action)
         {
-            var tr = _homeService.GetTestResult(id);
+            var tr = _testResultService.GetTestResultForID(id);
             if (tr != null)
             {
                 action(tr);
-                _homeService.UpdateTestResult(tr);
+                _testResultService.UpdateTestResult(tr);
 
                 // 发送事件通知 VM 刷新 UI
                 _mailboxService.Post(new TestResultUpdatedEvent { TestResultId = id });
@@ -1312,7 +1328,7 @@ namespace FluorescenceFullAutomatic.HomeModule.StateMachine
                 _logService.Info("[状态机] 检测完成，反应区有空位，恢复取样");
                 await FireAsync(DetectionTrigger.ReactionAreaSpaceAvailable);
             }
-            if (_homeService.ReactionAreaQueueIsEmpty())
+            if (_reactionAreaService.IsEmpty())
             {
                 if (SystemGlobal.MachineStatus == MachineStatus.SamplingFinished
                     || SystemGlobal.MachineStatus == MachineStatus.Testing

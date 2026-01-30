@@ -77,24 +77,10 @@ jobs:
         path: "TestResults/*.trx"
         reporter: dotnet-trx
 
-    # 5. Build Installer (Inno Setup)
-    - name: Compile Installer
-      uses: minhaskamal/inno-setup-action@v1
-      with:
-        path: setup.iss
-        # Pass version to script override
-        options: /DMyAppVersion=${{ steps.get_version.outputs.VERSION }}
-
-    # 6. Zip Artifacts (Optional: keep zip for raw bin access, or just keep installer)
+    # 5. Zip Artifacts
     - name: Zip Release
       run: |
         powershell Compress-Archive -Path Main\bin\Release\* -DestinationPath FluorescenceFullAutomatic-Bin-${{ steps.get_version.outputs.VERSION }}.zip
-
-    - name: Upload Installer
-      uses: actions/upload-artifact@v4
-      with:
-        name: setup-installer
-        path: Output/*.exe
 
     - name: Upload Binaries
       uses: actions/upload-artifact@v4
@@ -102,7 +88,7 @@ jobs:
         name: binary-package
         path: FluorescenceFullAutomatic-Bin-${{ steps.get_version.outputs.VERSION }}.zip
 
-  # 7. Create Release Job (Only runs on tags)
+  # 6. Create Release Job (Only runs on tags)
   create-release:
     name: Create GitHub Release
     needs: build-and-test
@@ -112,11 +98,6 @@ jobs:
       contents: write
 
     steps:
-    - name: Download Installer
-      uses: actions/download-artifact@v4
-      with:
-        name: setup-installer
-
     - name: Download Binaries
       uses: actions/download-artifact@v4
       with:
@@ -126,7 +107,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          *.exe
           *.zip
         draft: false
         prerelease: false

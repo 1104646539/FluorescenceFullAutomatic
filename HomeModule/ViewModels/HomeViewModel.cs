@@ -15,7 +15,6 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FluorescenceFullAutomatic.Core.Config;
 using FluorescenceFullAutomatic.Core.Model;
-using FluorescenceFullAutomatic.HomeModule.Services;
 using FluorescenceFullAutomatic.HomeModule.StateMachine;
 using FluorescenceFullAutomatic.Platform.Ex;
 using FluorescenceFullAutomatic.Platform.Model;
@@ -39,7 +38,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         [ObservableProperty]
         public string title;
 
-        private readonly IHomeService homeService;
+
         private readonly ISerialPortService serialPortService;
         private readonly ISerialPortCommandFacade serialPortCommandFacade;
         private readonly IDispatcherService dispatcherService;
@@ -48,7 +47,17 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private readonly IProjectService projectRepository;
         private readonly ILogService logService;
         private readonly IEventMailboxService mailboxService;
+        private readonly IApplyTestService applyTestRepository;
+        private readonly IReactionAreaService reactionAreaService;
+        private readonly IDialogService dialogRepository;
+        private readonly IPatientService patientRepository;
+        private readonly IPrintService printRepository;
+        private readonly ITestResultService testResultRepository;
+        private readonly IDialogCoordinator dialogCoordinator;
+        private readonly ILisService lisRepository;
         private readonly DetectionStateMachine detectionStateMachine;
+
+
 
         [ObservableProperty]
         public SampleShelfViewModel sampleShelfViewModel;
@@ -101,7 +110,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         /// 是否是检测前想要自检的（保留：用于 ReceiveGetSelfMachineStatusModel 判断是否处理响应）
         /// </summary>
         private bool IsTestGetSelfMachineState = true;
-     
+
 
         /// <summary>
         /// 获取反应区温度定时器
@@ -120,38 +129,58 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         public HomeViewModel(
             ISerialPortService serialPortService,
             ISerialPortCommandFacade serialPortCommandFacade,
-            IHomeService homeService,
+            IApplyTestService applyTestRepository,
             IConfigService configRepository,
-            IDispatcherService dispatcherService,
-            IToolService toolRepository,
             IProjectService projectRepository,
+            ILisService lisRepository,
+            IDialogService dialogRepository,
+            IPatientService patientRepository,
+            IPrintService printRepository,
+            IReactionAreaService reactionAreaService,
+            ITestResultService testResultRepository,
+            IEventMailboxService mailboxService,
             ILogService logService,
-            IEventMailboxService mailboxService
-        )
+            IDispatcherService dispatcherService,
+            IToolService toolService,
+            IPointService pointService,
+            IDialogCoordinator dialogCoordinator)
         {
-            this.projectRepository = projectRepository;
-            this.logService = logService;
-            this.configRepository = configRepository;
-            this.toolRepository = toolRepository;
             this.serialPortService = serialPortService;
             this.serialPortCommandFacade = serialPortCommandFacade;
-            this.homeService = homeService;
-            this.dispatcherService = dispatcherService;
+            this.applyTestRepository = applyTestRepository;
+            this.configRepository = configRepository;
+            this.projectRepository = projectRepository;
+            this.lisRepository = lisRepository;
+            this.dialogRepository = dialogRepository;
+            this.patientRepository = patientRepository;
+            this.printRepository = printRepository;
+            this.reactionAreaService = reactionAreaService;
+            this.testResultRepository = testResultRepository;
             this.mailboxService = mailboxService;
+            this.logService = logService;
+            this.dispatcherService = dispatcherService;
+            this.dialogCoordinator = dialogCoordinator;
+
+            this.detectionStateMachine = new DetectionStateMachine(logService, mailboxService, serialPortCommandFacade
+                , serialPortService, configRepository, projectRepository, toolService, pointService,
+                testResultRepository, reactionAreaService, printRepository, patientRepository, applyTestRepository
+                , lisRepository);
+
+            //InitialCommands();
+            RegisterMsg();
             //线程邮箱
             this.mailboxService.Subscribe(HandlerEventAsync);
-            detectionStateMachine = new DetectionStateMachine(logService, mailboxService, serialPortCommandFacade, serialPortService, homeService, configRepository, projectRepository, toolRepository);
             this.mailboxService.Start();
             SampleShelfViewModel = new SampleShelfViewModel();
             this.configRepository.AddDebugModeChangedListener(OnDebugModeChange);
             ChangeTestSettings();
             this.SampleShelfViewModel.onSelectedSampleItem += OnSampleItemSelected;
             OnSampleItemSelected(null);
-            RegisterMsg();
             UpdateState();
 
-            homeService.Hl7IsRunning();
+            ////lisRepository.IsConnected();
             OnDebugModeChange(configRepository.GetDebugMode());
+            InitState();
         }
 
         private async Task HandlerEventAsync(ITestEvent evt)
@@ -185,13 +214,13 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                         case MachineStatusValidationErrorEvent e:
                             HandleMachineStatusValidationError(e.ErrorMessage);
                             break;
-                            
+
                         // ========== 硬件反馈事件（仅更新 UI 状态，逻辑已迁移到状态机回调中直接处理） ==========
                         case SelfInspectionCompletedEvent e:
                             ReceiveGetSelfMachineStatusModel(e.Result);
                             break;
                         case MachineStatusReceivedEvent e:
-                            ReceiveMachineStatusModel(e.Result,e.Reason);
+                            ReceiveMachineStatusModel(e.Result, e.Reason);
                             break;
                         case MoveSampleShelfCompletedEvent e:
                             ReceiveMoveSampleShelfModel(e.Result);
@@ -255,7 +284,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 }
             );
         }
-   
+
 
         /// <summary>
         /// 处理检测卡不足事件，提示用户添加检测卡
@@ -298,7 +327,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             dispatcherService.Invoke(() =>
             {
                 // 显示取样结束提示
-                homeService.ShowHiltDialog(
+                dialogRepository.ShowHiltDialog(
                     this,
                     "提示",
                     hintMessage,
@@ -352,7 +381,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             if (item != null)
             {
-                item.TestResult = homeService.GetTestResult(item.ResultId);
+                item.TestResult = testResultRepository.GetTestResultForID(item.ResultId);
             }
             SelectedSampleItem = item;
         }
@@ -407,7 +436,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
 
         private void ChangeTestSettings()
         {
-            this.homeService.SetDequeueDuration(configRepository.ReactionDuration());
+            this.reactionAreaService.SetDequeueDuration(configRepository.ReactionDuration());
         }
 
         [RelayCommand]
@@ -430,7 +459,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             IsTestGetSelfMachineState = true;
             requestSelfMachineState();
         }
-        
+
 
         private void SetMachineStatus(MachineStatus state)
         {
@@ -482,19 +511,19 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                     ShowSelfMachineErrorDialog();
                     break;
                 case DetectionValidationErrorType.NotSelfInspected:
-                    homeService.ShowHiltDialog(this, "提示", "仪器尚未完成自检，请先进行自检。", "确定", (d, dialog) => { });
+                    dialogRepository.ShowHiltDialog(this, "提示", "仪器尚未完成自检，请先进行自检。", "确定", (d, dialog) => { });
                     break;
                 case DetectionValidationErrorType.AlreadyTesting:
-                    homeService.ShowHiltDialog(this, "提示", "仪器正在检测中，请等待检测完成。", "确定", (d, dialog) => { });
+                    dialogRepository.ShowHiltDialog(this, "提示", "仪器正在检测中，请等待检测完成。", "确定", (d, dialog) => { });
                     break;
                 case DetectionValidationErrorType.ReactionAreaFull:
-                    homeService.ShowHiltDialog(this, "提示", "反应区已满，请等待部分检测完成后再开始。", "确定", (d, dialog) => { });
+                    dialogRepository.ShowHiltDialog(this, "提示", "反应区已满，请等待部分检测完成后再开始。", "确定", (d, dialog) => { });
                     break;
                 case DetectionValidationErrorType.RunningError:
-                    homeService.ShowHiltDialog(this, "提示", "仪器处于错误状态，请检查硬件。", "确定", (d, dialog) => { });
+                    dialogRepository.ShowHiltDialog(this, "提示", "仪器处于错误状态，请检查硬件。", "确定", (d, dialog) => { });
                     break;
                 default:
-                    homeService.ShowHiltDialog(this, "提示", $"无法开始检测: {errorType}", "确定", (d, dialog) => { });
+                    dialogRepository.ShowHiltDialog(this, "提示", $"无法开始检测: {errorType}", "确定", (d, dialog) => { });
                     break;
             }
         }
@@ -527,7 +556,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
 
             dispatcherService.Invoke(() =>
             {
-                homeService.ShowHiltDialog(
+                dialogRepository.ShowHiltDialog(
                     this,
                     title,
                     message,
@@ -542,7 +571,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         /// </summary>
         private void HandleMachineStatusValidationError(string errorMessage)
         {
-            homeService.ShowHiltDialog(
+            dialogRepository.ShowHiltDialog(
                 this,
                 "提示",
                 errorMessage,
@@ -561,7 +590,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             );
         }
 
-      
+
         private void requestSelfMachineState()
         {
             InitState();
@@ -649,7 +678,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
 
             StartGetReactionTempTask();
             SelfMachineStateError = JoinSelfMachineError(model.Data);
-            
+
             if (string.IsNullOrEmpty(SelfMachineStateError))
             {
                 SetMachineStatus(MachineStatus.SelfInspectionSuccess);
@@ -663,14 +692,14 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
 
         private void ShowSelfMachineErrorDialog()
         {
-            homeService.ShowHiltDialog(
+            dialogRepository.ShowHiltDialog(
                 this,
                 "提示",
                 $"自检失败{SelfMachineStateError}",
                 "重新自检",
                 async (d, dialog) =>
                 {
-                    await homeService.HideMetroDialogAsync(this, dialog);
+                    await dialogRepository.HideMetroDialogAsync(this, dialog);
                     logService.Info("自检失败，点击 重新自检");
                     requestSelfMachineState();
                 },
@@ -687,10 +716,10 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         /// </summary>
         private void ClearWaitTestCard()
         {
-            homeService.ReactionAreaQueueClear();
+            reactionAreaService.Clear();
         }
 
-    
+
         public string JoinSelfMachineError(List<string> data)
         {
             if (data == null || data.Count == 0)
@@ -734,7 +763,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             logService.Info(
                 $"接收到 仪器状态: {JsonConvert.SerializeObject(model)} SampleCurrentPos={detectionStateMachine.Context.CurrentSamplePos}"
             );
-             // 更新 UI 状态展示
+            // 更新 UI 状态展示
             switch (reason)
             {
                 case MachineStatusRequestReason.AfterSelfInspection:// 自检后
@@ -747,20 +776,20 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                     ParseMachineStatusCard(model.Data);
                     break;
                 case MachineStatusRequestReason.BeforeMoveSample:// 移动样本前
-                    ParseMachineStatusCard(model.Data);  
+                    ParseMachineStatusCard(model.Data);
                     break;
                 default:
                     break;
             }
         }
 
- 
+
         private void requestMoveSampleShelf(int position)
         {
             mailboxService.Post(new MoveSampleShelfRequestEvent() { Position = position });
         }
-        
-    
+
+
         /// <summary>
         /// 解析仪器状态数据（更新 VM 的 UI 绑定属性）
         /// </summary>
@@ -787,7 +816,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         /// <param name="data"></param>
         private void ParseMachineStatusCard(MachineStatusModel data)
         {
-         
+
             // 状态机会在 context.UpdateFromModel(data) 中更新
             CleanoutFluidExist = data.CleanoutFluid == "1";
             int tempNum = 0;
@@ -800,7 +829,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             if (!ContinueTest())
                 return;
             logService.Info($"接收到 移动样本架: {JsonConvert.SerializeObject(model)}");
-            
+
             // 处理移动样本架数据
             InitCurrentSampleShelfState();
         }
@@ -814,7 +843,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             TestResults.Clear();
         }
 
-     
+
         private List<TestResult> TestResults = new List<TestResult>();
 
         public void ReceiveMoveSampleModel(BaseResponseModel<MoveSampleModel> model)
@@ -839,7 +868,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                     {
                         item.State = SampleState.Exist;
                         item.SampleType = model.Data.SampleType == MoveSampleModel.SampleTube ? SampleType.SampleTube : SampleType.SampleCup;
-                        
+
                         var currentTr = detectionStateMachine.Context.CurrentAddingSampleTestResult;
                         if (currentTr != null)
                         {
@@ -854,7 +883,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
 
 
 
-      
+
         private void requestSampling(string type, int volume)
         {
             mailboxService.Post(new SamplingRequestEvent() { Type = type, Volume = volume });
@@ -873,17 +902,17 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             return configRepository.IsScanBarcode();
         }
 
-      
+
         /// <summary>
         /// 反应区是否已满
         /// </summary>
         /// <returns></returns>
         private bool ReactionAreaIsFull()
         {
-            return homeService.ReactionAreaQueueIsFull();
+            return reactionAreaService.IsFull();
         }
 
-      
+
         /// <summary>
         /// 样本架复位
         /// </summary>
@@ -928,7 +957,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         {
             mailboxService.Post(new CleanoutSamplingProbeRequestEvent());
         }
-      
+
         private void requestMoveReactionArea(int x, int y)
         {
             mailboxService.Post(new MoveReactionAreaRequestEvent() { X = x, Y = y });
@@ -964,7 +993,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             }
         }
 
-      
+
         /// <summary>
         /// 是否推卡成功
         /// </summary>
@@ -976,7 +1005,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
                 && !string.IsNullOrEmpty(data.QrCode);
         }
 
-     
+
         public void ReceiveReactionTempModel(BaseResponseModel<ReactionTempModel> model)
         {
             if (!ContinueTest())
@@ -988,7 +1017,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             ReactionTemp = model.Data.Temp;
         }
 
-       
+
         private bool ContinueTest(bool isTestAction = false)
         {
             if (SystemGlobal.MachineStatus.IsRunningError())
@@ -1010,7 +1039,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
         private async void ShowSelfMachineDialog()
         {
             logService.Info("显示自检对话框");
-            showSelfController = await homeService.ShowProgressAsync(this, "提示", "正在自检……");
+            showSelfController = await dialogRepository.ShowProgressAsync(this, "提示", "正在自检……");
             showSelfController.SetIndeterminate();
         }
 
@@ -1022,7 +1051,7 @@ namespace FluorescenceFullAutomatic.HomeModule.ViewModels
             {
                 await showSelfController?.CloseAsync();
             }
-        }  
-      
+        }
+
     }
 }

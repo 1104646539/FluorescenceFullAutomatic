@@ -252,7 +252,8 @@
     <Compile Include="Services\IPointService.cs" />
     <Compile Include="Services\IPrintService.cs" />
     <Compile Include="Services\IProjectService.cs" />
-    <Compile Include="Services\IReactionAreaQueueService.cs" />
+    <Compile Include="Services\IProjectService.cs" />
+    <Compile Include="Services\IReactionAreaService.cs" />
     <Compile Include="Services\ISerialPortService.cs" />
     <Compile Include="Services\ISettingsService.cs" />
     <Compile Include="Services\ITestResultService.cs" />

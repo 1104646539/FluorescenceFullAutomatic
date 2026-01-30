@@ -1,4 +1,4 @@
-﻿using FluorescenceFullAutomatic.HomeModule.Services;
+﻿
 using FluorescenceFullAutomatic.HomeModule.ViewModels;
 using FluorescenceFullAutomatic.HomeModule.Views;
 using Prism.Ioc;

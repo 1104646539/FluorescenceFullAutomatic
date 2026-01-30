@@ -21,7 +21,6 @@ using FluorescenceFullAutomatic.Core.Model;
 using FluorescenceFullAutomatic.Platform.Utils;
 using FluorescenceFullAutomatic.Platform.Model.Events;
 using FluorescenceFullAutomatic.Platform.StateMachine;
-using FluorescenceFullAutomatic.HomeModule.Services;
 
 namespace FluorescenceFullAutomatic.ViewModels
 {
@@ -34,12 +33,11 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IToolService toolRepository;
         private readonly IProjectService projectRepository;
         private readonly IConfigService configRepository;
-        private readonly IReactionAreaQueueService reactionAreaQueueRepository;
+        private readonly IReactionAreaService reactionAreaQueueRepository;
         private readonly IPrintService printService;
         private readonly IDialogService dialogRepository;
         private readonly IEventMailboxService mailboxService;
         private readonly IDispatcherService dispatcherService;
-        private readonly IHomeService homeService;
         private readonly QCStateMachine qcStateMachine;
 
         /// <summary>
@@ -96,9 +94,9 @@ namespace FluorescenceFullAutomatic.ViewModels
         #endregion
         public QCViewModel(IToolService toolRepository, ISerialPortService serialService, ISerialPortCommandFacade serialPortCommandFacade
         , IConfigService configRepository
-            , IProjectService projectRepository, IReactionAreaQueueService reactionAreaQueueRepository
+            , IProjectService projectRepository, IReactionAreaService reactionAreaService
             , IDialogService dialogRepository, IPointService pointService, IPrintService printService
-            , IEventMailboxService mailboxService, IDispatcherService dispatcherService, IHomeService homeService, ILogService logService)
+            , IEventMailboxService mailboxService, IDispatcherService dispatcherService, ILogService logService)
         {
             this.printService = printService;
             this.pointService = pointService;
@@ -107,15 +105,14 @@ namespace FluorescenceFullAutomatic.ViewModels
             this.serialPortService = serialService;
             this.serialPortCommandFacade = serialPortCommandFacade;
             this.configRepository = configRepository;
-            this.reactionAreaQueueRepository = reactionAreaQueueRepository;
+            this.reactionAreaQueueRepository = reactionAreaService;
             this.dialogRepository = dialogRepository;
             this.mailboxService = mailboxService;
             this.dispatcherService = dispatcherService;
-            this.homeService = homeService;
-            ReactionAreaViewModel = ReactionAreaViewModel.Instance;
 
             // 创建 QC 状态机
-            qcStateMachine = new QCStateMachine(mailboxService, serialPortCommandFacade, projectRepository, logService, toolRepository, pointService, homeService, configRepository);
+            qcStateMachine = new QCStateMachine(mailboxService, serialPortCommandFacade, projectRepository, 
+                logService, toolRepository, pointService, reactionAreaService,configRepository);
             // 订阅事件邮箱
             mailboxService.Subscribe(HandlerQCEventAsync);
 
@@ -400,7 +397,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             switch (evt)
             {
                 case StartQCEvent e:
-                     _= qcStateMachine.FireAsync(QCTrigger.StartQC);
+                    _ = qcStateMachine.FireAsync(QCTrigger.StartQC);
                     break;
 
                 case QCValidationErrorEvent e:
