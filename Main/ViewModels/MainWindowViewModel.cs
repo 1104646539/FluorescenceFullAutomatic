@@ -34,6 +34,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         [ObservableProperty]
         private string title;
 
+
         [ObservableProperty]
         private string imgTemp;
 
