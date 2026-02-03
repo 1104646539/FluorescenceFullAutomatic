@@ -16,7 +16,7 @@ namespace FluorescenceFullAutomatic.ViewModels
     /// <summary>
     /// QC 质控流程状态机 - 负责质控流程控制和硬件指令下发
     /// </summary>
-    public class QCStateMachine
+    public class QCStateMachine : IQCStateMachine
     {
         #region 常量
         /// <summary>
@@ -39,6 +39,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IPointService _pointService;
         private readonly IReactionAreaService _reactionAreaService;
         private readonly IConfigService _configService;
+        private readonly ISystemGlobalService _systemGlobalService;
         private readonly StateMachine<QCState, QCTrigger> _machine;
 
         // 状态上下文
@@ -94,7 +95,8 @@ namespace FluorescenceFullAutomatic.ViewModels
             IToolService toolService,
             IPointService pointService,
             IReactionAreaService reactionAreaService,
-            IConfigService configService
+            IConfigService configService,
+            ISystemGlobalService systemGlobalService
         )
         {
             _mailboxService = mailboxService;
@@ -105,6 +107,7 @@ namespace FluorescenceFullAutomatic.ViewModels
             _pointService = pointService;
             _configService = configService;
             _reactionAreaService = reactionAreaService;
+            _systemGlobalService = systemGlobalService;
             _context = new StateContext(_configService);
             // 创建状态机
             _machine = new StateMachine<QCState, QCTrigger>(
@@ -308,32 +311,27 @@ namespace FluorescenceFullAutomatic.ViewModels
         /// </summary>
         public QCValidationErrorType ValidateStartQC()
         {
-            // 检查是否有其他类型检测正在进行
-            //if (SystemGlobal.TestType != TestType.None && SystemGlobal.TestType != TestType.QC)
-            //{
-            //    return QCValidationErrorType.OtherTestInProgress;
-            //}
 
             // 检查仪器状态
-            if (SystemGlobal.MachineStatus == MachineStatus.None)
+            if (_systemGlobalService.GetMachineStatus() == MachineStatus.None)
             {
                 return QCValidationErrorType.NotSelfInspected;
             }
 
-            if (SystemGlobal.MachineStatus == MachineStatus.SelfInspectionFailed)
+            if (_systemGlobalService.GetMachineStatus() == MachineStatus.SelfInspectionFailed)
             {
                 return QCValidationErrorType.SelfInspectionFailed;
             }
 
             if (
-                SystemGlobal.MachineStatus == MachineStatus.Sampling
-                || SystemGlobal.MachineStatus == MachineStatus.SamplingFinished
+                    _systemGlobalService.GetMachineStatus() == MachineStatus.Sampling
+                || _systemGlobalService.GetMachineStatus() == MachineStatus.SamplingFinished
             )
             {
                 return QCValidationErrorType.AlreadyTesting;
             }
 
-            if (SystemGlobal.MachineStatus.IsRunningError())
+            if (_systemGlobalService.GetMachineStatus().IsRunningError())
             {
                 return QCValidationErrorType.RunningError;
             }
@@ -591,8 +589,8 @@ namespace FluorescenceFullAutomatic.ViewModels
             _lastPushCardQrCode = "";
 
             // 设置全局状态
-            SystemGlobal.TestType = TestType.QC;
-            SetMachineState(MachineStatus.Sampling);
+            _systemGlobalService.SetTestType(TestType.QC);
+            NotifySetMachineState(MachineStatus.Sampling);
         }
 
         /// <summary>
@@ -748,12 +746,12 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             Log.Information("[QCStateMachine] 进入 Completed 状态，质控完成");
             // 重置全局状态
-            SystemGlobal.TestType = TestType.None;
-            SetMachineState(MachineStatus.TestingEnd);
+            _systemGlobalService.SetTestType(TestType.None);
+            NotifySetMachineState(MachineStatus.TestingEnd);
             _mailboxService.Post(new QCCompletedEvent { Message = "质控完成" });
         }
 
-        private void SetMachineState(MachineStatus status)
+        private void NotifySetMachineState(MachineStatus status)
         {
             _mailboxService.Post(new MachineStateChangeEvent { NewState = status });
         }

@@ -242,7 +242,6 @@
     <Compile Include="Services\EventMailboxService.cs" />
     <Compile Include="Services\IApplyTestService.cs" />
     <Compile Include="Services\IConfigService.cs" />
-
     <Compile Include="Services\IDialogService.cs" />
     <Compile Include="Services\IDispatcherService.cs" />
     <Compile Include="Services\IEventMailboxService.cs" />
@@ -253,9 +252,11 @@
     <Compile Include="Services\IPrintService.cs" />
     <Compile Include="Services\IProjectService.cs" />
     <Compile Include="Services\IProjectService.cs" />
+    <Compile Include="Services\IQCStateMachine.cs" />
     <Compile Include="Services\IReactionAreaService.cs" />
     <Compile Include="Services\ISerialPortService.cs" />
     <Compile Include="Services\ISettingsService.cs" />
+    <Compile Include="Services\ISystemGlobalService.cs" />
     <Compile Include="Services\ITestResultService.cs" />
     <Compile Include="Services\IToolService.cs" />
     <Compile Include="Sql\DB.cs" />

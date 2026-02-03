@@ -38,7 +38,9 @@ namespace FluorescenceFullAutomatic.ViewModels
         private readonly IDialogService dialogRepository;
         private readonly IEventMailboxService mailboxService;
         private readonly IDispatcherService dispatcherService;
-        private readonly QCStateMachine qcStateMachine;
+        private readonly IQCStateMachine qcStateMachine;
+
+        private readonly ISystemGlobalService systemGlobalService;
 
         /// <summary>
         /// 卡仓数量
@@ -96,7 +98,7 @@ namespace FluorescenceFullAutomatic.ViewModels
         , IConfigService configRepository
             , IProjectService projectRepository, IReactionAreaService reactionAreaService
             , IDialogService dialogRepository, IPointService pointService, IPrintService printService
-            , IEventMailboxService mailboxService, IDispatcherService dispatcherService, ILogService logService)
+            , IEventMailboxService mailboxService, IDispatcherService dispatcherService, ILogService logService, ISystemGlobalService systemGlobalService, IQCStateMachine qcStateMachine)
         {
             this.printService = printService;
             this.pointService = pointService;
@@ -109,10 +111,8 @@ namespace FluorescenceFullAutomatic.ViewModels
             this.dialogRepository = dialogRepository;
             this.mailboxService = mailboxService;
             this.dispatcherService = dispatcherService;
-
-            // 创建 QC 状态机
-            qcStateMachine = new QCStateMachine(mailboxService, serialPortCommandFacade, projectRepository, 
-                logService, toolRepository, pointService, reactionAreaService,configRepository);
+            this.systemGlobalService = systemGlobalService;
+            this.qcStateMachine = qcStateMachine;
             // 订阅事件邮箱
             mailboxService.Subscribe(HandlerQCEventAsync);
 
@@ -159,9 +159,9 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private void SetMachineStatus(MachineStatus state)
         {
-            SystemGlobal.MachineStatus = state;
+            systemGlobalService.SetMachineStatus(state);
             UpdateMainState();
-            StateMsg = SystemGlobal.MachineStatus.GetDescription();
+            StateMsg = systemGlobalService.GetMachineStatus().GetDescription();
         }
         private void UpdateMainState()
         {
@@ -178,19 +178,19 @@ namespace FluorescenceFullAutomatic.ViewModels
         {
             string errorMsg = "";
             if (
-                SystemGlobal.MachineStatus == MachineStatus.Sampling
-                || SystemGlobal.MachineStatus == MachineStatus.SamplingFinished
+                systemGlobalService.GetMachineStatus() == MachineStatus.Sampling
+                || systemGlobalService.GetMachineStatus() == MachineStatus.SamplingFinished
             )
             {
                 Log.Information("正在检测，请等待检测结束。");
                 errorMsg = "正在检测，请等待检测结束。";
             }
-            else if (SystemGlobal.MachineStatus == MachineStatus.SelfInspectionFailed)
+            else if (systemGlobalService.GetMachineStatus() == MachineStatus.SelfInspectionFailed)
             {
                 Log.Information("自检失败，请先自检。");
                 errorMsg = "自检失败，请先自检。";
             }
-            else if (SystemGlobal.MachineStatus == MachineStatus.None)
+            else if (systemGlobalService.GetMachineStatus() == MachineStatus.None)
             {
                 Log.Information("仪器未自检，请先自检。");
                 errorMsg = "仪器未自检，请先自检。";
@@ -200,7 +200,7 @@ namespace FluorescenceFullAutomatic.ViewModels
                 Log.Information("反应区不为空，请等待检测结束。");
                 errorMsg = "反应区不为空，请等待检测结束。";
             }
-            else if (SystemGlobal.MachineStatus.IsRunningError())
+            else if (systemGlobalService.GetMachineStatus().IsRunningError())
             {
                 Log.Information("仪器运行异常");
                 errorMsg = RunningErrorMsg;
@@ -354,8 +354,8 @@ namespace FluorescenceFullAutomatic.ViewModels
 
         private void ChangesView()
         {
-            ShowQCCardQCText = SystemGlobal.TestType == TestType.QC ? "质控中" : "质控卡质控";
-            IsEnabled = SystemGlobal.TestType != TestType.QC;
+            ShowQCCardQCText = systemGlobalService.GetTestType() == TestType.QC ? "质控中" : "质控卡质控";
+            IsEnabled = systemGlobalService.GetTestType() != TestType.QC;
         }
 
         string RunningErrorMsg = "";
@@ -378,13 +378,13 @@ namespace FluorescenceFullAutomatic.ViewModels
             resultDetailsViewModel.Result = testResult;
             resultDetailsViewModel.CloseAction = () =>
             {
-                MainWindow.Instance.HideMetroDialogAsync(customDialog);
+                dialogRepository.HideMetroDialogAsync(this, customDialog);
             };
             ResultDetailsControl resultDetailsControl = new ResultDetailsControl();
             resultDetailsControl.Update(resultDetailsViewModel);
             customDialog.Content = resultDetailsControl;
 
-            MainWindow.Instance.ShowMetroDialogAsync(customDialog);
+            dialogRepository.ShowMetroDialogAsync(this, customDialog);
         }
         private CustomDialog customDialog;
 

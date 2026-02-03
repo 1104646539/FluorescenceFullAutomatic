@@ -109,6 +109,7 @@
     <Compile Include="Repositorys\FakeExportExcelRepository.cs" />
     <Compile Include="Repositorys\FakePrintRepository.cs" />
     <Compile Include="Services\FakeDispatcherService.cs" />
+    <Compile Include="StateMachine\QCStateMachineIntegrationTests.cs" />
     <Compile Include="StateMachine\QCStateMachineTests.cs" />
     <Compile Include="UnitTest1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -15,7 +15,7 @@ namespace FluorescenceFullAutomatic.Platform.Services
 {
     public interface IDialogService
     {
-        
+
         public void ShowHiltDialog(object context,
             string title,
             string msg,
@@ -28,6 +28,8 @@ namespace FluorescenceFullAutomatic.Platform.Services
             bool autoCloseDialog = true
         );
 
+        public Task ShowMetroDialogAsync(object context, BaseMetroDialog dialog, MetroDialogSettings settings = null);
+
         public Task HideMetroDialogAsync(object context, BaseMetroDialog dialog, MetroDialogSettings settings = null);
 
         Task<ProgressDialogController> ShowProgressAsync(object context, string title, string message, bool isCancelable = false, MetroDialogSettings settings = null);
@@ -38,18 +40,26 @@ namespace FluorescenceFullAutomatic.Platform.Services
     {
 
         IDialogCoordinator dialogCoordinator;
-        
-        public DialogService(IDialogCoordinator dialogCoordinator) { 
+
+        public DialogService(IDialogCoordinator dialogCoordinator)
+        {
             this.dialogCoordinator = dialogCoordinator;
         }
         public Task HideMetroDialogAsync(object context, BaseMetroDialog dialog, MetroDialogSettings settings = null)
         {
             var w = Application.Current.MainWindow as MetroWindow;
-            return w.HideMetroDialogAsync(dialog,settings);
+            return w.HideMetroDialogAsync(dialog, settings);
             //return window.HideMetroDialogAsync(dialog, settings);
         }
-        public bool ClickTimeConfirm(long time) {
+        public bool ClickTimeConfirm(long time)
+        {
             return time == 0 || (time > 0 && (DateTimeOffset.Now.ToUnixTimeMilliseconds() - time > 1500));
+        }
+
+        public Task ShowMetroDialogAsync(object context, BaseMetroDialog dialog, MetroDialogSettings settings = null)
+        {
+            var w = Application.Current.MainWindow as MetroWindow;
+            return w.ShowMetroDialogAsync(dialog, settings);
         }
         public void ShowHiltDialog(object context, string title, string msg, string confirmText, Action<HintDialogViewModel, CustomDialog> actionConfirm,
             string cancelText = null, Action<HintDialogViewModel, CustomDialog> actionCancel = null, string closeText = null, Action<HintDialogViewModel, CustomDialog> actionClose = null, bool autoCloseDialog = true)
@@ -64,12 +74,13 @@ namespace FluorescenceFullAutomatic.Platform.Services
                     {
                         prevTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                     }
-                    else {
+                    else
+                    {
                         return;
                     }
                     if (autoCloseDialog)
                     {
-                       await w.HideMetroDialogAsync(customDialog);
+                        await w.HideMetroDialogAsync(customDialog);
                     }
                     actionConfirm?.Invoke(d, customDialog);
                 },
@@ -86,7 +97,7 @@ namespace FluorescenceFullAutomatic.Platform.Services
                     }
                     if (autoCloseDialog)
                     {
-                        w.HideMetroDialogAsync( customDialog);
+                        w.HideMetroDialogAsync(customDialog);
                     }
                     actionCancel?.Invoke(d, customDialog);
                 },
@@ -103,7 +114,7 @@ namespace FluorescenceFullAutomatic.Platform.Services
                     }
                     if (autoCloseDialog)
                     {
-                        w.HideMetroDialogAsync( customDialog);
+                        w.HideMetroDialogAsync(customDialog);
                     }
                     actionClose?.Invoke(d, customDialog);
                 }
@@ -117,7 +128,8 @@ namespace FluorescenceFullAutomatic.Platform.Services
             };
             customDialog.Content = new HintDialog() { DataContext = hiltDialogVM };
             var w = Application.Current.MainWindow as MetroWindow;
-            if (w != null) { 
+            if (w != null)
+            {
                 w.ShowMetroDialogAsync(customDialog);
             }
             //dialogCoordinator.ShowMetroDialogAsync(context,customDialog);

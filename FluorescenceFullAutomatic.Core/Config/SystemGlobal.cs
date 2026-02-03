@@ -12,7 +12,7 @@ namespace FluorescenceFullAutomatic.Core.Config
         /// <summary>
         /// 是否是调试代码模式。不使用真实串口
         /// </summary>
-        public const bool IsCodeDebug = true;
+        public static bool IsCodeDebug = true;
         /// <summary>
         /// 仪器当前运行状态
         /// </summary>
@@ -36,8 +36,8 @@ namespace FluorescenceFullAutomatic.Core.Config
         /// 当错误后是否要继续检测
         /// </summary>
         public static bool ErrorContinueTest = false;
- 
-     
+
+
         /// <summary>
         /// 升级文件的盘符别名
         /// </summary>
@@ -73,5 +73,5 @@ namespace FluorescenceFullAutomatic.Core.Config
             }
         }
     }
-   
+
 }
